@@ -10,18 +10,21 @@ import (
 )
 
 type IMMessageService struct {
-	sessionStorage him.SessionStorage
-	pusher         him.Pusher
-	db             *gorm.DB
-	idGen          *snowflake.Node
+	sessionStorage   him.SessionStorage
+	pusher           him.Pusher
+	db               *gorm.DB
+	idGen            *snowflake.Node
+	imOfflineService *IMOfflineService
 }
 
-func NewIMMessageService(sessionStorage him.SessionStorage, pusher him.Pusher) *IMMessageService {
+func NewIMMessageService(sessionStorage him.SessionStorage, pusher him.Pusher,
+	imOfflineService *IMOfflineService) *IMMessageService {
 	return &IMMessageService{
-		sessionStorage: sessionStorage,
-		pusher:         pusher,
-		db:             db.NewDB(),
-		idGen:          db.NewIDGen(),
+		sessionStorage:   sessionStorage,
+		pusher:           pusher,
+		db:               db.NewDB(),
+		idGen:            db.NewIDGen(),
+		imOfflineService: imOfflineService,
 	}
 }
 
@@ -111,4 +114,18 @@ func (h *IMMessageService) InsertMessage(req *pkt.MessageReq, sender int64, send
 		return 0, err
 	}
 	return messageId, nil
+}
+
+func (h *IMMessageService) DoTalkAck(ctx him.Context) {
+	var req pkt.MessageAckReq
+	if err := ctx.ReadBody(&req); err != nil {
+		_ = ctx.RespWithError(pkt.Status_InvalidPacketBody, err)
+		return
+	}
+	err := h.imOfflineService.setMessageAck(ctx.Session().GetUserId(), req.MessageId, ctx.Session().GetTerminal())
+	if err != nil {
+		_ = ctx.RespWithError(pkt.Status_SystemException, err)
+		return
+	}
+	_ = ctx.Resp(pkt.Status_Success, nil)
 }

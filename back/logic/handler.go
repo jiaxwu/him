@@ -15,23 +15,26 @@ import (
 
 // Handler 这里是逻辑层，对消息进行处理并转发到service层
 type Handler struct {
-	idGen          *snowflake.Node
-	imLoginService *service.IMLoginService
+	idGen            *snowflake.Node
+	imLoginService   *service.IMLoginService
 	imMessageService *service.IMMessageService
-	userService    *service.UserService
-	pusher         him.Pusher
-	sessionStorage him.SessionStorage
+	imOfflineService *service.IMOfflineService
+	userService      *service.UserService
+	pusher           him.Pusher
+	sessionStorage   him.SessionStorage
 }
 
 func NewHandler(imLoginService *service.IMLoginService, userService *service.UserService, pusher him.Pusher,
-	sessionStorage him.SessionStorage, imMessageService *service.IMMessageService) *Handler {
+	sessionStorage him.SessionStorage, imMessageService *service.IMMessageService,
+	imOfflineService *service.IMOfflineService) *Handler {
 	return &Handler{
-		idGen:          db.NewIDGen(),
-		imLoginService: imLoginService,
-		userService:    userService,
-		pusher:         pusher,
-		sessionStorage: sessionStorage,
+		idGen:            db.NewIDGen(),
+		imLoginService:   imLoginService,
+		userService:      userService,
+		pusher:           pusher,
+		sessionStorage:   sessionStorage,
 		imMessageService: imMessageService,
+		imOfflineService: imOfflineService,
 	}
 }
 
@@ -115,15 +118,15 @@ func (h *Handler) Receive(ch him.Channel, payload []byte) {
 		if logicPkt.Command == wire.CommandChatUserTalk {
 			h.imMessageService.InsertUserMessage(context)
 		}
-		//err = container.Forward(logicPkt.ServiceName(), logicPkt)
-		//if err != nil {
-		//	logger.WithFields(logger.Fields{
-		//		"module": "handler",
-		//		"id":     ag.ID(),
-		//		"cmd":    logicPkt.Command,
-		//		"dest":   logicPkt.Dest,
-		//	}).Error(err)
-		//}
+		if logicPkt.Command == wire.CommandChatTalkAck {
+			h.imMessageService.DoTalkAck(context)
+		}
+		if logicPkt.Command == wire.CommandOfflineIndex {
+			h.imOfflineService.DoSyncIndex(context)
+		}
+		if logicPkt.Command == wire.CommandOfflineContent {
+			h.imOfflineService.DoSyncContent(context)
+		}
 	}
 }
 
@@ -148,4 +151,3 @@ func (h *Handler) Disconnect(ch him.Channel) error {
 func generateChannelID(userID int64, terminal string) string {
 	return fmt.Sprintf("%d_%s_%d", userID, terminal, Seq.Next())
 }
-

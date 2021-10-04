@@ -1,131 +1,139 @@
 package service
 
 import (
+	"context"
+	"errors"
+	"fmt"
 	"github.com/XiaoHuaShiFu/him/back/db"
 	"github.com/XiaoHuaShiFu/him/back/him"
+	"github.com/XiaoHuaShiFu/him/back/wire"
 	"github.com/XiaoHuaShiFu/him/back/wire/pkt"
 	"github.com/bwmarrin/snowflake"
+	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 	"time"
 )
 
-type IMMessageService struct {
+type IMOfflineService struct {
 	sessionStorage him.SessionStorage
 	pusher         him.Pusher
 	db             *gorm.DB
+	rdb            *redis.Client
 	idGen          *snowflake.Node
 }
 
-func NewIMMessageService(sessionStorage him.SessionStorage, pusher him.Pusher) *IMMessageService {
-	return &IMMessageService{
+func NewIMOfflineService(sessionStorage him.SessionStorage, pusher him.Pusher) *IMOfflineService {
+	return &IMOfflineService{
 		sessionStorage: sessionStorage,
 		pusher:         pusher,
 		db:             db.NewDB(),
 		idGen:          db.NewIDGen(),
+		rdb:            db.NewRDB(),
 	}
 }
 
-func (h *IMMessageService) InsertUserMessage(c him.Context) {
-	// validate
-	// 1. 解包
-	var req pkt.MessageReq
-	if err := c.ReadBody(&req); err != nil {
-		_ = c.RespWithError(pkt.Status_InvalidPacketBody, err)
+func (h *IMOfflineService) DoSyncIndex(ctx him.Context) {
+	var req pkt.MessageIndexReq
+	if err := ctx.ReadBody(&req); err != nil {
+		_ = ctx.RespWithError(pkt.Status_InvalidPacketBody, err)
 		return
 	}
-	// 2. 获取接收方的位置信息
-	receiver := req.GetDest()
-	loc, err := h.sessionStorage.GetLocation(receiver, "pc")
-	if err != nil && err != him.ErrSessionNil {
-		_ = c.RespWithError(pkt.Status_SystemException, err)
-		return
-	}
-	// 3. 保存离线消息
-	sendTime := time.Now().UnixNano()
-	messageID, err := h.InsertMessage(&req, c.Session().GetUserId(), sendTime)
+	resp, err := h.GetOfflineMessageIndex(ctx.Session().GetUserId(), req.MessageId, ctx.Session().GetTerminal())
 	if err != nil {
-		_ = c.RespWithError(pkt.Status_SystemException, err)
+		_ = ctx.RespWithError(pkt.Status_SystemException, err)
 		return
 	}
-
-	// 4. 如果接收方在线，就推送一条消息过去。
-	if loc != nil {
-		if err = c.Dispatch(&pkt.MessagePush{
-			MessageId: messageID,
-			Type:      req.GetType(),
-			Body:      req.GetBody(),
-			Extra:     req.GetExtra(),
-			Sender:    c.Session().GetUserId(),
-			SendTime:  sendTime,
-		}, loc); err != nil {
-			_ = c.RespWithError(pkt.Status_SystemException, err)
-			return
-		}
-	}
-	// 5. 返回一条resp消息
-	_ = c.Resp(pkt.Status_Success, &pkt.MessageResp{
-		MessageId: messageID,
-		SendTime:  sendTime,
+	_ = ctx.Resp(pkt.Status_Success, &pkt.MessageIndexResp{
+		Indexes: resp,
 	})
 }
 
-func (h *IMMessageService) InsertMessage(req *pkt.MessageReq, sender int64, sendTime int64) (int64, error) {
-	messageId := h.idGen.Generate().Int64()
-	messageContent := db.MessageContent{
-		ID:       messageId,
-		Type:     byte(req.Type),
-		Body:     req.Body,
-		Extra:    req.Extra,
-		SendTime: sendTime,
+func (h *IMOfflineService) GetOfflineMessageIndex(userID int64, messageId int64, terminal string) ([]*pkt.MessageIndex, error) {
+	start, err := h.getSentTime(userID, messageId, terminal)
+	if err != nil {
+		return nil, err
 	}
+	var indexes []*pkt.MessageIndex
+	tx := h.db.Model(&db.MessageIndex{}).Select("send_time", "user_b", "direction", "message_id", "group")
+	err = tx.Where("user_a=? and send_time>? and direction=?", userID, start, 0).Order("send_time asc").
+		Limit(wire.OfflineSyncIndexCount).Find(&indexes).Error
+	if err != nil {
+		return nil, err
+	}
+	err = h.setMessageAck(userID, messageId, terminal)
+	if err != nil {
+		return nil, err
+	}
+	return indexes, nil
+}
 
-	// 扩散写
-	idxs := make([]db.MessageIndex, 2)
-	idxs[0] = db.MessageIndex{
-		ID:        h.idGen.Generate().Int64(),
-		MessageID: messageId,
-		UserA:     req.Dest,
-		UserB:     sender,
-		Direction: 0,
-		SendTime:  sendTime,
+func (h *IMOfflineService) getSentTime(userId int64, msgId int64, terminal string) (int64, error) {
+	// 1. 冷启动情况，从服务端拉取消息索引
+	if msgId == 0 {
+		key := h.keyMessageAckIndex(userId, terminal)
+		msgId, _ = h.rdb.Get(context.Background(), key).Int64() // 如果一次都没有发ack包，这里就是0
 	}
-	idxs[1] = db.MessageIndex{
-		ID:        h.idGen.Generate().Int64(),
-		MessageID: messageId,
-		UserA:     sender,
-		UserB:     req.Dest,
-		Direction: 1,
-		SendTime:  sendTime,
+	var start int64
+	if msgId > 0 {
+		// 2.根据消息ID读取此条消息的发送时间。
+		var content db.MessageContent
+		err := h.db.Select("send_time").First(&content, msgId).Error
+		if err != nil {
+			//3.如果此条消息不存在，返回最近一天
+			start = time.Now().AddDate(0, 0, -1).UnixNano()
+		} else {
+			start = content.SendTime
+		}
 	}
+	// 4.返回默认的离线消息过期时间
+	earliestKeepTime := time.Now().AddDate(0, 0, -1*wire.OfflineMessageExpiresIn).UnixNano()
+	if start == 0 || start < earliestKeepTime {
+		start = earliestKeepTime
+	}
+	return start, nil
+}
 
-	err := h.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(&messageContent).Error; err != nil {
-			return err
-		}
-		if err := tx.Create(&idxs).Error; err != nil {
-			return err
-		}
+func (h *IMOfflineService) keyMessageAckIndex(userId int64, terminal string) string {
+	return fmt.Sprintf("chat:ack:%d:%s", userId, terminal)
+}
+
+func (h *IMOfflineService) setMessageAck(userId int64, msgId int64, terminal string) error {
+	if msgId == 0 {
 		return nil
-	})
-	if err != nil {
-		return 0, err
 	}
-	return messageId, nil
+	key := h.keyMessageAckIndex(userId, terminal)
+	return h.rdb.Set(context.Background(), key, msgId, wire.OfflineReadIndexExpiresIn).Err()
 }
 
-//func (h *IMMessageService) DoTalkAck(ctx him.Context) {
-//	var req pkt.MessageAckReq
-//	if err := ctx.ReadBody(&req); err != nil {
-//		_ = ctx.RespWithError(pkt.Status_InvalidPacketBody, err)
-//		return
-//	}
-//	err := h.msgService.SetAck(ctx.Session().GetApp(), &rpc.AckMessageReq{
-//		Account:   ctx.Session().GetAccount(),
-//		MessageId: req.GetMessageId(),
-//	})
-//	if err != nil {
-//		_ = ctx.RespWithError(pkt.Status_SystemException, err)
-//		return
-//	}
-//	_ = ctx.Resp(pkt.Status_Success, nil)
-//}
+func (h *IMOfflineService) DoSyncContent(ctx him.Context) {
+	var req pkt.MessageContentReq
+	if err := ctx.ReadBody(&req); err != nil {
+		_ = ctx.RespWithError(pkt.Status_InvalidPacketBody, err)
+		return
+	}
+	if len(req.MessageIds) == 0 {
+		_ = ctx.RespWithError(pkt.Status_InvalidPacketBody, errors.New("empty MessageIds"))
+		return
+	}
+	resp, err := h.GetOfflineMessageContent(req.MessageIds)
+	if err != nil {
+		_ = ctx.RespWithError(pkt.Status_SystemException, err)
+		return
+	}
+	_ = ctx.Resp(pkt.Status_Success, &pkt.MessageContentResp{
+		Contents: resp,
+	})
+}
+
+func (h *IMOfflineService) GetOfflineMessageContent(messageIds []int64) ([]*pkt.MessageContent, error) {
+	mlen := len(messageIds)
+	if mlen > wire.MessageMaxCountPerPage {
+		return nil, errors.New("too many MessageIds")
+	}
+	var contents []*pkt.MessageContent
+	err := h.db.Where(messageIds).Find(&contents).Error
+	if err != nil {
+		return nil, err
+	}
+	return contents, nil
+}
