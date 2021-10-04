@@ -127,7 +127,7 @@ message MessageIndex {
   int64 message_id = 1;
   int32 direction = 2;
   int64 send_time = 3;
-  string accountB = 4;
+  int64 userB = 4;
   string group = 5;
 }
 
