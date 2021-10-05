@@ -1,15 +1,32 @@
 package main
 
 import (
-	"github.com/XiaoHuaShiFu/him/back/http"
+	httpRouter "github.com/XiaoHuaShiFu/him/back/http"
 	"github.com/XiaoHuaShiFu/him/back/link"
 	"github.com/XiaoHuaShiFu/him/back/logic"
 	"github.com/XiaoHuaShiFu/him/back/service"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
+
+func Cors() gin.HandlerFunc {
+	return func(context *gin.Context) {
+		method := context.Request.Method
+		context.Header("Access-Control-Allow-Origin", "*")
+		context.Header("Access-Control-Allow-Headers", "Content-Type,AccessToken,X-CSRF-Token, Authorization, Token")
+		context.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+		context.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
+		context.Header("Access-Control-Allow-Credentials", "true")
+		if method == "OPTIONS" {
+			context.AbortWithStatus(http.StatusNoContent)
+		}
+		context.Next()
+	}
+}
 
 func main() {
 	r := gin.Default()
+	r.Use(Cors())
 	server := link.NewServer()
 	storage := service.NewRedisStorage()
 	userService := service.NewUserService()
@@ -23,7 +40,7 @@ func main() {
 	server.SetStateListener(handler)
 	server.SetChannelMap(channels)
 
-	router := http.NewRouter(userService)
+	router := httpRouter.NewRouter(userService)
 
 	r.GET("/ws", func(c *gin.Context) {
 		server.Handle(c.Request, c.Writer)
