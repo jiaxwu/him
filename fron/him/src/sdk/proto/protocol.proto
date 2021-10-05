@@ -1,6 +1,4 @@
 syntax = "proto3";
-package pkt;
-option go_package = "./pkt";
 
 message LoginReq {
   string token = 1; // 用于认证用户身份

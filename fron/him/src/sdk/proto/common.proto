@@ -1,6 +1,4 @@
 syntax = "proto3";
-package pkt;
-option go_package = "./pkt";
 
 // status is a uint16 value 
 enum Status {

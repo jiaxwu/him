@@ -16,46 +16,38 @@ import { doLogin, LoginBody } from "./login";
 import Long from "long";
 import localforage from "localforage";
 
+// 让int64正常
+var $protobuf = require("protobufjs/minimal");
+$protobuf.util.Long = require("long");
+$protobuf.configure();
+
 const heartbeatInterval = 55 * 1000; // seconds
 const sendTimeout = 5 * 1000; // 10 seconds
 
-const Flag = {
-  Request: common.lookupEnum("pkt.Flag").values.Request,
-  Response: common.lookupEnum("pkt.Flag").values.Response,
-  Push: common.lookupEnum("pkt.Flag").values.Push,
-};
+const Flag = common.Flag;
 
-const Status = {
-  Success: common.lookupEnum("pkt.Status").values.Success,
-  NoDestination: common.lookupEnum("pkt.Status").values.NoDestination,
-  InvalidPacketBody: common.lookupEnum("pkt.Status").values.InvalidPacketBody,
-  InvalidCommand: common.lookupEnum("pkt.Status").values.InvalidCommand,
-  Unauthorized: common.lookupEnum("pkt.Status").values.Unauthorized,
-  SystemException: common.lookupEnum("pkt.Status").values.SystemException,
-  NotImplemented: common.lookupEnum("pkt.Status").values.NotImplemented,
-  SessionNotFound: common.lookupEnum("pkt.Status").values.SessionNotFound,
-};
+const Status = common.Status;
 
-const LoginReq = protocol.lookupType("pkt.LoginReq");
-const LoginResp = protocol.lookupType("pkt.LoginResp");
-const MessageReq = protocol.lookupType("pkt.MessageReq");
-const MessageResp = protocol.lookupType("pkt.MessageResp");
-const MessagePush = protocol.lookupType("pkt.MessagePush");
-const GroupCreateResp = protocol.lookupType("pkt.GroupCreateResp");
-const GroupGetResp = protocol.lookupType("pkt.GroupGetResp");
-const MessageIndexResp = protocol.lookupType("pkt.MessageIndexResp");
-const MessageContentResp = protocol.lookupType("pkt.MessageContentResp");
-const ErrorResp = protocol.lookupType("pkt.ErrorResp");
-const KickoutNotify = protocol.lookupType("pkt.KickoutNotify");
-const MessageAckReq = protocol.lookupType("pkt.MessageAckReq");
-const MessageIndexReq = protocol.lookupType("pkt.MessageIndexReq");
-const MessageIndex = protocol.lookupType("pkt.MessageIndex");
-const MessageContentReq = protocol.lookupType("pkt.MessageContentReq");
-const MessageContent = protocol.lookupType("pkt.MessageContent");
-const GroupCreateReq = protocol.lookupType("pkt.GroupCreateReq");
-const GroupJoinReq = protocol.lookupType("pkt.GroupJoinReq");
-const GroupQuitReq = protocol.lookupType("pkt.GroupQuitReq");
-const GroupGetReq = protocol.lookupType("pkt.GroupGetReq");
+const LoginReq = protocol.LoginReq;
+const LoginResp = protocol.LoginResp;
+const MessageReq = protocol.MessageReq;
+const MessageResp = protocol.MessageResp;
+const MessagePush = protocol.MessagePush;
+const GroupCreateResp = protocol.GroupCreateResp;
+const GroupGetResp = protocol.GroupGetResp;
+const MessageIndexResp = protocol.MessageIndexResp;
+const MessageContentResp = protocol.MessageContentResp;
+const ErrorResp = protocol.ErrorResp;
+const KickoutNotify = protocol.KickoutNotify;
+const MessageAckReq = protocol.MessageAckReq;
+const MessageIndexReq = protocol.MessageIndexReq;
+const MessageIndex = protocol.MessageIndex;
+const MessageContentReq = protocol.MessageContentReq;
+const MessageContent = protocol.MessageContent;
+const GroupCreateReq = protocol.GroupCreateReq;
+const GroupJoinReq = protocol.GroupJoinReq;
+const GroupQuitReq = protocol.GroupQuitReq;
+const GroupGetReq = protocol.GroupGetReq;
 
 const TimeUnit = {
   Second: 1000,
@@ -91,7 +83,7 @@ export const KIMStatus = {
 export const KIMEvent = {
   Reconnecting: "Reconnecting", //重连中
   Reconnected: "Reconnected", //重连成功
-  Closed: "Closed",
+  Closed: "Closed", // 断开连接
   Kickout: "Kickout", // 被踢
 };
 
@@ -119,12 +111,15 @@ export class Request {
 
 const pageCount = 50;
 
+// 处理离线消息的类
 export class OfflineMessages {
   cli; // KIMClient
-  groupmessages = new Map(); // <string, Message[]>
   usermessages = new Map(); // <string, Message[]>
 
-  // indexes : MessageIndex[]
+  /**
+   * @param {KIMClient} cli
+   * @param {MessageIndex[]} indexes
+   */
   constructor(cli, indexes) {
     this.cli = cli;
     // 通常离线消息的读取是从下向上，因此这里提前倒序下
@@ -132,40 +127,23 @@ export class OfflineMessages {
       const idx = indexes[index];
       let message = new Message(idx.messageId, idx.sendTime);
       if (idx.direction == 1) {
-        message.sender = cli.account;
-        message.receiver = idx.accountB;
+        message.sender = cli.userId;
+        message.receiver = idx.userB;
       } else {
-        message.sender = idx.accountB;
-        message.receiver = cli.account;
+        message.sender = idx.userB;
+        message.receiver = cli.userId;
       }
 
-      if (idx.group) {
-        if (!this.groupmessages.has(idx.group)) {
-          this.groupmessages.set(idx.group, new Array()); // <Message>
-        }
-        this.groupmessages.get(idx.group)?.push(message);
-      } else {
-        if (!this.usermessages.has(idx.accountB)) {
-          this.usermessages.set(idx.accountB, new Array()); // <Message>
-        }
-        this.usermessages.get(idx.accountB)?.push(message);
+      if (!this.usermessages.has(idx.userB)) {
+        this.usermessages.set(idx.userB, new Array()); // <Message>
       }
+      this.usermessages.get(idx.userB)?.push(message);
     }
   }
-  /**
-   * 获取离线消息群列表
-   * return : Array<string>
-   */
-  listGroups() {
-    let arr = new Array(); // <string>
-    this.groupmessages.forEach((_, key) => {
-      arr.push(key);
-    });
-    return arr;
-  }
+
   /**
    * 获取离线消息用户列表
-   * return : Array<string>
+   * @return {Array<String>}
    */
   listUsers() {
     let arr = new Array(); // <string>
@@ -174,20 +152,7 @@ export class OfflineMessages {
     });
     return arr;
   }
-  /**
-   * lazy load group offline messages, the page count is 50
-   * group: string
-   * @param page page number, start from one
-   * return : Promise<Message[]>
-   */
-  async loadGroup(group, page) {
-    let messages = this.groupmessages.get(group);
-    if (!messages) {
-      return new Array(); // <Message>
-    }
-    let msgs = await this.lazyLoad(messages, page);
-    return msgs;
-  }
+
   // account: string, page: number
   // return Promise<Message[]>
   async loadUser(account, page) {
@@ -197,18 +162,6 @@ export class OfflineMessages {
     }
     let msgs = await this.lazyLoad(messages, page);
     return msgs;
-  }
-  /**
-   * 获取指定群的离线消息数据
-   * @param group string 群ID
-   * return number
-   */
-  getGroupMessagesCount(group) {
-    let messages = this.groupmessages.get(group);
-    if (!messages) {
-      return 0;
-    }
-    return messages.length;
   }
   /**
    * 获取指定用户的离线消息数量
@@ -261,7 +214,7 @@ export class OfflineMessages {
     let resp = await this.cli.request(pkt);
     if (resp.status != Status.Success) {
       let err = ErrorResp.decode(pkt.payload);
-      console.error(err);
+      //   console.error(err);
       return {
         status: resp.status,
         contents: new Array(), // <MessageContent>
@@ -273,17 +226,21 @@ export class OfflineMessages {
   }
 }
 
+// 消息对象
 export class Message {
-  messageId; // Long;
-  type; // number;
-  body; // string;
-  extra; // string;
-  sender; // string;
-  receiver; // string;
-  group; // string;
-  sendTime; // Long;
-  arrivalTime; // number;
-  //messageId: Long, sendTime: Long
+  messageId; // 消息id
+  type; // 消息类型
+  body; // 消息体 string
+  sender; // 发送者
+  extra; // 额外信息 String
+  receiver; // 接收者
+  sendTime; // 发送时间
+  arrivalTime; // 到达时间
+
+  /**
+   * @param {Long} messageId
+   * @param {Long} sendTime
+   */
   constructor(messageId, sendTime) {
     this.messageId = messageId;
     this.sendTime = sendTime;
@@ -291,13 +248,19 @@ export class Message {
   }
 }
 
+// 内容，用于发送消息
 export class Content {
-  type; // number;
-  body; // string;
-  extra; // string;
+  type;
+  body;
+  extra;
   dest;
 
-  // body: string, type: number = MessageType.Text, extra?: string
+  /**
+   * @param {Long} dest
+   * @param {String} body
+   * @param {MessageType} type
+   * @param {String} extra
+   */
   constructor(dest, body, type = MessageType.Text, extra) {
     this.dest = dest;
     this.type = type;
@@ -307,67 +270,73 @@ export class Content {
 }
 
 export class KIMClient {
-  wsurl; // string
+  wsurl; // ws连接url
   req; // LoginBody
   state = State.INIT;
-  channelId; // string
-  account; // string
+  channelId; // 连接的通道id
+  userId; // 用户id
   conn; // w3cwebsocket
   lastRead; // number
   lastMessage; // Message
   unack = 0; // number
+  // 事件监听器列表，监听KIMEvent事件
   listeners = new Map(); // new Map<string, (e: KIMEvent) => void>()
   messageCallback; // (m: Message) => void
   offmessageCallback; // (m: OfflineMessages) => void
   closeCallback; // () => void
   // 全双工请求队列
   sendq = new Map(); // <number, Request>
-  //url: string, req: LoginBody
+
+  // 构造一个客户端
   constructor(url, req) {
     this.wsurl = url;
     this.req = req;
     this.lastRead = Date.now();
-    this.channelId = "";
-    this.account = "";
     this.messageCallback = (m) => {
-      // m : Message
-      console.warn(
-        `throw a message from ${m.sender} -- ${m.body}\nPlease check you had register a onmessage callback method before login`
+      console.log(
+        `sdk:client:messageCallback:登录中收到: ${m.sender} -- ${m.body}`
       );
     };
-    this.offmessageCallback = (_m) => {
-      // m: OfflineMessages
-      console.warn(
-        `throw OfflineMessages.\nPlease check you had register a onofflinemessage callback method before login`
-      );
+    this.offmessageCallback = (m) => {
+      console.log(`sdk:client:offmessageCallback:登录中收到: ${m}`);
     };
   }
+
+  // 注册事件监听器
   // events: string[], callback: (e: KIMEvent) => void
   register(events, callback) {
-    // 注册事件到Client中。
     events.forEach((event) => {
       this.listeners.set(event, callback);
     });
   }
+
+  // 接收到消息的回调
   // cb: (m: Message) => void
   onmessage(cb) {
     this.messageCallback = cb;
   }
+
+  // 加载离线消息时的回调
   // cb: (m: OfflineMessages) => void
   onofflinemessage(cb) {
     this.offmessageCallback = cb;
   }
+
   // 1、登录
   // return Promise<{ success: boolean, err?: Error }>
+  // 表示登录是否成功，错误信息
   async login() {
+    // step 1 检查登录状态，如果已经连接，就不要重复连接了
     if (this.state == State.CONNECTED) {
       return {
         success: false,
-        err: new Error("client has already been connected"),
+        err: new Error("已经完成连接了"),
       };
     }
+
+    // step 2 开始连接
     this.state = State.CONNECTING;
-    let { success, err, channelId, account, conn } = await doLogin(
+    let { success, err, channelId, userId, conn } = await doLogin(
       this.wsurl,
       this.req
     );
@@ -375,9 +344,8 @@ export class KIMClient {
       this.state = State.INIT;
       return { success, err };
     }
-    console.info("login - ", success);
-    // overwrite onmessage
-    // evt: IMessageEvent
+
+    // step 3 覆盖onmessage回调
     conn.onmessage = (evt) => {
       try {
         // 重置lastRead
@@ -385,41 +353,59 @@ export class KIMClient {
         let buf = Buffer.from(evt.data);
         let magic = buf.readInt32BE(0);
         if (magic == MagicBasicPktInt) {
-          //目前只有心跳包pong
-          console.debug(`recv a basic packet - ${buf.join(",")}`);
+          console.log(
+            `sdk:client:login:onmessage:收到心跳Pong:${buf.join(",")}`
+          );
           return;
         }
         let pkt = LogicPkt.from(buf);
         this.packetHandler(pkt);
       } catch (error) {
-        console.error(evt.data, error);
+        console.log("sdk:client:login:onmessage:捕获异常", evt.data, error);
       }
     };
+
+    // step 4 覆盖onerror回调
     conn.onerror = (error) => {
-      console.info("websocket error: ", error);
+      console.log("sdk:client:login:onerror:异常事件", error);
       this.errorHandler(error);
     };
-    // e: ICloseEvent
+
+    // step5 覆盖onclose回调
     conn.onclose = (e) => {
-      console.debug("event[onclose] fired");
+      console.log("sdk:client:login:onclose:关闭事件");
       if (this.state == State.CLOSEING) {
         this.onclose("logout");
         return;
       }
       this.errorHandler(new Error(e.reason));
     };
+
+    // step 5 设置连接相关参数
     this.conn = conn;
-    this.channelId = channelId || "";
-    this.account = account || "";
+    this.channelId = channelId;
+    this.userId = userId;
+
+    // step 6 加载离线消息
     await this.loadOfflineMessage();
-    // success
+
+    // step 7 设置为已经连接
     this.state = State.CONNECTED;
+
+    // step 8 设置心跳
     this.heartbeatLoop();
+
+    // step 9 设置读
     this.readDeadlineLoop();
+
+    // step 10 设置已读回调
     this.messageAckLoop();
+
+    // step 11 成功
     return { success, err };
   }
-  // return : Promise<void>
+
+  // 2、退出登录
   logout() {
     return new Promise((resolve, _) => {
       if (this.state === State.CLOSEING) {
@@ -445,100 +431,25 @@ export class KIMClient {
       console.info("Connection closing...");
     });
   }
+
   /**
    * 给用户dest发送一条消息
-   * @param dest 用户账号
-   * @param req 请求的消息内容
-   * @returns status KIMStatus|Status
+   * @param {Content} req 请求的消息内容
+   * @param {Number} retry 重试次数
+   * @returns {Promise<{ status: Number, resp: MessageResp, err?: ErrorResp }> | {Status}}
    */
   // dest: string, req: Content, retry: number = 3
-  // return : Promise<{ status: number, resp?: MessageResp, err?: ErrorResp }>
+  // return :
   async talkToUser(req, retry = 3) {
-    return this.talk(
-      Command.ChatUserTalk,
-      MessageReq.fromObject(req),
-      retry
-    );
+    return this.talk(Command.ChatUserTalk, MessageReq.fromObject(req), retry);
   }
-  /**
-   * 给群dest发送一条消息
-   * @param dest 群ID
-   * @param req 请求的消息内容
-   * @returns status KIMStatus|Status
+
+  /** 发送聊天消息
+   * @param {String} command 命令
+   * @param {MessageReq} req 请求的消息内容
+   * @param {Number} retry 重试次数
+   * @return {Promise<{ status: Number, resp?: MessageResp, err?: ErrorResp }> | {Status}}
    */
-  // dest: string, req: Content, retry: number = 3
-  // return : Promise<{ status: number, resp?: MessageResp, err?: ErrorResp }>
-  async talkToGroup(dest, req, retry = 3) {
-    return this.talk(
-      Command.ChatGroupTalk,
-      dest,
-      MessageReq.fromObject(req),
-      retry
-    );
-  }
-  // req: {
-  //     name: string;
-  //     avatar?: string;
-  //     introduction?: string;
-  //     members: string[];
-  // }
-  // return : Promise<{ status: number, resp?: GroupCreateResp, err?: ErrorResp }>
-  async createGroup(req) {
-    let req2 = GroupCreateReq.fromObject(req);
-    req2.owner = this.account;
-    if (!req2.members.find((v) => v == this.account)) {
-      req2.members.push(this.account);
-    }
-    let pbreq = GroupCreateReq.encode(req2).finish();
-    let pkt = LogicPkt.build(Command.GroupCreate, "", pbreq);
-    let resp = await this.request(pkt);
-    if (resp.status != Status.Success) {
-      let err = ErrorResp.decode(resp.payload);
-      return { status: resp.status, err: err };
-    }
-    return {
-      status: Status.Success,
-      resp: GroupCreateResp.decode(resp.payload),
-    };
-  }
-  // req: GroupJoinReq
-  // : Promise<{ status: number, err?: ErrorResp }>
-  async joinGroup(req) {
-    let pbreq = GroupJoinReq.encode(req).finish();
-    let pkt = LogicPkt.build(Command.GroupJoin, "", pbreq);
-    let resp = await this.request(pkt);
-    if (resp.status != Status.Success) {
-      let err = ErrorResp.decode(resp.payload);
-      return { status: resp.status, err: err };
-    }
-    return { status: Status.Success };
-  }
-  // req: GroupQuitReq
-  // return : Promise<{ status: number, err?: ErrorResp }>
-  async quitGroup(req) {
-    let pbreq = GroupQuitReq.encode(req).finish();
-    let pkt = LogicPkt.build(Command.GroupQuit, "", pbreq);
-    let resp = await this.request(pkt);
-    if (resp.status != Status.Success) {
-      let err = ErrorResp.decode(resp.payload);
-      return { status: resp.status, err: err };
-    }
-    return { status: Status.Success };
-  }
-  // req: GroupGetReq
-  // return : : Promise<{ status: number, resp?: GroupGetResp, err?: ErrorResp }>
-  async GetGroup(req) {
-    let pbreq = GroupGetReq.encode(req).finish();
-    let pkt = LogicPkt.build(Command.GroupDetail, "", pbreq);
-    let resp = await this.request(pkt);
-    if (resp.status != Status.Success) {
-      let err = ErrorResp.decode(resp.payload);
-      return { status: resp.status, err: err };
-    }
-    return { status: Status.Success, resp: GroupGetResp.decode(resp.payload) };
-  }
-  // command: string, dest: string, req: MessageReq, retry: number
-  // return : Promise<{ status: number, resp?: MessageResp, err?: ErrorResp }>
   async talk(command, req, retry) {
     let pbreq = MessageReq.encode(req).finish();
     for (let index = 0; index < retry + 1; index++) {
@@ -550,9 +461,9 @@ export class KIMClient {
           resp: MessageResp.decode(resp.payload),
         };
       }
+      // 消息重发
       if (resp.status >= 300 && resp.status < 400) {
-        // 消息重发
-        console.warn("retry to send message");
+        console.log("sdk:client:talk:重发消息");
         await sleep(2);
         continue;
       }
@@ -561,37 +472,47 @@ export class KIMClient {
     }
     return {
       status: KIMStatus.SendFailed,
-      err: new Error("over max retry times"),
+      err: new Error("超过最大重试次数"),
     };
   }
-  // data: LogicPkt
-  // return  : Promise<Response>
+
+  /**
+   * 发送一个LogicPkt请求
+   * 这里会把异步转换成同步
+   * @param {LogicPkt} data
+   * @returns {Promise<Response>}
+   */
   async request(data) {
     return new Promise((resolve, _) => {
       let seq = data.sequence;
 
+      // 这里是超时回调
+      // 会把请求从队列里面剔除，然后触发响应
+      // 这里是一个超时响应
       let tr = setTimeout(() => {
-        // remove from sendq
         this.sendq.delete(seq);
         resolve(new Response(KIMStatus.RequestTimeout));
       }, sendTimeout);
 
-      // asynchronous wait ack from server
+      // 同步等待服务器响应
       // pkt: LogicPkt
       let callback = (pkt) => {
         clearTimeout(tr);
-        // remove from sendq
         this.sendq.delete(seq);
         resolve(new Response(pkt.status, pkt.dest, pkt.payload));
       };
-      console.debug(`request seq:${seq} command:${data.command}`);
+      //   console.log(`sdk:client:request:请求:序列=${seq}:命令=${data.command}`);
 
+      // 把请求加到队列里面
       this.sendq.set(seq, new Request(data, callback));
+
+      // 真正的发送请求
       if (!this.send(data.bytes())) {
         resolve(new Response(KIMStatus.SendFailed));
       }
     });
   }
+
   // event: KIMEvent
   fireEvent(event) {
     let listener = this.listeners.get(event);
@@ -599,6 +520,7 @@ export class KIMClient {
       listener(event);
     }
   }
+
   // pkt: LogicPkt
   async packetHandler(pkt) {
     console.debug("received packet: ", pkt);
@@ -650,6 +572,7 @@ export class KIMClient {
         break;
     }
   }
+
   // 2、心跳
   heartbeatLoop() {
     console.debug("heartbeatLoop start");
@@ -668,6 +591,7 @@ export class KIMClient {
     };
     setTimeout(loop, 500);
   }
+
   // 3、读超时
   readDeadlineLoop() {
     console.debug("deadlineLoop start");
@@ -684,6 +608,7 @@ export class KIMClient {
     };
     setTimeout(loop, 500);
   }
+
   messageAckLoop() {
     let start = Date.now();
     const delay = 500; //ms
@@ -713,21 +638,30 @@ export class KIMClient {
     };
     setTimeout(loop, 500);
   }
+
+  /**
+   * 加载离线消息
+   */
   async loadOfflineMessage() {
-    console.log("loadOfflineMessage start");
+    console.log("sdk:client:loadOfflineMessage:加载离线消息开始");
     // 1. 加载消息索引
     // messageId: Long = Long.ZERO
     // return : Promise<{ status: number, indexes?: MessageIndex[] }>
     let loadIndex = async (messageId = Long.ZERO) => {
+      //   console.log(
+      //     `sdk:client:loadOfflineMessage:加载离线消息的起始索引是：`,
+      //     new Long(messageId.low, messageId.high, messageId.unsigned).toString()
+      //   );
       let req = MessageIndexReq.encode({ messageId });
       let pkt = LogicPkt.build(Command.OfflineIndex, req.finish());
       let resp = await this.request(pkt);
       if (resp.status != Status.Success) {
         let err = ErrorResp.decode(pkt.payload);
-        console.error(err);
+        console.log(`sdk:client:loadOfflineMessage:加载出错:`, err);
         return { status: resp.status };
       }
       let respbody = MessageIndexResp.decode(resp.payload);
+      //   console.log(`sdk:client:loadOfflineMessage:加载到的数据是:`, respbody);
       return { status: resp.status, indexes: respbody.indexes };
     };
     let offmessages = new Array(); // <MessageIndex>
@@ -744,13 +678,14 @@ export class KIMClient {
       offmessages = offmessages.concat(indexes);
     }
     console.info(
-      `load offline indexes - ${offmessages.map((msg) =>
-        msg.messageId.toString()
+      `sdk:client:loadOfflineMessage:最终加载到的索引是: ${offmessages.map(
+        (msg) => msg.messageId.toString()
       )}`
     );
     let om = new OfflineMessages(this, offmessages);
     this.offmessageCallback(om);
   }
+
   // 表示连接中止
   // reason: string
   onclose(reason) {
@@ -796,17 +731,21 @@ export class KIMClient {
     }
     this.onclose("reconnect timeout");
   }
-  // data: Buffer | Uint8Array
-  // return : boolean
+
+  /**
+   *  底层的发送请求方法
+   * @param {Buffer | Uint8Array} data
+   * @returns {Boolean}
+   */
   send(data) {
     try {
       if (this.conn == null) {
         return false;
       }
+      // 这里是最底层的向一个websocket连接发送消息的操作
       this.conn.send(data);
     } catch (error) {
-      // handle write error
-      this.errorHandler(new Error("write timeout"));
+      this.errorHandler(new Error("写超时"));
       return false;
     }
     return true;
@@ -863,13 +802,13 @@ class MsgStorage {
   // id: Long
   // return : Promise<boolean>
   async setAck(id) {
+    console.log(`sdk:client:setAck:设置last_id:${id}`);
     await localforage.setItem(this.keylast(), id);
     return true;
   }
   // return : Promise<Long>
   async lastId() {
     let id = await localforage.getItem(this.keylast());
-    // <Long>
     return id || Long.ZERO;
   }
 }

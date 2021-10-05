@@ -26,11 +26,9 @@ export const Command = {
 const MagicLogicPkt = new Uint8Array([0xc3, 0x11, 0xa3, 0x65]);
 const MagicBasicPkt = new Uint8Array([0xc3, 0x15, 0xa7, 0x65]);
 
-const Status = {
-    Success: common.lookupEnum("pkt.Status").values.Success
-}
+const Status = common.Status;
 
-const Header = common.lookupType("pkt.Header");
+const Header = common.Header;
 
 export const MagicLogicPktInt = Buffer.from(MagicLogicPkt).readInt32BE(0);
 export const MagicBasicPktInt = Buffer.from(MagicBasicPkt).readInt32BE(0);
@@ -45,6 +43,7 @@ export const MessageType = {
 export const Ping = new Uint8Array([0xc3, 0x15, 0xa7, 0x65, 0, 1, 0, 0]);
 export const Pong = new Uint8Array([0xc3, 0x15, 0xa7, 0x65, 0, 2, 0, 0]);
 
+// LogicPkt 的封装
 export class LogicPkt {
   command;
   sequence = 0;
@@ -56,7 +55,6 @@ export class LogicPkt {
   }
   // 返回 LogicPkt
   static build(command, payload = new Uint8Array()) {
-    // build LogicPkt
     let message = new LogicPkt();
     message.command = command;
     message.sequence = Seq.Next();
