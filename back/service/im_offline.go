@@ -131,7 +131,7 @@ func (h *IMOfflineService) GetOfflineMessageContent(messageIds []int64) ([]*pkt.
 		return nil, errors.New("too many MessageIds")
 	}
 	var contents []*pkt.MessageContent
-	err := h.db.Where(messageIds).Find(&contents).Error
+	err := h.db.Where("id in ?", messageIds).Find(&contents).Error
 	if err != nil {
 		return nil, err
 	}
