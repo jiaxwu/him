@@ -33,8 +33,6 @@ const LoginResp = protocol.LoginResp;
 const MessageReq = protocol.MessageReq;
 const MessageResp = protocol.MessageResp;
 const MessagePush = protocol.MessagePush;
-const GroupCreateResp = protocol.GroupCreateResp;
-const GroupGetResp = protocol.GroupGetResp;
 const MessageIndexResp = protocol.MessageIndexResp;
 const MessageContentResp = protocol.MessageContentResp;
 const ErrorResp = protocol.ErrorResp;
@@ -44,10 +42,6 @@ const MessageIndexReq = protocol.MessageIndexReq;
 const MessageIndex = protocol.MessageIndex;
 const MessageContentReq = protocol.MessageContentReq;
 const MessageContent = protocol.MessageContent;
-const GroupCreateReq = protocol.GroupCreateReq;
-const GroupJoinReq = protocol.GroupJoinReq;
-const GroupQuitReq = protocol.GroupQuitReq;
-const GroupGetReq = protocol.GroupGetReq;
 
 const TimeUnit = {
   Second: 1000,
@@ -828,6 +822,15 @@ class MsgStorage {
   async insert(msg) {
     await localforage.setItem(this.keymsg(msg.messageId), msg);
     return true;
+  }
+
+  /**
+   * 插入用户消息索引
+   * 用于获取和某个用户聊天的全部消息
+   * @param {Long}} userId 
+   * @param {msgIdx} msgIdx 
+   */
+  async insertUserMessageIndex(userId, msgIdx) {
   }
 
   /**
