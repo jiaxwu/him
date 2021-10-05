@@ -6,9 +6,6 @@
 </template>
 
 <script>
-// import { LogicPkt, Command, MagicBasicPktInt } from "./sdk/packet";
-// import Long from "long";
-// import protocol from "./sdk/protocol";
 import common from "./sdk/common";
 import { LoginBody } from "./sdk/login";
 import { KIMClient, KIMEvent, Content, sleep } from "./sdk/sdk";
@@ -46,7 +43,7 @@ export default {
       };
       // m: Message
       let messagecallback = (m) => {
-        console.info(m);
+        console.log('App:messagecallback:收到消息回调:', m);
       };
       // om: OfflineMessages
       let offmessagecallback = async (om) => {
@@ -84,63 +81,13 @@ export default {
         console.error(err2);
         return;
       }
-      console.info(`resp - ${resp?.messageId} ${resp?.sendTime.toString()}`);
+      console.info(`App:发送消息的响应是:`, resp);
 
       await sleep(10);
 
       // // 5. 登出
       // await cli.logout();
     },
-    // async getMessage(event) {
-    //   try {
-    //     // 重置lastRead
-    //     let arrayBuffer = await event.data.arrayBuffer();
-    //     let buf = Buffer.from(arrayBuffer);
-    //     let magic = buf.readInt32BE(0);
-    //     if (magic == MagicBasicPktInt) {
-    //       //目前只有心跳包pong
-    //       console.log(`recv a basic packet - ${buf.join(",")}`);
-    //       return;
-    //     }
-    //     let pkt = LogicPkt.from(buf);
-    //     console.log(pkt);
-    //     // this.packetHandler(pkt)
-    //   } catch (error) {
-    //     console.log(event.data, error);
-    //   }
-    // },
-    send() {
-      // let req = new protocol.MessageReq();
-      // req.setType(1);
-      // req.setBody("xxxxxxxxxxhahah");
-      // req.setDest(2);
-      // let reqBytes = req.serializeBinary();
-      // let logicPkt = LogicPkt.build(Command.ChatUserTalk, reqBytes);
-      // this.conn.send(logicPkt.bytes());
-    },
-    // DoSyncIndex() {
-    //   let messageReq = protocol.lookup("pkt.MessageIndexReq");
-    //   const reqData = {
-    //     messageId: Long.fromString("1444704021331742722"),
-    //   };
-    //   let messageReqP = messageReq.create(reqData);
-    //   let bytes = messageReq.encode(messageReqP).finish();
-    //   let logicPkt = LogicPkt.build(Command.OfflineIndex, bytes);
-    //   this.conn.send(logicPkt.bytes());
-    // },
-    // close: function() {
-    //   console.log("socket已经关闭");
-    // },
-    // // 2、心跳
-    // heartbeatLoop() {
-    //   //   const heartbeatInterval = 55 * 1000 // seconds
-    //   const Ping = new Uint8Array([0xc3, 0x15, 0xa7, 0x65, 0, 1, 0, 0]);
-    //   let loop = () => {
-    //     this.conn.send(Ping);
-    //     setTimeout(loop, 3000);
-    //   };
-    //   setTimeout(loop, 3000);
-    // },
   },
   // destroyed() {
   //   // 销毁监听

@@ -87,6 +87,7 @@ export const KIMEvent = {
   Kickout: "Kickout", // 被踢
 };
 
+// 异步转同步的响应
 export class Response {
   status; // number
   dest; // string
@@ -98,6 +99,7 @@ export class Response {
   }
 }
 
+// 异步转同步的请求
 export class Request {
   sendTime; // number
   data; // LogicPkt
@@ -153,48 +155,57 @@ export class OfflineMessages {
     return arr;
   }
 
-  // account: string, page: number
-  // return Promise<Message[]>
-  async loadUser(account, page) {
-    let messages = this.usermessages.get(account);
+  /**
+   * 获取某个用户的消息
+   * @param {Long} userId
+   * @param {Number} page
+   * @returns {Promise<Message[]>}
+   */
+  async loadUser(userId, page) {
+    let messages = this.usermessages.get(userId);
     if (!messages) {
       return new Array(); // <Message>
     }
     let msgs = await this.lazyLoad(messages, page);
     return msgs;
   }
+
   /**
    * 获取指定用户的离线消息数量
-   * @param account string 用户
-   * @return number
+   * @param {Long} userId 用户
+   * @return {number}
    */
-  getUserMessagesCount(account) {
-    let messages = this.usermessages.get(account);
+  getUserMessagesCount(userId) {
+    let messages = this.usermessages.get(userId);
     if (!messages) {
       return 0;
     }
     return messages.length;
   }
-  // messages: Array<Message>, page: number
-  // return Promise<Array<Message>>
+
+  /**
+   * 懒加载消息内容
+   * @param {Array<Message>} messages
+   * @param {Number} page
+   * @returns {Promise<Array<Message>>}
+   */
   async lazyLoad(messages, page) {
     let i = (page - 1) * pageCount;
     let msgs = messages.slice(i, i + pageCount);
-    console.debug(msgs);
     if (!msgs || msgs.length == 0) {
       return new Array(); // <Message>
     }
     if (msgs[0].body) {
       return msgs;
     }
-    //load from server
+    // 从服务器加载数据
     let { status, contents } = await this.loadcontent(
       msgs.map((idx) => idx.messageId)
     );
     if (status != Status.Success) {
       return msgs;
     }
-    console.debug(`load content ${contents.map((c) => c.body)}`);
+
     if (contents.length == msgs.length) {
       for (let index = 0; index < msgs.length; index++) {
         let msg = msgs[index];
@@ -206,22 +217,27 @@ export class OfflineMessages {
     }
     return msgs;
   }
-  // messageIds: Long[]
-  // return Promise<{ status: number, contents: MessageContent[] }>
+
+  /**
+   * 从服务器加载消息内容
+   * @param {Long[]} messageIds
+   * @returns {Promise<{ status: Number, contents: MessageContent[] }>}
+   */
   async loadcontent(messageIds) {
     let req = MessageContentReq.encode({ messageIds });
-    let pkt = LogicPkt.build(Command.OfflineContent, "", req.finish());
+    let pkt = LogicPkt.build(Command.OfflineContent, req.finish());
     let resp = await this.cli.request(pkt);
     if (resp.status != Status.Success) {
-      let err = ErrorResp.decode(pkt.payload);
-      //   console.error(err);
       return {
         status: resp.status,
         contents: new Array(), // <MessageContent>
       };
     }
-    console.info(resp);
     let respbody = MessageContentResp.decode(resp.payload);
+    console.log(
+      "sdk:OfflineMessages:loadcontent:加载到的消息内容是:",
+      respbody
+    );
     return { status: resp.status, contents: respbody.contents };
   }
 }
@@ -513,7 +529,10 @@ export class KIMClient {
     });
   }
 
-  // event: KIMEvent
+  /**
+   * 触发剔除事件
+   * @param {KIMEvent} event
+   */
   fireEvent(event) {
     let listener = this.listeners.get(event);
     if (listener) {
@@ -521,33 +540,40 @@ export class KIMClient {
     }
   }
 
-  // pkt: LogicPkt
+  /**
+   * 收到消息的处理器
+   * @param {LogicPkt} pkt
+   * @returns
+   */
   async packetHandler(pkt) {
-    console.debug("received packet: ", pkt);
     if (pkt.status >= 400) {
-      console.info(`need relogin due to status ${pkt.status}`);
+      console.log(
+        `sdk:client:packetHandler:收到一个状态是400以上的包:需要重新登录:`,
+        pkt
+      );
       this.conn?.close();
       return;
     }
+
     if (pkt.flag == Flag.Response) {
       let req = this.sendq.get(pkt.sequence);
       if (req) {
         req.callback(pkt);
       } else {
-        console.error(`req of ${pkt.sequence} no found in sendq`);
+        console.error(
+          `sdk:client:packetHandler:收到一个不在回调队列里的包:`,
+          pkt
+        );
       }
       return;
     }
+
     switch (pkt.command) {
       case Command.ChatUserTalk:
-      case Command.ChatGroupTalk:
         let push = MessagePush.decode(pkt.payload);
         let message = new Message(push.messageId, push.sendTime);
         Object.assign(message, push);
-        message.receiver = this.account;
-        if (pkt.command == Command.ChatGroupTalk) {
-          message.group = pkt.dest;
-        }
+        message.receiver = this.userId;
         if (!(await Store.exist(message.messageId))) {
           // 确保状态处于CONNECTED，才能执行消息ACK
           if (this.state == State.CONNECTED) {
@@ -556,7 +582,7 @@ export class KIMClient {
             try {
               this.messageCallback(message);
             } catch (error) {
-              console.error(error);
+              console.log("sdk:client:packetHandler:出现异常", error);
             }
           }
           // 消息保存到数据库中。
@@ -573,13 +599,15 @@ export class KIMClient {
     }
   }
 
-  // 2、心跳
+  /**
+   * 2、心跳
+   */
   heartbeatLoop() {
-    console.debug("heartbeatLoop start");
+    console.log("sdk:client:heartbeatLoop:心跳开始");
     let start = Date.now();
     let loop = () => {
       if (this.state != State.CONNECTED) {
-        console.debug("heartbeatLoop exited");
+        console.log("sdk:client:heartbeatLoop:心跳退出");
         return;
       }
       if (Date.now() - start >= heartbeatInterval) {
@@ -592,47 +620,54 @@ export class KIMClient {
     setTimeout(loop, 500);
   }
 
-  // 3、读超时
+  /**
+   * 3、读超时循环
+   */
   readDeadlineLoop() {
-    console.debug("deadlineLoop start");
+    console.log("sdk:client:readDeadlineLoop:读超时循环开始");
     let loop = () => {
       if (this.state != State.CONNECTED) {
-        console.debug("deadlineLoop exited");
+        console.log("sdk:client:readDeadlineLoop:读超时循环退出");
         return;
       }
       if (Date.now() - this.lastRead > 3 * heartbeatInterval) {
         // 如果超时就调用errorHandler处理
-        this.errorHandler(new Error("read timeout"));
+        this.errorHandler(new Error("读超时"));
       }
       setTimeout(loop, 500);
     };
     setTimeout(loop, 500);
   }
 
+  /**
+   * 消息Ack循环
+   */
   messageAckLoop() {
     let start = Date.now();
     const delay = 500; //ms
     let loop = async () => {
       if (this.state != State.CONNECTED) {
-        console.debug("messageAckLoop exited");
+        console.log("sdk:client:messageAckLoop:消息Ack循环开始");
         return;
       }
-      let msg = this.lastMessage; // lock this message
+      let msg = this.lastMessage; // 先缓存最后一条消息
       if (!!msg && Date.now() - start > 3000) {
         let overflow = this.unack > 10;
-        this.unack = 0; // reset unack before ack
-        this.lastMessage = undefined; //reset last message
+        this.unack = 0; // 在ack前重置unack
+        this.lastMessage = undefined; // 重置最后一条消息
 
         let diff = Date.now() - msg.arrivalTime;
         if (!overflow && diff < delay) {
           await sleep(delay - diff, TimeUnit.Millisecond);
         }
         let req = MessageAckReq.encode({ messageId: msg.messageId });
-        let pkt = LogicPkt.build(Command.ChatTalkAck, "", req.finish());
+        let pkt = LogicPkt.build(Command.ChatTalkAck, req.finish());
         start = Date.now();
-        this.send(pkt.bytes());
+        let resp = await this.request(pkt);
         // 修改本地存储中最后一条ACK消息记录
-        await Store.setAck(msg.messageId);
+        if (resp.status == Status.Success) {
+          await Store.setAck(msg.messageId);
+        }
       }
       setTimeout(loop, 500);
     };
@@ -686,26 +721,33 @@ export class KIMClient {
     this.offmessageCallback(om);
   }
 
-  // 表示连接中止
-  // reason: string
+  /**
+   * 表示连接中止
+   * @param {String} reason
+   * @returns
+   */
   onclose(reason) {
     if (this.state == State.CLOSED) {
       return;
     }
     this.state = State.CLOSED;
 
-    console.info("connection closed due to " + reason);
+    console.log("sdk:client:onclose:连接中断了:原因是: " + reason);
     this.conn = undefined;
     this.channelId = "";
-    this.account = "";
+    this.userId = 0;
     // 通知上层应用
     this.fireEvent(KIMEvent.Closed);
     if (this.closeCallback) {
       this.closeCallback();
     }
   }
-  // 4. 自动重连
-  // error: Error
+
+  /**
+   * 4. 自动重连
+   * @param {Error} error
+   * @returns
+   */
   async errorHandler(error) {
     // 如果是主动断开连接，就没有必要自动重连
     // 比如收到被踢，或者主动调用logout()方法
@@ -718,18 +760,18 @@ export class KIMClient {
     for (let index = 0; index < 10; index++) {
       await sleep(3);
       try {
-        console.info("try to relogin");
+        console.log("sdk:client:errorHandler:尝试重新登录");
         let { success, err } = await this.login();
         if (success) {
           this.fireEvent(KIMEvent.Reconnected);
           return;
         }
-        console.info(err);
+        console.log("sdk:client:errorHandler:重新登录失败:原因:", err);
       } catch (error) {
-        console.warn(error);
+        console.warn("sdk:client:errorHandler:重新登录失败:原因:", error);
       }
     }
-    this.onclose("reconnect timeout");
+    this.onclose("重新连接超时");
   }
 
   /**
@@ -752,6 +794,7 @@ export class KIMClient {
   }
 }
 
+// 消息存储器
 class MsgStorage {
   constructor() {
     localforage.config({
@@ -759,54 +802,78 @@ class MsgStorage {
       storeName: "kim",
     });
   }
-  // id: Long
-  // return : string
+
+  /**
+   * 消息的key
+   * @param {Long} id
+   * @returns {String}
+   */
   keymsg(id) {
     return `msg_${id.toString()}`;
   }
-  // return : string
+
+  /**
+   * 最后读取的消息的id的key
+   * @returns {String}
+   */
   keylast() {
     return `last_id`;
   }
-  // 记录一条消息
-  // msg: Message
-  // return : Promise<boolean>
+
+  /**
+   * 记录一条消息
+   * @param {Message} msg
+   * @returns {Promise<Boolean>}
+   */
   async insert(msg) {
     await localforage.setItem(this.keymsg(msg.messageId), msg);
     return true;
   }
-  // 检查消息是否已经保存
-  // id: Long
-  // return : Promise<boolean>
+
+  /**
+   * 检查消息是否已经保存
+   * @param {Long} id
+   * @returns Promise<Boolean>
+   */
   async exist(id) {
     try {
       let val = await localforage.getItem(this.keymsg(id));
       return !!val;
     } catch (err) {
-      console.warn(err);
+      console.log("sdk:MsgStorage:exist:出错:", err);
     }
     return false;
   }
-  // id: Long
-  // return : Promise<Message | null>
+
+  /**
+   * 获取一条消息
+   * @param {Long} id
+   * @returns {Promise<Message | null>}
+   */
   async get(id) {
     try {
       let message = await localforage.getItem(this.keymsg(id));
-      // <Message>
       return message;
     } catch (err) {
-      console.warn(err);
+      console.log("sdk:MsgStorage:get:出错:", err);
     }
     return null;
   }
-  // id: Long
-  // return : Promise<boolean>
+
+  /**
+   * 设置消息回调下标
+   * @param {Long} id
+   * @returns {Promise<Boolean>}
+   */
   async setAck(id) {
-    console.log(`sdk:client:setAck:设置last_id:${id}`);
     await localforage.setItem(this.keylast(), id);
     return true;
   }
-  // return : Promise<Long>
+
+  /**
+   * 最后收到的消息的id
+   * @returns {Promise<Long>}
+   */
   async lastId() {
     let id = await localforage.getItem(this.keylast());
     return id || Long.ZERO;
