@@ -455,13 +455,21 @@ export class KIMClient {
   }
 
   /**
+   * 给用户fans发送一条消息
+   * @param {Content} req 请求的消息内容
+   * @param {Number} retry 重试次数
+   * @returns {Promise<{ status: Number, resp: MessageResp, err?: ErrorResp }> | {Status}}
+   */
+  async talkToCommunity(req, retry = 3) {
+    return this.talk(Command.CommunityPush, MessageReq.fromObject(req), retry);
+  }
+
+  /**
    * 给用户dest发送一条消息
    * @param {Content} req 请求的消息内容
    * @param {Number} retry 重试次数
    * @returns {Promise<{ status: Number, resp: MessageResp, err?: ErrorResp }> | {Status}}
    */
-  // dest: string, req: Content, retry: number = 3
-  // return :
   async talkToUser(req, retry = 3) {
     return this.talk(Command.ChatUserTalk, MessageReq.fromObject(req), retry);
   }
@@ -576,6 +584,7 @@ export class KIMClient {
 
     switch (pkt.command) {
       case Command.ChatUserTalk:
+      case Command.CommunityPush:
         let push = MessagePush.decode(pkt.payload);
         let message = new Message(push.messageId, push.sendTime);
         Object.assign(message, push);
@@ -586,8 +595,8 @@ export class KIMClient {
             this.lastMessage = message;
             this.unack++;
             try {
-              let cb = this.talkMessageMap.get(message.sender.toString())
-              cb(message)
+              let cb = this.talkMessageMap.get(message.sender.toString());
+              cb(message);
               this.messageCallback(message);
             } catch (error) {
               console.log("sdk:client:packetHandler:出现异常", error);

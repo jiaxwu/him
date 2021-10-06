@@ -21,6 +21,9 @@ export const Command = {
   // 离线
   OfflineIndex: "chat.offline.index",
   OfflineContent: "chat.offline.content",
+
+  // 社群
+  CommunityPush: "chat.community.push"
 };
 
 const MagicLogicPkt = new Uint8Array([0xc3, 0x11, 0xa3, 0x65]);
