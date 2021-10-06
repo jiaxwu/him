@@ -54,8 +54,8 @@ func (h *IMOfflineService) GetOfflineMessageIndex(userID int64, messageId int64,
 		return nil, err
 	}
 	var indexes []*pkt.MessageIndex
-	tx := h.db.Model(&db.MessageIndex{}).Select("send_time", "user_b", "direction", "message_id", "group")
-	err = tx.Where("user_a=? and send_time>? and direction=?", userID, start, 0).Order("send_time asc").
+	tx := h.db.Model(&db.MessageIndex{}).Select("send_time", "user_b", "direction", "message_id")
+	err = tx.Where("user_a=? and send_time>?", userID, start, 0).Order("send_time asc").
 		Limit(wire.OfflineSyncIndexCount).Find(&indexes).Error
 	if err != nil {
 		return nil, err

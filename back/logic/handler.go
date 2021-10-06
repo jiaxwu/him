@@ -15,26 +15,28 @@ import (
 
 // Handler 这里是逻辑层，对消息进行处理并转发到service层
 type Handler struct {
-	idGen            *snowflake.Node
-	imLoginService   *service.IMLoginService
-	imMessageService *service.IMMessageService
-	imOfflineService *service.IMOfflineService
-	userService      *service.UserService
-	pusher           him.Pusher
-	sessionStorage   him.SessionStorage
+	idGen              *snowflake.Node
+	imLoginService     *service.IMLoginService
+	imMessageService   *service.IMMessageService
+	imCommunityService *service.IMCommunityService
+	imOfflineService   *service.IMOfflineService
+	userService        *service.UserService
+	pusher             him.Pusher
+	sessionStorage     him.SessionStorage
 }
 
 func NewHandler(imLoginService *service.IMLoginService, userService *service.UserService, pusher him.Pusher,
 	sessionStorage him.SessionStorage, imMessageService *service.IMMessageService,
-	imOfflineService *service.IMOfflineService) *Handler {
+	imOfflineService *service.IMOfflineService, imCommunityService *service.IMCommunityService) *Handler {
 	return &Handler{
-		idGen:            db.NewIDGen(),
-		imLoginService:   imLoginService,
-		userService:      userService,
-		pusher:           pusher,
-		sessionStorage:   sessionStorage,
-		imMessageService: imMessageService,
-		imOfflineService: imOfflineService,
+		idGen:              db.NewIDGen(),
+		imLoginService:     imLoginService,
+		userService:        userService,
+		pusher:             pusher,
+		sessionStorage:     sessionStorage,
+		imMessageService:   imMessageService,
+		imCommunityService: imCommunityService,
+		imOfflineService:   imOfflineService,
 	}
 }
 
@@ -126,6 +128,9 @@ func (h *Handler) Receive(ch him.Channel, payload []byte) {
 		}
 		if logicPkt.Command == wire.CommandOfflineContent {
 			h.imOfflineService.DoSyncContent(context)
+		}
+		if logicPkt.Command == wire.CommandCommunityPush {
+			h.imCommunityService.CommunityPush(context)
 		}
 	}
 }

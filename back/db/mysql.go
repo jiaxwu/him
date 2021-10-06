@@ -23,7 +23,6 @@ type MessageIndex struct {
 	UserB  int64 `gorm:"size:60;not null;comment:另一方"`
 	Direction byte   `gorm:"default:0;not null;comment:1表示AccountA为发送者"`
 	MessageID int64  `gorm:"not null;comment:关联消息内容表中的ID"`
-	Group     string `gorm:"size:30;comment:群ID，单聊情况为空"`
 	SendTime  int64  `gorm:"index;not null;comment:消息发送时间"`
 }
 
@@ -41,6 +40,11 @@ type User struct {
 	Password string `gorm:"size:30"`
 	Avatar   string `gorm:"size:200"`
 	Nickname string `gorm:"size:20"`
+}
+
+type Fans struct {
+	UserA int64 // 自己
+	UserB int64 // 粉丝
 }
 
 type DB struct {
@@ -67,7 +71,7 @@ func NewDB() *gorm.DB {
 		if err != nil {
 			log.Fatal("初始化DB失败", err)
 		}
-		_ = mysqlDB.AutoMigrate(&User{}, &MessageContent{}, &MessageIndex{})
+		_ = mysqlDB.AutoMigrate(&User{}, &MessageContent{}, &MessageIndex{}, &Fans{})
 		db.db = mysqlDB
 	})
 	return db.db
