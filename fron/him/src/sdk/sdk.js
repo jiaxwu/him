@@ -293,9 +293,12 @@ export class KIMClient {
   listeners = new Map(); // new Map<string, (e: KIMEvent) => void>()
   messageCallback; // (m: Message) => void
   offmessageCallback; // (m: OfflineMessages) => void
+
   closeCallback; // () => void
   // 全双工请求队列
   sendq = new Map(); // <number, Request>
+
+  talkMessageMap = new Map(); // <userId, (Message) => void>
 
   // 构造一个客户端
   constructor(url, req) {
@@ -318,6 +321,15 @@ export class KIMClient {
     events.forEach((event) => {
       this.listeners.set(event, callback);
     });
+  }
+
+  /**
+   * 推送一个消息到指定的用户回调
+   * @param {Long} userId
+   * @param {(Message) => void>} callback
+   */
+  onTalkMessagePush(userId, callback) {
+    this.talkMessageMap.set(userId.toString(), callback);
   }
 
   // 接收到消息的回调
@@ -574,6 +586,8 @@ export class KIMClient {
             this.lastMessage = message;
             this.unack++;
             try {
+              let cb = this.talkMessageMap.get(message.sender.toString())
+              cb(message)
               this.messageCallback(message);
             } catch (error) {
               console.log("sdk:client:packetHandler:出现异常", error);
@@ -815,6 +829,14 @@ class MsgStorage {
   }
 
   /**
+   * 用户对应消息的key
+   * @param {Long} userId
+   */
+  keyUserMsgIdx(userId) {
+    return `user_msg_idx_${userId.toString()}`;
+  }
+
+  /**
    * 记录一条消息
    * @param {Message} msg
    * @returns {Promise<Boolean>}
@@ -827,11 +849,13 @@ class MsgStorage {
   /**
    * 插入用户消息索引
    * 用于获取和某个用户聊天的全部消息
-   * @param {Long}} userId 
-   * @param {msgIdx} msgIdx 
+   * @param {Long} userId
+   * @param {msgIdx} msgIdx
    */
-  async insertUserMessageIndex(userId, msgIdx) {
-  }
+  //   async insertUserMessageIndex(userId, msgIdx) {
+  //     let smgIdx = await localforage.getItem(userId.toString());
+  //     console.log(smgIdx);
+  //   }
 
   /**
    * 检查消息是否已经保存
