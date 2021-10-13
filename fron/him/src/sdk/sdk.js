@@ -917,3 +917,154 @@ class MsgStorage {
 }
 
 export let Store = new MsgStorage();
+
+// IM存储器
+class ImStore {
+  /**
+   * 用户表
+   * Key：用户编号
+   * Value：{
+   * id:用户编号
+   * nickName:昵称
+   * avatar:头像
+   * unreads:未读消息数
+   * lastMsg:最后一条消息（简略）
+   * lastMsgTime:最后一条消息时间
+   * }
+   */
+  userTable;
+
+  /**
+   * 消息序列表
+   * Key: 用户编号
+   * Value: 消息ID列表
+   */
+
+  msgSeqTable;
+
+  /**
+   * 消息表
+   * Key：消息编号
+   * Value：{
+   * id:消息编号
+   * type:消息类型
+   * seqNO:序列号（对应msgSeq里的数组的相对下标)
+   * sender: 发送者
+   * recipient: 接收者
+   * sendTime: 发送时间
+   * content: 内容
+   * }
+   */
+  msgTable;
+
+  /**
+   * 添加消息
+   * @param {Number} userID 用户编号
+   * @param {Message} msg 消息
+   */
+  addMsg(userID, msg) {
+    // 消息已经存在
+    if (this.msgTable.containsKey(msg.id)) {
+      return;
+    }
+
+    // 如果用户第一次插入记录，那么消息序列表里还没记录，先插入一个空的序列表
+    if (!this.msgSeqTable.containsKey(userID)) {
+      this.msgSeqTable.put(userID, []);
+    }
+
+    // 获取序列
+    let msgSeq = this.msgSeqTable.get(userID);
+    let seqNO = msgSeq.length;
+
+    // Step 1 列表的结尾加入序列
+    msgSeq.push(msg.id);
+    this.msgSeqTable.put(userID, msgSeq);
+
+    // Step 2 在消息表插入消息
+    msg.seqNO = seqNO;
+    this.msgTable.put(msg.id, msg);
+
+    // Step 3 修改未读数
+    this.updateUnreads(userID, true, false);
+
+    // Step 4 回调应用层
+    this.newMsgCB(userID, msg);
+  }
+
+  /**
+   * 修改未读数
+   * @param {Number} userID 用户编号
+   * @param {String} action 行为，有 plusOne 和 clearZero
+   */
+  updateUnreads(userID, action) {
+    // 如果用户还不存在，加载用户并存储
+    if (!this.userTable.containsKey(userID)) {
+      let user = this.loadUser(userID);
+      this.userTable.put(userID, user);
+    }
+
+    // Step 1 修改未读数
+    let user = this.userTable.get(userID);
+    if (action == "plusOne") {
+      user.unreads++;
+    }
+    if (action == "clearZero") {
+      user.unreads = 0;
+    }
+
+    // Step 2 回调应用层
+    this.userChangeCB(user);
+  }
+
+  /**
+   * 获取消息
+   * @param {Number} userID 用户编号
+   * @param {Number} seqNO 起始序列号，Number.MAX_VALUE表示从最大序列号开始获取
+   * @param {Number} size 条数
+   * @returns {Array<Message>} 消息列表
+   */
+  getMsgs(userID, seqNO, size) {
+    // 如果seqNO为0，直接返回
+    if (seqNO == 0) {
+      return [];
+    }
+
+    // 如果用户没有消息，直接返回空列表
+    if (!this.msgSeqTable.containsKey(userID)) {
+      return [];
+    }
+
+    // 如果seqNO是最大值，表示从最大序列号开始获取
+    let msgSeq = this.msgSeqTable.get(userID);
+    if (seqNO == Number.MAX_VALUE) {
+      seqNO = msgSeq.length - 1;
+    }
+
+    // 获取对应条数的消息
+    let msgs = [];
+    size = Math.min(size, seqNO); // 不能获取比序列号还多的条数
+    for (let i = seqNO - size; i < seqNO; i++) {
+      let msgID = msgSeq[i];
+      let msg = this.msgTable.get(msgID);
+      msgs.push(msg);
+    }
+    return msgs;
+  }
+
+
+  /**
+   * 获取全部用户，用于第一次同步的时候使用
+   * @returns {Array<User>} 用户列表
+   */
+  getAllUsers() {
+    return this.userTable.getAll()
+  }
+
+  constructor() {
+    localforage.config({
+      name: "kim",
+      storeName: "kim",
+    });
+  }
+}
