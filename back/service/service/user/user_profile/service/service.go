@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/apache/rocketmq-client-go/v2"
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -16,6 +18,7 @@ import (
 	loginModel "him/service/service/login/model"
 	userProfileModel "him/service/service/user/user_profile/model"
 	"strings"
+	"time"
 )
 
 type UserProfileService struct {
@@ -54,6 +57,7 @@ func (s *UserProfileService) GetUserProfile(req *userProfileModel.GetUserProfile
 	return &userProfileModel.GetUserProfileRsp{
 		UserProfile: userProfileModel.UserProfile{
 			UserID:         userProfile.UserID,
+			Username:       userProfile.Username,
 			NickName:       userProfile.NickName,
 			Avatar:         userProfile.Avatar,
 			LastOnLineTime: userProfile.LastOnLineTime,
@@ -95,6 +99,7 @@ func (s *UserProfileService) InitUserProfile(req *userProfileModel.InitUserProfi
 	userProfile := model.UserProfile{
 		UserID:   req.UserID,
 		NickName: req.NickName,
+		Username: fmt.Sprintf("him_%s_%s", gofakeit.LetterN(15), time.Now().Format("20060102")),
 	}
 	if err := s.db.Create(&userProfile).Error; err != nil {
 		s.logger.WithField("err", err).Error("db exception")
@@ -105,6 +110,7 @@ func (s *UserProfileService) InitUserProfile(req *userProfileModel.InitUserProfi
 	return &userProfileModel.InitUserProfileRsp{
 		UserProfile: userProfileModel.UserProfile{
 			UserID:         userProfile.UserID,
+			Username:       userProfile.Username,
 			NickName:       userProfile.NickName,
 			Avatar:         userProfile.Avatar,
 			LastOnLineTime: userProfile.LastOnLineTime,

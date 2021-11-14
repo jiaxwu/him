@@ -2,6 +2,7 @@ package model
 
 type UserProfile struct {
 	UserID         uint64 `json:"userID"`
+	Username       string `json:"username"`
 	NickName       string `json:"nickName"`
 	Avatar         string `json:"avatar"`
 	LastOnLineTime uint64 `json:"lastOnLineTime"`
