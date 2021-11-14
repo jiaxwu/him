@@ -1,51 +1,48 @@
 package main
 
 import (
-	httpRouter "github.com/XiaoHuaShiFu/him/back/http"
-	"github.com/XiaoHuaShiFu/him/back/link"
-	"github.com/XiaoHuaShiFu/him/back/logic"
-	"github.com/XiaoHuaShiFu/him/back/service"
-	"github.com/gin-gonic/gin"
-	"net/http"
+	"go.uber.org/fx"
+	"lolmclient/conf"
+	"lolmclient/core/db"
+	"lolmclient/core/logger"
+	"lolmclient/core/oss"
+	"lolmclient/core/rdb"
+	"lolmclient/core/validate"
+	"lolmclient/service/server"
+	loginHandler "lolmclient/service/service/login/handler"
+	loginService "lolmclient/service/service/login/service"
+	smsService "lolmclient/service/service/sms/service"
+	userProfileHandler "lolmclient/service/service/user/user_profile/handler"
+	userProfileService "lolmclient/service/service/user/user_profile/service"
+	"lolmclient/service/wrapper"
 )
 
-func Cors() gin.HandlerFunc {
-	return func(context *gin.Context) {
-		method := context.Request.Method
-		context.Header("Access-Control-Allow-Origin", "*")
-		context.Header("Access-Control-Allow-Headers", "Content-Type,AccessToken,X-CSRF-Token, Authorization, Token")
-		context.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-		context.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
-		context.Header("Access-Control-Allow-Credentials", "true")
-		if method == "OPTIONS" {
-			context.AbortWithStatus(http.StatusNoContent)
-		}
-		context.Next()
-	}
+func main() {
+	NewApp().Run()
 }
 
-func main() {
-	r := gin.Default()
-	r.Use(Cors())
-	server := link.NewServer()
-	storage := service.NewRedisStorage()
-	userService := service.NewUserService()
-	imLoginService := service.NewIMLoginService(storage, server)
-	imOfflineService := service.NewIMOfflineService(storage, server)
-	imMessageService := service.NewIMMessageService(storage, server, imOfflineService)
-	imCommunityService := service.NewIMCommunityService(storage, server)
-	handler := logic.NewHandler(imLoginService, userService, server, storage, imMessageService, imOfflineService, imCommunityService)
-	channels := link.NewChannels()
-	server.SetAcceptor(handler)
-	server.SetMessageListener(handler)
-	server.SetStateListener(handler)
-	server.SetChannelMap(channels)
-
-	router := httpRouter.NewRouter(userService)
-
-	r.GET("/ws", func(c *gin.Context) {
-		server.Handle(c.Request, c.Writer)
-	})
-	r.GET("/login", router.Login)
-	r.Run() // listen and serve on 0.0.0.0:8080
+func NewApp() *fx.App {
+	return fx.New(
+		fx.Provide(
+			logger.NewLogger,
+			validate.NewValidate,
+			conf.NewConf,
+			db.NewDB,
+			oss.NewOSS,
+			rdb.NewRDB,
+			server.NewEngine,
+			server.NewServer,
+			wrapper.NewHandlerWrapper,
+			wrapper.NewServiceWrapper,
+			smsService.NewSMSService,
+			loginService.NewLoginService,
+			userProfileService.NewUserProfileService,
+		),
+		fx.Invoke(
+			loginHandler.RegisterLoginHandler,
+			userProfileHandler.RegisterUserProfileHandler,
+			server.Start,
+		),
+		fx.WithLogger(logger.NewFxEventLogger),
+	)
 }
