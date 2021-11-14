@@ -2,10 +2,10 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"lolmclient/service/common"
-	loginModel "lolmclient/service/service/login/model"
-	"lolmclient/service/service/login/service"
-	"lolmclient/service/wrapper"
+	"him/service/common"
+	loginModel "him/service/service/login/model"
+	"him/service/service/login/service"
+	"him/service/wrapper"
 )
 
 func RegisterLoginHandler(engine *gin.Engine, loginService *service.LoginService,

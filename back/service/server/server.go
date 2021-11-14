@@ -3,7 +3,7 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"lolmclient/conf"
+	"him/conf"
 )
 
 // NewEngine 新建一个Gin Engine

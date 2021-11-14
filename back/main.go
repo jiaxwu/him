@@ -2,19 +2,19 @@ package main
 
 import (
 	"go.uber.org/fx"
-	"lolmclient/conf"
-	"lolmclient/core/db"
-	"lolmclient/core/logger"
-	"lolmclient/core/oss"
-	"lolmclient/core/rdb"
-	"lolmclient/core/validate"
-	"lolmclient/service/server"
-	loginHandler "lolmclient/service/service/login/handler"
-	loginService "lolmclient/service/service/login/service"
-	smsService "lolmclient/service/service/sms/service"
-	userProfileHandler "lolmclient/service/service/user/user_profile/handler"
-	userProfileService "lolmclient/service/service/user/user_profile/service"
-	"lolmclient/service/wrapper"
+	"him/conf"
+	"him/core/db"
+	"him/core/logger"
+	"him/core/oss"
+	"him/core/rdb"
+	"him/core/validate"
+	"him/service/server"
+	loginHandler "him/service/service/login/handler"
+	loginService "him/service/service/login/service"
+	smsService "him/service/service/sms/service"
+	userProfileHandler "him/service/service/user/user_profile/handler"
+	userProfileService "him/service/service/user/user_profile/service"
+	"him/service/wrapper"
 )
 
 func main() {

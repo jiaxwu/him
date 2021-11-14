@@ -21,9 +21,12 @@ type SendSMSReq struct {
 
 type SendSMSRsp struct{}
 
-// SendSMSTencentCloudRspResponseSendStatusCode 短信发送状态的错误码
-type SendSMSTencentCloudRspResponseSendStatusCode string
+// TencentCloudStatusCode 短信发送状态的错误码
+type TencentCloudStatusCode string
 
 const (
-	SendSMSTencentCloudRspResponseSendStatusCodeOK SendSMSTencentCloudRspResponseSendStatusCode = "Ok" // 发送成功
+	// TencentCloudStatusCodeOK 发送成功
+	TencentCloudStatusCodeOK TencentCloudStatusCode = "Ok"
+	// TencentCloudStatusCodeLimitExceededPhoneNumberThirtySecondLimit 触发限频策略
+	TencentCloudStatusCodeLimitExceededPhoneNumberThirtySecondLimit TencentCloudStatusCode = "LimitExceeded.PhoneNumberThirtySecondLimit"
 )

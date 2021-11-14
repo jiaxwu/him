@@ -10,11 +10,11 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"lolmclient/conf"
-	"lolmclient/model"
-	"lolmclient/service/common"
-	loginModel "lolmclient/service/service/login/model"
-	userProfileModel "lolmclient/service/service/user/user_profile/model"
+	"him/conf"
+	"him/model"
+	"him/service/common"
+	loginModel "him/service/service/login/model"
+	userProfileModel "him/service/service/user/user_profile/model"
 	"strings"
 )
 

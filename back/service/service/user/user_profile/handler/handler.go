@@ -2,10 +2,10 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"lolmclient/service/common"
-	userProfileModel "lolmclient/service/service/user/user_profile/model"
-	"lolmclient/service/service/user/user_profile/service"
-	"lolmclient/service/wrapper"
+	"him/service/common"
+	userProfileModel "him/service/service/user/user_profile/model"
+	"him/service/service/user/user_profile/service"
+	"him/service/wrapper"
 )
 
 func RegisterUserProfileHandler(engine *gin.Engine, userProfileService *service.UserProfileService,

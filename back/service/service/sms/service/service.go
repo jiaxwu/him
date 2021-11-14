@@ -7,9 +7,9 @@ import (
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
 	sms "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms/v20210111"
-	"lolmclient/conf"
-	"lolmclient/service/common"
-	"lolmclient/service/service/sms/model"
+	"him/conf"
+	"him/service/common"
+	"him/service/service/sms/model"
 	"strconv"
 )
 
@@ -56,6 +56,7 @@ func (s *SMSService) SendAuthCodeForLogin(req *model.SendAuthCodeForLoginReq) (
 }
 
 // SendSMS 发送短信
+// todo 限频
 func (s *SMSService) SendSMS(req *model.SendSMSReq) (*model.SendSMSRsp, common.Error) {
 	// 构造请求
 	request := sms.NewSendSmsRequest()
@@ -82,8 +83,14 @@ func (s *SMSService) SendSMS(req *model.SendSMSReq) (*model.SendSMSRsp, common.E
 		return nil, common.WrapError(common.ErrCodeInternalError, err)
 	}
 
+	// 超过限频限制
+	if *rsp.Response.SendStatusSet[0].Code ==
+		string(model.TencentCloudStatusCodeLimitExceededPhoneNumberThirtySecondLimit) {
+		return nil, common.WrapError(common.ErrCodeThrottlingSMSCode, err)
+	}
+
 	// 结果处理
-	if *rsp.Response.SendStatusSet[0].Code != string(model.SendSMSTencentCloudRspResponseSendStatusCodeOK) {
+	if *rsp.Response.SendStatusSet[0].Code != string(model.TencentCloudStatusCodeOK) {
 		s.logger.WithFields(logrus.Fields{
 			"req": req,
 			"rsp": rsp,

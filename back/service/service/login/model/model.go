@@ -1,7 +1,7 @@
 package model
 
 import (
-	"lolmclient/service/common"
+	"him/service/common"
 	"regexp"
 	"time"
 )

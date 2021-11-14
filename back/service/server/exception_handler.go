@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"lolmclient/service/common"
+	"him/service/common"
 	"net/http"
 )
 

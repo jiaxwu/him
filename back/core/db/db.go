@@ -6,8 +6,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
-	"lolmclient/conf"
-	"lolmclient/model"
+	"him/conf"
+	"him/model"
 )
 
 func NewDB(log *logrus.Logger, config *conf.Config) *gorm.DB {

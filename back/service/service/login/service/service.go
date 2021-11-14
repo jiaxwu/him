@@ -15,12 +15,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"lolmclient/conf"
-	"lolmclient/model"
-	"lolmclient/service/common"
-	loginModel "lolmclient/service/service/login/model"
-	smsModel "lolmclient/service/service/sms/model"
-	smsService "lolmclient/service/service/sms/service"
+	"him/conf"
+	"him/model"
+	"him/service/common"
+	loginModel "him/service/service/login/model"
+	smsModel "him/service/service/sms/model"
+	smsService "him/service/service/sms/service"
 	"time"
 )
 

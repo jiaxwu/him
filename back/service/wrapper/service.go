@@ -2,9 +2,9 @@ package wrapper
 
 import (
 	"github.com/gin-gonic/gin"
-	"lolmclient/service/common"
-	loginModel "lolmclient/service/service/login/model"
-	loginService "lolmclient/service/service/login/service"
+	"him/service/common"
+	loginModel "him/service/service/login/model"
+	loginService "him/service/service/login/service"
 	"reflect"
 )
 

@@ -11,10 +11,10 @@ oss:
   secretAccessKey: qqzLGKUCdD5JcWn2E5bwEdZGEJViIjHDD+cnAoDD
   bucketName: lolmclient
 sms:
-  secretID: AKID71g5FAn9F4cuxkHYZJmzwe6HBpCI7tTn
-  secretKey: 6ybz6xb092g4C4h5D6j7G8k7E8nDNHvJ
+  secretID: AKID61g4C2buwhBOKzNTJtCE0UhdIhpgFYZJ
+  secretKey: UifLkskLegRwA6mBI8hKglZ7ON6ZlhMj
   region: ap-guangzhou
-  smsSDKAppID: 1400591141
+  smsSDKAppID: 1400597505
   signName: 小花师傅
 rocketMQ:
   topic: LolmClient

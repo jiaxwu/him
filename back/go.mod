@@ -1,4 +1,4 @@
-module lolmclient
+module him
 
 go 1.17
 

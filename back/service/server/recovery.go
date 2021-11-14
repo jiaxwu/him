@@ -2,8 +2,8 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"lolmclient/core/logger"
-	"lolmclient/service/common"
+	"him/core/logger"
+	"him/service/common"
 )
 
 // Recovery 异常恢复
