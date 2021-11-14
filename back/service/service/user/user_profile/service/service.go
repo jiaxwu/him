@@ -99,7 +99,8 @@ func (s *UserProfileService) InitUserProfile(req *userProfileModel.InitUserProfi
 	userProfile := model.UserProfile{
 		UserID:   req.UserID,
 		NickName: req.NickName,
-		Username: fmt.Sprintf("him_%s_%s", gofakeit.LetterN(15), time.Now().Format("20060102")),
+		Username: fmt.Sprintf("him_%s_%s", strings.ToLower(gofakeit.LetterN(15)),
+			time.Now().Format("20060102")),
 	}
 	if err := s.db.Create(&userProfile).Error; err != nil {
 		s.logger.WithField("err", err).Error("db exception")
