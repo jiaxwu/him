@@ -73,6 +73,12 @@ func (s *UserProfileService) GetUserProfile(req *userProfileModel.GetUserProfile
 	return &rsp, nil
 }
 
+// UpdateAvatar 更新头像
+func (s UserProfileService) UpdateAvatar(req *userProfileModel.UpdateAvatarReq) (
+	*userProfileModel.UpdateAvatarRsp, common.Error) {
+	panic("todo")
+}
+
 // initUserProfile 初始化用户信息
 func (s *UserProfileService) initUserProfile(userID uint64) (*userProfileModel.UserProfile, common.Error) {
 	// 判断用户是否存在
@@ -173,7 +179,7 @@ func (s *UserProfileService) consumeLoginMessage(message *primitive.MessageExt) 
 	var loginEvent loginModel.LoginEvent
 	if err := json.Unmarshal(message.Body, &loginEvent); err != nil {
 		s.logger.WithFields(logrus.Fields{
-			"err": err,
+			"err":     err,
 			"message": message,
 		}).Error("unmarshal message exception")
 		return
@@ -189,7 +195,7 @@ func (s *UserProfileService) consumeLogoutMessage(message *primitive.MessageExt)
 	var logoutEvent loginModel.LogoutEvent
 	if err := json.Unmarshal(message.Body, &logoutEvent); err != nil {
 		s.logger.WithFields(logrus.Fields{
-			"err": err,
+			"err":     err,
 			"message": message,
 		}).Error("unmarshal message exception")
 		return

@@ -372,9 +372,16 @@ func (s *LoginService) Authorize(req *loginModel.AuthorizeReq) (*loginModel.Auth
 		return nil, err
 	}
 
-	// 判断是否有需要的角色or权限
-	if req.UserType != 0 {
-		if rsp.Session.UserType() != req.UserType {
+	// 判断是否有需要的角色
+	if req.UserTypes != nil && len(req.UserTypes) != 0 {
+		hasRole := false
+		for _, userType := range req.UserTypes {
+			if rsp.Session.UserType() == userType {
+				hasRole = true
+				break
+			}
+		}
+		if !hasRole {
 			return nil, common.NewError(common.ErrCodeForbidden)
 		}
 	}

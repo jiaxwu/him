@@ -73,8 +73,8 @@ type SendSMSForLoginReq struct {
 type SendSMSForLoginRsp struct{}
 
 type AuthorizeReq struct {
-	Token    string          `validate:"required,len=36"`
-	UserType common.UserType `validate:"required"`
+	Token     string            `validate:"required,len=36"`
+	UserTypes []common.UserType `validate:"required"`
 }
 
 type AuthorizeRsp struct {

@@ -8,19 +8,18 @@ import (
 	"him/service/wrapper"
 )
 
-func RegisterLoginHandler(engine *gin.Engine, loginService *service.LoginService,
-	handlerWrapper *wrapper.HandlerWrapper, serviceWrapper *wrapper.ServiceWrapper) {
-	engine.POST("login", serviceWrapper.Wrap(loginService.Login, 0))
-	engine.POST("login/sms/send", serviceWrapper.Wrap(loginService.SendSMSForLogin, 0))
-	engine.POST("logout", handlerWrapper.Wrap(func(header common.Header, session common.Session,
-		req *loginModel.LogoutReq) (*loginModel.LogoutRsp, common.Error) {
+func RegisterLoginHandler(engine *gin.Engine, loginService *service.LoginService, wrapper *wrapper.Wrapper) {
+	engine.POST("login", wrapper.Wrap(loginService.Login, false))
+	engine.POST("login/sms/send", wrapper.Wrap(loginService.SendSMSForLogin, false))
+	engine.POST("logout", wrapper.Wrap(func(req *loginModel.LogoutReq, header common.Header,
+		session common.Session) (*loginModel.LogoutRsp, common.Error) {
 		req.Token = header.Token()
 		req.UserID = session.UserID()
 		return loginService.Logout(req)
-	}, common.UserTypePlayer))
-	engine.POST("login/password/bind", handlerWrapper.Wrap(func(_ common.Header, session common.Session,
-		req *loginModel.BindPasswordLoginReq) (*loginModel.BindPasswordLoginRsp, common.Error) {
+	}, true, common.UserTypePlayer))
+	engine.POST("login/password/bind", wrapper.Wrap(func(req *loginModel.BindPasswordLoginReq,
+		session common.Session) (*loginModel.BindPasswordLoginRsp, common.Error) {
 		req.UserID = session.UserID()
 		return loginService.BindPasswordLogin(req)
-	}, common.UserTypePlayer))
+	}, true, common.UserTypePlayer))
 }

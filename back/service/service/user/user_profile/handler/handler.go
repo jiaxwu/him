@@ -9,12 +9,18 @@ import (
 )
 
 func RegisterUserProfileHandler(engine *gin.Engine, userProfileService *service.UserProfileService,
-	serviceWrapper *wrapper.ServiceWrapper, handlerWrapper *wrapper.HandlerWrapper) {
-	engine.POST("user/profile/get", serviceWrapper.Wrap(userProfileService.GetUserProfile,
-		common.UserTypePlayer))
-	engine.POST("user/profile/self/get", handlerWrapper.Wrap(func(_ common.Header, session common.Session,
-		req *userProfileModel.GetUserProfileReq) (*userProfileModel.GetUserProfileRsp, common.Error) {
+	wrapper *wrapper.Wrapper) {
+	engine.POST("user/profile/get", wrapper.Wrap(userProfileService.GetUserProfile,
+		true, common.UserTypePlayer))
+	engine.POST("user/profile/self/get", wrapper.Wrap(func(req *userProfileModel.GetUserProfileReq,
+		session common.Session) (*userProfileModel.GetUserProfileRsp, common.Error) {
 		req.UserID = session.UserID()
 		return userProfileService.GetUserProfile(req)
-	}, common.UserTypePlayer))
+	}, true, common.UserTypePlayer))
+	engine.POST("user/profile/avatar/update", wrapper.Wrap(func(
+		req *userProfileModel.GetUserProfileReq, session common.Session) (
+		*userProfileModel.GetUserProfileRsp, common.Error) {
+		req.UserID = session.UserID()
+		return userProfileService.GetUserProfile(req)
+	}, true, common.UserTypePlayer))
 }
