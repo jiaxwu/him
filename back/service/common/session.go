@@ -8,7 +8,7 @@ const (
 )
 
 // Session 会话
-type Session interface {
-	UserID() uint64
-	UserType() UserType
+type Session struct {
+	UserID   uint64   `json:"userID"`
+	UserType UserType `json:"userType"`
 }

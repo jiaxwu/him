@@ -78,7 +78,7 @@ type AuthorizeReq struct {
 }
 
 type AuthorizeRsp struct {
-	Session common.Session
+	Session *common.Session
 }
 
 type GetSessionReq struct {
@@ -86,19 +86,5 @@ type GetSessionReq struct {
 }
 
 type GetSessionRsp struct {
-	Session common.Session
-}
-
-// Session 会话实现
-type Session struct {
-	UserID_   uint64          `json:"userID"`
-	UserType_ common.UserType `json:"userType"`
-}
-
-func (s *Session) UserID() uint64 {
-	return s.UserID_
-}
-
-func (s *Session) UserType() common.UserType {
-	return s.UserType_
+	Session *common.Session
 }

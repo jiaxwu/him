@@ -201,9 +201,9 @@ func (s *LoginService) login(userID uint64) (*loginModel.LoginRsp, common.Error)
 	// 生成Token并添加到Redis
 	token := uuid.New().String()
 	tokenKey := s.tokenRedisKey(token)
-	session := &loginModel.Session{
-		UserID_:   userID,
-		UserType_: common.UserType(user.Type),
+	session := &common.Session{
+		UserID:   userID,
+		UserType: common.UserType(user.Type),
 	}
 	sessionBytes, _ := json.Marshal(session)
 	// 先插入反向Token
@@ -376,7 +376,7 @@ func (s *LoginService) Authorize(req *loginModel.AuthorizeReq) (*loginModel.Auth
 	if req.UserTypes != nil && len(req.UserTypes) != 0 {
 		hasRole := false
 		for _, userType := range req.UserTypes {
-			if rsp.Session.UserType() == userType {
+			if rsp.Session.UserType == userType {
 				hasRole = true
 				break
 			}
@@ -409,7 +409,7 @@ func (s *LoginService) GetSession(req *loginModel.GetSessionReq) (*loginModel.Ge
 	}
 
 	// 解析Session
-	var session loginModel.Session
+	var session common.Session
 	_ = json.Unmarshal(sessionBytes, &session)
 
 	// 延长Token的过期时间
@@ -419,7 +419,7 @@ func (s *LoginService) GetSession(req *loginModel.GetSessionReq) (*loginModel.Ge
 	}
 
 	// 延长AntiToken过期时间
-	antiKey := s.antiTokenRedisKey(session.UserID())
+	antiKey := s.antiTokenRedisKey(session.UserID)
 	if err := s.rdb.Expire(context.Background(), antiKey, loginModel.TokenExp).Err(); err != nil {
 		s.logger.WithField("err", err).Error("rdb exception")
 		return nil, common.WrapError(common.ErrCodeInternalErrorRDB, err)
