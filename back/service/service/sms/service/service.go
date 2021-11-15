@@ -9,6 +9,7 @@ import (
 	sms "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms/v20210111"
 	"him/conf"
 	"him/service/common"
+	"him/service/service/sms/code"
 	"him/service/service/sms/model"
 	"strconv"
 )
@@ -38,6 +39,7 @@ func NewSMSService(config *conf.Config, logger *logrus.Logger, validate *validat
 }
 
 // SendAuthCodeForLogin 发送登录验证码
+// todo 限频
 func (s *SMSService) SendAuthCodeForLogin(req *model.SendAuthCodeForLoginReq) (
 	*model.SendAuthCodeForLoginRsp, common.Error) {
 	if err := s.validate.Struct(req); err != nil {
@@ -56,7 +58,6 @@ func (s *SMSService) SendAuthCodeForLogin(req *model.SendAuthCodeForLoginReq) (
 }
 
 // SendSMS 发送短信
-// todo 限频
 func (s *SMSService) SendSMS(req *model.SendSMSReq) (*model.SendSMSRsp, common.Error) {
 	// 构造请求
 	request := sms.NewSendSmsRequest()
@@ -86,7 +87,7 @@ func (s *SMSService) SendSMS(req *model.SendSMSReq) (*model.SendSMSRsp, common.E
 	// 超过限频限制
 	if *rsp.Response.SendStatusSet[0].Code ==
 		string(model.TencentCloudStatusCodeLimitExceededPhoneNumberThirtySecondLimit) {
-		return nil, common.WrapError(common.ErrCodeThrottlingSMSCode, err)
+		return nil, common.WrapError(code.ThrottlingSMSCode, err)
 	}
 
 	// 结果处理
@@ -95,7 +96,7 @@ func (s *SMSService) SendSMS(req *model.SendSMSReq) (*model.SendSMSRsp, common.E
 			"req": req,
 			"rsp": rsp,
 		}).Error("received a code that is not 'Ok'")
-		return nil, common.WrapError(common.ErrCodeInternalErrorThirdPartyTencentCloud, err)
+		return nil, common.WrapError(code.InternalErrorThirdPartyTencentCloud, err)
 	}
 	return &model.SendSMSRsp{}, nil
 }

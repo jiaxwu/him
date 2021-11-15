@@ -16,21 +16,25 @@ type GetUserProfileRsp struct {
 	*UserProfile
 }
 
-type UpdateAvatarReq struct {
-	UserID      uint64 `json:"userID" validate:"required"`
-	Avatar      []byte `json:"avatar" validate:"required,lte=5242880"`
-	ContentType string `json:"contentType" validate:"required,oneof='image/png' 'image/jpg' 'image/jpeg'"`
+type UpdateProfileAction string
+
+const (
+	UpdateProfileActionAvatar   = "avatar"
+	UpdateProfileActionNickName = "nickName"
+	UpdateProfileActionUsername = "username"
+)
+
+// UpdateProfileActionToDBColumnMap 转数据库字段
+var UpdateProfileActionToDBColumnMap = map[UpdateProfileAction]string{
+	UpdateProfileActionAvatar:   "avatar",
+	UpdateProfileActionNickName: "nick_name",
+	UpdateProfileActionUsername: "username",
 }
 
-type UpdateAvatarRsp struct {
-	Avatar string `json:"avatar"`
+type UpdateProfileReq struct {
+	UserID uint64              `json:"userID" validate:"required"`
+	Action UpdateProfileAction `json:"action" validate:"required"`
+	Value  string              `json:"value" validate:"required"`
 }
 
-type UpdateNickNameReq struct {
-	UserID   uint64 `json:"userID" validate:"required"`
-	NickName string `json:"nickName" validate:"required,min=2,max=10"`
-}
-
-type UpdateNickNameRsp struct {
-	NickName string `json:"nickName"`
-}
+type UpdateProfileRsp struct {}

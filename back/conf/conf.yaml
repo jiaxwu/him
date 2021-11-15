@@ -7,9 +7,9 @@ server:
   env: dev
 oss:
   endpoint: 127.0.0.1:9000
-  accessKeyID: Q4G2LT8U2RCD1TK1Z871
-  secretAccessKey: qqzLGKUCdD5JcWn2E5bwEdZGEJViIjHDD+cnAoDD
-  bucketName: lolmclient
+  accessKeyID: HS5MT00AZFEGZUYR1GFE
+  secretAccessKey: KcDPkmuWnUEvMlUpFr+nL7VD1XanvvAFN57tEMDk
+  bucketName: him
 sms:
   secretID: AKID61g4C2buwhBOKzNTJtCE0UhdIhpgFYZJ
   secretKey: UifLkskLegRwA6mBI8hKglZ7ON6ZlhMj

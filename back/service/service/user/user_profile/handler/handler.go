@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"him/service/common"
 	userProfileModel "him/service/service/user/user_profile/model"
@@ -13,14 +12,16 @@ func RegisterUserProfileHandler(engine *gin.Engine, userProfileService *service.
 	wrapper *wrapper.Wrapper) {
 	engine.POST("user/profile/get", wrapper.Wrap(userProfileService.GetUserProfile,
 		true, common.UserTypePlayer))
+
 	engine.POST("user/profile/self/get", wrapper.Wrap(func(req *userProfileModel.GetUserProfileReq,
 		session *common.Session) (*userProfileModel.GetUserProfileRsp, common.Error) {
 		req.UserID = session.UserID
 		return userProfileService.GetUserProfile(req)
 	}, true, common.UserTypePlayer))
-	engine.POST("user/profile/avatar/update", wrapper.Wrap(func(req *userProfileModel.UpdateAvatarReq,
-		session *common.Session, files []*common.File) (*userProfileModel.GetUserProfileRsp, common.Error) {
-		fmt.Printf("%+v\n", req)
-		return nil, nil
+
+	engine.POST("user/profile/update", wrapper.Wrap(func(req *userProfileModel.UpdateProfileReq,
+		session *common.Session) (*userProfileModel.UpdateProfileRsp, common.Error) {
+		req.UserID = session.UserID
+		return userProfileService.UpdateProfile(req)
 	}, true, common.UserTypePlayer))
 }

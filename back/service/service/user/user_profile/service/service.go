@@ -13,9 +13,11 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"him/conf"
+	"him/core/oss"
 	"him/model"
 	"him/service/common"
 	loginModel "him/service/service/login/model"
+	"him/service/service/user/user_profile/code"
 	userProfileModel "him/service/service/user/user_profile/model"
 	"him/service/service/user/user_profile/util"
 	"strings"
@@ -26,15 +28,17 @@ type UserProfileService struct {
 	validate *validator.Validate
 	logger   *logrus.Logger
 	config   *conf.Config
+	oss      *oss.OSS
 }
 
 func NewUserProfileService(db *gorm.DB, validate *validator.Validate, logger *logrus.Logger, config *conf.Config,
-) *UserProfileService {
+	oss *oss.OSS) *UserProfileService {
 	userProfileService := &UserProfileService{
 		db:       db,
 		validate: validate,
 		logger:   logger,
 		config:   config,
+		oss:      oss,
 	}
 	userProfileService.startConsumeLoginEvent()
 	return userProfileService
@@ -73,12 +77,6 @@ func (s *UserProfileService) GetUserProfile(req *userProfileModel.GetUserProfile
 	return &rsp, nil
 }
 
-// UpdateAvatar 更新头像
-func (s UserProfileService) UpdateAvatar(req *userProfileModel.UpdateAvatarReq) (
-	*userProfileModel.UpdateAvatarRsp, common.Error) {
-	panic("todo")
-}
-
 // initUserProfile 初始化用户信息
 func (s *UserProfileService) initUserProfile(userID uint64) (*userProfileModel.UserProfile, common.Error) {
 	// 判断用户是否存在
@@ -88,7 +86,7 @@ func (s *UserProfileService) initUserProfile(userID uint64) (*userProfileModel.U
 		return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
 	}
 	if count < 1 {
-		return nil, common.NewError(common.ErrCodeNotFoundUser)
+		return nil, common.NewError(code.NotFoundUser)
 	}
 
 	// 判断是否已经初始化了
@@ -123,6 +121,52 @@ func (s *UserProfileService) initUserProfile(userID uint64) (*userProfileModel.U
 		Avatar:         userProfile.Avatar,
 		LastOnLineTime: userProfile.LastOnLineTime,
 	}, nil
+}
+
+// UpdateProfile 更新个人信息
+func (s *UserProfileService) UpdateProfile(req *userProfileModel.UpdateProfileReq) (*userProfileModel.UpdateProfileRsp,
+	common.Error) {
+	// 判断更新类型是否支持
+	column := userProfileModel.UpdateProfileActionToDBColumnMap[req.Action]
+	if column == "" {
+		return nil, common.NewError(common.ErrCodeInvalidParameter)
+	}
+
+	// 参数校验
+	if req.Action == userProfileModel.UpdateProfileActionAvatar {
+		if len(req.Value) > 200 {
+			return nil, common.NewError(code.InvalidParameterAvatarLength)
+		}
+	}
+	if req.Action == userProfileModel.UpdateProfileActionUsername {
+		if len(req.Value) < 4 || len(req.Value) > 30 {
+			return nil, common.NewError(code.InvalidParameterUsernameLength)
+		}
+		var count int64
+		if err := s.db.Model(&model.UserProfile{}).Where("username = ?", req.Value).
+			Count(&count).Error; err != nil {
+			s.logger.WithField("err", err).Error("db exception")
+			return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
+		}
+		if count > 0 {
+			return nil, common.NewError(code.ExistsUsername)
+		}
+	}
+	if req.Action == userProfileModel.UpdateProfileActionNickName {
+		if len(req.Value) < 2 || len(req.Value) > 10 {
+			return nil, common.NewError(code.InvalidParameterNickNameLength)
+		}
+	}
+
+	// 更新参数
+	if err := s.db.Model(&model.UserProfile{}).Where("user_id = ?", req.UserID).
+		Update(column, req.Value).Error; err != nil {
+		s.logger.WithField("err", err).Error("db exception")
+		return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
+	}
+
+	// todo 用户信息更新事件
+	return &userProfileModel.UpdateProfileRsp{}, nil
 }
 
 // StartConsumeLoginEvent 消费登录事件

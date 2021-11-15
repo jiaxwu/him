@@ -18,6 +18,7 @@ import (
 	"him/conf"
 	"him/model"
 	"him/service/common"
+	"him/service/service/login/code"
 	loginModel "him/service/service/login/model"
 	smsModel "him/service/service/sms/model"
 	smsService "him/service/service/sms/service"
@@ -95,14 +96,14 @@ func (s *LoginService) loginBySMS(phone, authCode string) (*loginModel.LoginRsp,
 	authCodeKey := s.smsAuthCodeRedisKeyForLogin(phone)
 	authCodeByRedis, err := s.rdb.Get(context.Background(), authCodeKey).Result()
 	if err == redis.Nil {
-		return nil, common.NewError(common.ErrCodeInvalidParameterLoginSMSAuthCodeNotExist)
+		return nil, common.NewError(code.InvalidParameterLoginSMSAuthCodeNotExist)
 	}
 	if err != nil {
 		s.logger.WithField("err", err).Error("db exception")
 		return nil, common.WrapError(common.ErrCodeInternalErrorRDB, err)
 	}
 	if authCodeByRedis != authCode {
-		return nil, common.NewError(common.ErrCodeInvalidParameterLoginSMSAuthCodeError)
+		return nil, common.NewError(code.InvalidParameterLoginSMSAuthCodeError)
 	}
 
 	// 验证成功要把验证码删了
@@ -145,7 +146,7 @@ func (s *LoginService) loginByPwd(username, password string) (*loginModel.LoginR
 	}
 	err := s.db.Where(&phoneLogin).Take(&phoneLogin).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, common.NewError(common.ErrCodeInvalidParameterLoginUsernameOrPassword)
+		return nil, common.NewError(code.InvalidParameterLoginUsernameOrPassword)
 	}
 	if err != nil {
 		s.logger.WithField("err", err).Error("db exception")
@@ -158,7 +159,7 @@ func (s *LoginService) loginByPwd(username, password string) (*loginModel.LoginR
 	}
 	err = s.db.Where(&passwordLogin).Take(&passwordLogin).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, common.NewError(common.ErrCodeInvalidParameterLoginUsernameOrPassword)
+		return nil, common.NewError(code.InvalidParameterLoginUsernameOrPassword)
 	}
 	if err != nil {
 		s.logger.WithField("err", err).Error("db exception")
@@ -167,7 +168,7 @@ func (s *LoginService) loginByPwd(username, password string) (*loginModel.LoginR
 
 	// 判断密码是否正确
 	if err := bcrypt.CompareHashAndPassword([]byte(passwordLogin.Password), []byte(password)); err != nil {
-		return nil, common.NewError(common.ErrCodeInvalidParameterLoginUsernameOrPassword)
+		return nil, common.NewError(code.InvalidParameterLoginUsernameOrPassword)
 	}
 
 	return s.login(phoneLogin.UserID)
@@ -325,7 +326,7 @@ func (s *LoginService) BindPasswordLogin(req *loginModel.BindPasswordLoginReq) (
 // checkPasswordLevel 检查密码强度
 func (s *LoginService) checkPasswordLevel(password string) common.Error {
 	if len(password) < 8 || len(password) > 20 {
-		return common.NewError(common.ErrCodeInvalidParameterLoginPasswordNotMeetRequirements)
+		return common.NewError(code.InvalidParameterLoginPasswordNotMeetRequirements)
 	}
 
 	var count uint
@@ -335,7 +336,7 @@ func (s *LoginService) checkPasswordLevel(password string) common.Error {
 		}
 	}
 	if count < 3 {
-		return common.NewError(common.ErrCodeInvalidParameterLoginPasswordNotMeetRequirements)
+		return common.NewError(code.InvalidParameterLoginPasswordNotMeetRequirements)
 	}
 	return nil
 }
@@ -394,14 +395,14 @@ func (s *LoginService) Authorize(req *loginModel.AuthorizeReq) (*loginModel.Auth
 // GetSession 获取Session
 func (s *LoginService) GetSession(req *loginModel.GetSessionReq) (*loginModel.GetSessionRsp, common.Error) {
 	if err := s.validate.Struct(req); err != nil {
-		return nil, common.WrapError(common.ErrCodeUnauthorizedInvalidToken, err)
+		return nil, common.WrapError(code.UnauthorizedInvalidToken, err)
 	}
 
 	// 判断Token是否过期
 	key := s.tokenRedisKey(req.Token)
 	sessionBytes, err := s.rdb.Get(context.Background(), key).Bytes()
 	if errors.Is(err, redis.Nil) {
-		return nil, common.NewError(common.ErrCodeUnauthorizedInvalidToken)
+		return nil, common.NewError(code.UnauthorizedInvalidToken)
 	}
 	if err != nil {
 		s.logger.WithField("err", err).Error("rdb exception")
