@@ -17,8 +17,8 @@ import (
 	"him/service/common"
 	loginModel "him/service/service/login/model"
 	userProfileModel "him/service/service/user/user_profile/model"
+	"him/service/service/user/user_profile/util"
 	"strings"
-	"time"
 )
 
 type UserProfileService struct {
@@ -50,72 +50,72 @@ func (s *UserProfileService) GetUserProfile(req *userProfileModel.GetUserProfile
 		return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
 	}
 
+	// 如果查询不到用户信息，先进行初始化
+	var rsp userProfileModel.GetUserProfileRsp
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, common.NewError(common.ErrCodeNotFound)
-	}
-
-	return &userProfileModel.GetUserProfileRsp{
-		UserProfile: userProfileModel.UserProfile{
+		userProfile, err := s.initUserProfile(req.UserID)
+		if err != nil {
+			return nil, err
+		}
+		rsp.UserProfile = userProfile
+	} else
+	// 如果查询得到直接返回
+	{
+		rsp.UserProfile = &userProfileModel.UserProfile{
 			UserID:         userProfile.UserID,
 			Username:       userProfile.Username,
 			NickName:       userProfile.NickName,
 			Avatar:         userProfile.Avatar,
 			LastOnLineTime: userProfile.LastOnLineTime,
-		},
-	}, nil
+		}
+	}
+
+	return &rsp, nil
 }
 
-// InitUserProfile 初始化用户信息
-func (s *UserProfileService) InitUserProfile(req *userProfileModel.InitUserProfileReq) (
-	*userProfileModel.InitUserProfileRsp, common.Error) {
-	if err := s.validate.Struct(req); err != nil {
-		return nil, common.WrapError(common.ErrCodeInvalidParameter, err)
+// initUserProfile 初始化用户信息
+func (s *UserProfileService) initUserProfile(userID uint64) (*userProfileModel.UserProfile, common.Error) {
+	// 判断用户是否存在
+	var count int64
+	if err := s.db.Model(&model.User{}).Where("id = ?", userID).Count(&count).Error; err != nil {
+		s.logger.WithField("err", err).Error("db exception")
+		return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
+	}
+	if count < 1 {
+		return nil, common.NewError(common.ErrCodeNotFoundUser)
 	}
 
 	// 判断是否已经初始化了
-	var count int64
-	if err := s.db.Model(&model.UserProfile{}).Where("user_id = ?", req.UserID).
-		Count(&count).Error; err != nil {
+	if err := s.db.Model(&model.UserProfile{}).Where("user_id = ?", userID).Count(&count).Error; err != nil {
 		s.logger.WithField("err", err).Error("db exception")
 		return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
 	}
 
+	// 用户已经初始化则直接查询返回
+	var userProfile model.UserProfile
 	if count > 0 {
-		return nil, common.NewError(common.ErrCodeAlreadyInit)
+		if err := s.db.Where("user_id = ?", userID).Take(&userProfile).Error; err != nil {
+			s.logger.WithField("err", err).Error("db exception")
+			return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
+		}
+	} else
+	// 否则创建用户信息
+	{
+		userProfile.UserID = userID
+		userProfile.NickName = util.GenNickName()
+		userProfile.Username = fmt.Sprintf("him_%s", strings.ToLower(gofakeit.LetterN(20)))
+		if err := s.db.Create(&userProfile).Error; err != nil {
+			s.logger.WithField("err", err).Error("db exception")
+			return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
+		}
 	}
 
-	// 判断昵称是否重复
-	if err := s.db.Model(&model.UserProfile{}).Where("nick_name = ?", req.NickName).
-		Count(&count).Error; err != nil {
-		s.logger.WithField("err", err).Error("db exception")
-		return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
-	}
-
-	if count > 0 {
-		return nil, common.NewError(common.ErrCodeExistsNickName)
-	}
-
-	// 创建用户信息
-	userProfile := model.UserProfile{
-		UserID:   req.UserID,
-		NickName: req.NickName,
-		Username: fmt.Sprintf("him_%s_%s", strings.ToLower(gofakeit.LetterN(15)),
-			time.Now().Format("20060102")),
-	}
-	if err := s.db.Create(&userProfile).Error; err != nil {
-		s.logger.WithField("err", err).Error("db exception")
-		return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
-	}
-
-	// 返回
-	return &userProfileModel.InitUserProfileRsp{
-		UserProfile: userProfileModel.UserProfile{
-			UserID:         userProfile.UserID,
-			Username:       userProfile.Username,
-			NickName:       userProfile.NickName,
-			Avatar:         userProfile.Avatar,
-			LastOnLineTime: userProfile.LastOnLineTime,
-		},
+	return &userProfileModel.UserProfile{
+		UserID:         userProfile.UserID,
+		Username:       userProfile.Username,
+		NickName:       userProfile.NickName,
+		Avatar:         userProfile.Avatar,
+		LastOnLineTime: userProfile.LastOnLineTime,
 	}, nil
 }
 
@@ -141,11 +141,11 @@ func (s *UserProfileService) startConsumeLoginEvent() {
 		Expression: strings.Join([]string{string(loginModel.LoginEventTagLogin),
 			string(loginModel.LoginEventTagLogout)}, "||"),
 	}
-	receiveMsgCB := func(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
-		s.consumeLoginEventMsgs(msgs)
+	receiveMessageCB := func(ctx context.Context, messages ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
+		s.consumeLoginEventMessages(messages)
 		return consumer.ConsumeSuccess, nil
 	}
-	if err := c.Subscribe(s.config.RocketMQ.Topic, messageSelector, receiveMsgCB); err != nil {
+	if err := c.Subscribe(s.config.RocketMQ.Topic, messageSelector, receiveMessageCB); err != nil {
 		s.logger.Fatal(err)
 	}
 	if err := c.Start(); err != nil {
@@ -153,29 +153,29 @@ func (s *UserProfileService) startConsumeLoginEvent() {
 	}
 }
 
-// consumeLoginEventMsgs 消费登录事件
-func (s *UserProfileService) consumeLoginEventMsgs(msgs []*primitive.MessageExt) {
-	for _, msg := range msgs {
-		switch msg.GetTags() {
+// consumeLoginEventMessages 消费登录事件
+func (s *UserProfileService) consumeLoginEventMessages(messages []*primitive.MessageExt) {
+	for _, message := range messages {
+		switch message.GetTags() {
 		case string(loginModel.LoginEventTagLogin):
-			s.consumeLoginMsg(msg)
+			s.consumeLoginMessage(message)
 		case string(loginModel.LoginEventTagLogout):
-			s.consumeLogoutMsg(msg)
+			s.consumeLogoutMessage(message)
 		default:
-			s.logger.WithField("msg", msg).Error("receive an unknown tag msg")
+			s.logger.WithField("message", message).Error("receive an unknown tag message")
 		}
 	}
 }
 
-// consumeLoginMsg 消费登录消息
-func (s *UserProfileService) consumeLoginMsg(msg *primitive.MessageExt) {
+// consumeLoginMessage 消费登录消息
+func (s *UserProfileService) consumeLoginMessage(message *primitive.MessageExt) {
 	// 解析登录事件
 	var loginEvent loginModel.LoginEvent
-	if err := json.Unmarshal(msg.Body, &loginEvent); err != nil {
+	if err := json.Unmarshal(message.Body, &loginEvent); err != nil {
 		s.logger.WithFields(logrus.Fields{
 			"err": err,
-			"msg": msg,
-		}).Error("unmarshal msg exception")
+			"message": message,
+		}).Error("unmarshal message exception")
 		return
 	}
 
@@ -183,15 +183,15 @@ func (s *UserProfileService) consumeLoginMsg(msg *primitive.MessageExt) {
 	s.updateLastOnLineTime(loginEvent.UserID, loginEvent.LoginTime)
 }
 
-// consumeLogoutMsg 消费退出登录消息
-func (s *UserProfileService) consumeLogoutMsg(msg *primitive.MessageExt) {
+// consumeLogoutMessage 消费退出登录消息
+func (s *UserProfileService) consumeLogoutMessage(message *primitive.MessageExt) {
 	// 解析退出登录事件
 	var logoutEvent loginModel.LogoutEvent
-	if err := json.Unmarshal(msg.Body, &logoutEvent); err != nil {
+	if err := json.Unmarshal(message.Body, &logoutEvent); err != nil {
 		s.logger.WithFields(logrus.Fields{
 			"err": err,
-			"msg": msg,
-		}).Error("unmarshal msg exception")
+			"message": message,
+		}).Error("unmarshal message exception")
 		return
 	}
 

@@ -441,23 +441,23 @@ func (s *LoginService) antiTokenRedisKey(userID uint64) string {
 // sendLoginEvent 发送登录事件
 func (s *LoginService) sendLoginEvent(loginEvent *loginModel.LoginEvent) {
 	body, _ := json.Marshal(loginEvent)
-	msg := primitive.NewMessage(s.config.RocketMQ.Topic, body).WithTag(string(loginModel.LoginEventTagLogin))
-	s.sendEventMsg(msg)
+	message := primitive.NewMessage(s.config.RocketMQ.Topic, body).WithTag(string(loginModel.LoginEventTagLogin))
+	s.sendEventMessage(message)
 }
 
 // sendLogoutEvent 发送退出登录事件
 func (s *LoginService) sendLogoutEvent(logoutEvent *loginModel.LogoutEvent) {
 	body, _ := json.Marshal(logoutEvent)
-	msg := primitive.NewMessage(s.config.RocketMQ.Topic, body).WithTag(string(loginModel.LoginEventTagLogout))
-	s.sendEventMsg(msg)
+	message := primitive.NewMessage(s.config.RocketMQ.Topic, body).WithTag(string(loginModel.LoginEventTagLogout))
+	s.sendEventMessage(message)
 }
 
-// sendEventMsg 发送事件消息
-func (s *LoginService) sendEventMsg(msg *primitive.Message) {
+// sendEventMessage 发送事件消息
+func (s *LoginService) sendEventMessage(message *primitive.Message) {
 	resCB := func(ctx context.Context, result *primitive.SendResult, err error) {
 		s.logger.WithField("res", result).Info("send message success")
 	}
-	if err := s.loginEventProducer.SendAsync(context.Background(), resCB, msg); err != nil {
+	if err := s.loginEventProducer.SendAsync(context.Background(), resCB, message); err != nil {
 		s.logger.WithField("err", err).Error("consumer message exception")
 	}
 }

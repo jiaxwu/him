@@ -13,16 +13,7 @@ type GetUserProfileReq struct {
 }
 
 type GetUserProfileRsp struct {
-	UserProfile
-}
-
-type InitUserProfileReq struct {
-	UserID   uint64 `json:"userID" validate:"required"`
-	NickName string `json:"nickName" validate:"required,min=2,max=10"`
-}
-
-type InitUserProfileRsp struct {
-	UserProfile
+	*UserProfile
 }
 
 type UpdateAvatarReq struct {

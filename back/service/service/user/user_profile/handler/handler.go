@@ -17,9 +17,4 @@ func RegisterUserProfileHandler(engine *gin.Engine, userProfileService *service.
 		req.UserID = session.UserID()
 		return userProfileService.GetUserProfile(req)
 	}, common.UserTypePlayer))
-	engine.POST("user/profile/init", handlerWrapper.Wrap(func(_ common.Header, session common.Session,
-		req *userProfileModel.InitUserProfileReq) (*userProfileModel.InitUserProfileRsp, common.Error) {
-		req.UserID = session.UserID()
-		return userProfileService.InitUserProfile(req)
-	}, common.UserTypePlayer))
 }
