@@ -17,8 +17,8 @@ func RegisterUserProfileHandler(engine *gin.Engine, userProfileService *service.
 		req.UserID = session.UserID()
 		return userProfileService.GetUserProfile(req)
 	}, true, common.UserTypePlayer))
-	engine.POST("user/profile/avatar/update", wrapper.Wrap(func(
-		req *userProfileModel.GetUserProfileReq, session common.Session) (
+	engine.POST("user/profile/avatar/update", wrapper.Wrap(func(req *userProfileModel.GetUserProfileReq,
+		session common.Session) (
 		*userProfileModel.GetUserProfileRsp, common.Error) {
 		req.UserID = session.UserID()
 		return userProfileService.GetUserProfile(req)
