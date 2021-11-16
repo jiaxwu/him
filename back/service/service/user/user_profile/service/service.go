@@ -1,13 +1,9 @@
 package service
 
 import (
-	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/apache/rocketmq-client-go/v2"
-	"github.com/apache/rocketmq-client-go/v2/consumer"
-	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
@@ -16,19 +12,21 @@ import (
 	"him/core/oss"
 	"him/model"
 	"him/service/common"
-	loginModel "him/service/service/login/model"
+	"him/service/mq"
 	"him/service/service/user/user_profile/code"
 	userProfileModel "him/service/service/user/user_profile/model"
 	"him/service/service/user/user_profile/util"
 	"strings"
+	"time"
 )
 
 type UserProfileService struct {
-	db       *gorm.DB
-	validate *validator.Validate
-	logger   *logrus.Logger
-	config   *conf.Config
-	oss      *oss.OSS
+	db                             *gorm.DB
+	validate                       *validator.Validate
+	logger                         *logrus.Logger
+	config                         *conf.Config
+	oss                            *oss.OSS
+	updateUserProfileEventProducer rocketmq.Producer
 }
 
 func NewUserProfileService(db *gorm.DB, validate *validator.Validate, logger *logrus.Logger, config *conf.Config,
@@ -40,6 +38,7 @@ func NewUserProfileService(db *gorm.DB, validate *validator.Validate, logger *lo
 		config:   config,
 		oss:      oss,
 	}
+	userProfileService.initUpdateUserProfileEventProducer()
 	userProfileService.startConsumeLoginEvent()
 	return userProfileService
 }
@@ -165,94 +164,12 @@ func (s *UserProfileService) UpdateProfile(req *userProfileModel.UpdateProfileRe
 		return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
 	}
 
-	// todo 用户信息更新事件
+	// 发送用户信息更新事件
+	s.sendProfileUpdateEvent(&mq.UpdateUserProfileEvent{
+		UserID:     req.UserID,
+		Action:     req.Action,
+		Value:      req.Value,
+		UpdateTime: uint64(time.Now().Unix()),
+	})
 	return &userProfileModel.UpdateProfileRsp{}, nil
-}
-
-// StartConsumeLoginEvent 消费登录事件
-func (s *UserProfileService) startConsumeLoginEvent() {
-	// 创建消费者
-	nameSrvAddr, err := primitive.NewNamesrvAddr(s.config.RocketMQ.NameSrvAddrs...)
-	if err != nil {
-		s.logger.Fatal(err)
-	}
-	c, err := rocketmq.NewPushConsumer(
-		consumer.WithNameServer(nameSrvAddr),
-		consumer.WithConsumerModel(consumer.Clustering),
-		consumer.WithGroupName(loginModel.LoginEventConsumerGroupName),
-	)
-	if err != nil {
-		s.logger.Fatal(err)
-	}
-
-	// 订阅登录事件
-	messageSelector := consumer.MessageSelector{
-		Type: consumer.TAG,
-		Expression: strings.Join([]string{string(loginModel.LoginEventTagLogin),
-			string(loginModel.LoginEventTagLogout)}, "||"),
-	}
-	receiveMessageCB := func(ctx context.Context, messages ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
-		s.consumeLoginEventMessages(messages)
-		return consumer.ConsumeSuccess, nil
-	}
-	if err := c.Subscribe(s.config.RocketMQ.Topic, messageSelector, receiveMessageCB); err != nil {
-		s.logger.Fatal(err)
-	}
-	if err := c.Start(); err != nil {
-		s.logger.Fatal(err)
-	}
-}
-
-// consumeLoginEventMessages 消费登录事件
-func (s *UserProfileService) consumeLoginEventMessages(messages []*primitive.MessageExt) {
-	for _, message := range messages {
-		switch message.GetTags() {
-		case string(loginModel.LoginEventTagLogin):
-			s.consumeLoginMessage(message)
-		case string(loginModel.LoginEventTagLogout):
-			s.consumeLogoutMessage(message)
-		default:
-			s.logger.WithField("message", message).Error("receive an unknown tag message")
-		}
-	}
-}
-
-// consumeLoginMessage 消费登录消息
-func (s *UserProfileService) consumeLoginMessage(message *primitive.MessageExt) {
-	// 解析登录事件
-	var loginEvent loginModel.LoginEvent
-	if err := json.Unmarshal(message.Body, &loginEvent); err != nil {
-		s.logger.WithFields(logrus.Fields{
-			"err":     err,
-			"message": message,
-		}).Error("unmarshal message exception")
-		return
-	}
-
-	// 更新最后一次登录时间
-	s.updateLastOnLineTime(loginEvent.UserID, loginEvent.LoginTime)
-}
-
-// consumeLogoutMessage 消费退出登录消息
-func (s *UserProfileService) consumeLogoutMessage(message *primitive.MessageExt) {
-	// 解析退出登录事件
-	var logoutEvent loginModel.LogoutEvent
-	if err := json.Unmarshal(message.Body, &logoutEvent); err != nil {
-		s.logger.WithFields(logrus.Fields{
-			"err":     err,
-			"message": message,
-		}).Error("unmarshal message exception")
-		return
-	}
-
-	// 更新最后一次登录时间
-	s.updateLastOnLineTime(logoutEvent.UserID, logoutEvent.LogoutTime)
-}
-
-// updateLastOnLineTime 更新最后一次登录时间
-func (s *UserProfileService) updateLastOnLineTime(userID uint64, lasOnLineTime uint64) {
-	if err := s.db.Model(&model.UserProfile{}).Where("user_id = ? and last_on_line_time < ?", userID,
-		lasOnLineTime).Update("last_on_line_time", lasOnLineTime).Error; err != nil {
-		s.logger.WithField("err", err).Error("db exception")
-	}
 }

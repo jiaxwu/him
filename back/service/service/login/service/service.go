@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/apache/rocketmq-client-go/v2"
-	"github.com/apache/rocketmq-client-go/v2/primitive"
-	"github.com/apache/rocketmq-client-go/v2/producer"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v8"
@@ -18,6 +16,7 @@ import (
 	"him/conf"
 	"him/model"
 	"him/service/common"
+	"him/service/mq"
 	"him/service/service/login/code"
 	loginModel "him/service/service/login/model"
 	smsModel "him/service/service/sms/model"
@@ -69,7 +68,7 @@ func (s *LoginService) Login(req *loginModel.LoginReq) (*loginModel.LoginRsp, co
 	}
 
 	// 发送登录事件
-	s.sendLoginEvent(&loginModel.LoginEvent{
+	s.sendLoginEvent(&mq.LoginEvent{
 		UserID:    rsp.UserID,
 		LoginTime: uint64(time.Now().Unix()),
 		LoginType: req.Type,
@@ -357,7 +356,7 @@ func (s *LoginService) Logout(req *loginModel.LogoutReq) (*loginModel.LogoutRsp,
 	}
 
 	// 发送退出登录事件
-	s.sendLogoutEvent(&loginModel.LogoutEvent{
+	s.sendLogoutEvent(&mq.LogoutEvent{
 		UserID:     req.UserID,
 		LogoutTime: uint64(time.Now().Unix()),
 	})
@@ -444,48 +443,4 @@ func (s *LoginService) tokenRedisKey(token string) string {
 // antiTokenRedisKey 反向Token Redis Key
 func (s *LoginService) antiTokenRedisKey(userID uint64) string {
 	return fmt.Sprintf("login:token:anti:%d", userID)
-}
-
-// sendLoginEvent 发送登录事件
-func (s *LoginService) sendLoginEvent(loginEvent *loginModel.LoginEvent) {
-	body, _ := json.Marshal(loginEvent)
-	message := primitive.NewMessage(s.config.RocketMQ.Topic, body).WithTag(string(loginModel.LoginEventTagLogin))
-	s.sendEventMessage(message)
-}
-
-// sendLogoutEvent 发送退出登录事件
-func (s *LoginService) sendLogoutEvent(logoutEvent *loginModel.LogoutEvent) {
-	body, _ := json.Marshal(logoutEvent)
-	message := primitive.NewMessage(s.config.RocketMQ.Topic, body).WithTag(string(loginModel.LoginEventTagLogout))
-	s.sendEventMessage(message)
-}
-
-// sendEventMessage 发送事件消息
-func (s *LoginService) sendEventMessage(message *primitive.Message) {
-	resCB := func(ctx context.Context, result *primitive.SendResult, err error) {
-		s.logger.WithField("res", result).Info("send message success")
-	}
-	if err := s.loginEventProducer.SendAsync(context.Background(), resCB, message); err != nil {
-		s.logger.WithField("err", err).Error("consumer message exception")
-	}
-}
-
-// initLoginEventProducer 初始化登录事件生产者
-func (s *LoginService) initLoginEventProducer() {
-	nameSrvAddr, err := primitive.NewNamesrvAddr(s.config.RocketMQ.NameSrvAddrs...)
-	if err != nil {
-		s.logger.Fatal(err)
-	}
-	p, err := rocketmq.NewProducer(
-		producer.WithNameServer(nameSrvAddr),
-		producer.WithRetry(2),
-		producer.WithGroupName(loginModel.LoginEventProducerGroupName),
-	)
-	if err != nil {
-		s.logger.Fatal(err)
-	}
-	if err := p.Start(); err != nil {
-		s.logger.Fatal(err)
-	}
-	s.loginEventProducer = p
 }

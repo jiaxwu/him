@@ -17,6 +17,6 @@ sms:
   smsSDKAppID: 1400597505
   signName: 小花师傅
 rocketMQ:
-  topic: LolmClient
+  topic: Him
   nameSrvAddrs:
     - 119.91.127.64:9876

@@ -16,6 +16,7 @@ type GetUserProfileRsp struct {
 	*UserProfile
 }
 
+// UpdateProfileAction 更新行为
 type UpdateProfileAction string
 
 const (
