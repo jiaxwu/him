@@ -43,7 +43,6 @@ func NewUserProfileService(db *gorm.DB, validate *validator.Validate, logger *lo
 	}
 	userProfileService.initCOS()
 	userProfileService.initUpdateUserProfileEventProducer()
-	userProfileService.startConsumeLoginEvent()
 	return userProfileService
 }
 
@@ -204,7 +203,7 @@ func (s *UserProfileService) UploadAvatar(req *userProfileModel.UploadAvatarReq)
 		return nil, common.NewError(code.CanNotOpenFile)
 	}
 	objectName := gofakeit.UUID()
-	if _, err := s.oss.Object.Put(context.Background(), objectName, avatar, &cos.ObjectPutOptions{
+	if _, err = s.oss.Object.Put(context.Background(), objectName, avatar, &cos.ObjectPutOptions{
 		ObjectPutHeaderOptions: &cos.ObjectPutHeaderOptions{
 			ContentType: contentType,
 		},

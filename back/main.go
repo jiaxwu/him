@@ -11,6 +11,7 @@ import (
 	loginHandler "him/service/service/login/handler"
 	loginService "him/service/service/login/service"
 	smsService "him/service/service/sms/service"
+	userProfileConsumer "him/service/service/user/user_profile/consumer"
 	userProfileHandler "him/service/service/user/user_profile/handler"
 	userProfileService "him/service/service/user/user_profile/service"
 	"him/service/wrapper"
@@ -38,6 +39,7 @@ func NewApp() *fx.App {
 		fx.Invoke(
 			loginHandler.RegisterLoginHandler,
 			userProfileHandler.RegisterUserProfileHandler,
+			userProfileConsumer.NewLoginEventConsumer,
 			server.Start,
 		),
 		fx.WithLogger(logger.NewFxEventLogger),
