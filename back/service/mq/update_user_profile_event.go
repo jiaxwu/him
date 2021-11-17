@@ -4,9 +4,9 @@ import "him/service/service/user/user_profile/model"
 
 const (
 	// UpdateUserProfileEventProducerGroupName 更新用户信息事件生产者群名
-	UpdateUserProfileEventProducerGroupName = "ProducerUpdateUserProfileEvent"
+	UpdateUserProfileEventProducerGroupName GroupName = "ProducerUpdateUserProfileEvent"
 	// UpdateUserProfileEventConsumerGroupName 更新用户信息事件消费者群名
-	UpdateUserProfileEventConsumerGroupName = "ConsumerUpdateUserProfileEvent"
+	UpdateUserProfileEventConsumerGroupName GroupName = "ConsumerUpdateUserProfileEvent"
 )
 
 // UpdateUserProfileEvent 更新用户信息事件

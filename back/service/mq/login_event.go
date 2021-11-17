@@ -4,9 +4,9 @@ import "him/service/service/login/model"
 
 const (
 	// LoginEventProducerGroupName 登录事件生产者群名
-	LoginEventProducerGroupName = "ProducerLoginEvent"
+	LoginEventProducerGroupName GroupName = "ProducerLoginEvent"
 	// LoginEventConsumerGroupName 登录事件消费者群名
-	LoginEventConsumerGroupName = "ConsumerLoginEvent"
+	LoginEventConsumerGroupName GroupName = "ConsumerLoginEvent"
 )
 
 type LoginEvent struct {

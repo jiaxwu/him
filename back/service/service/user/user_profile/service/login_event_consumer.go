@@ -22,7 +22,7 @@ func (s *UserProfileService) startConsumeLoginEvent() {
 	c, err := rocketmq.NewPushConsumer(
 		consumer.WithNameServer(nameSrvAddr),
 		consumer.WithConsumerModel(consumer.Clustering),
-		consumer.WithGroupName(mq.LoginEventConsumerGroupName),
+		consumer.WithGroupName(string(mq.LoginEventConsumerGroupName)),
 	)
 	if err != nil {
 		s.logger.Fatal(err)

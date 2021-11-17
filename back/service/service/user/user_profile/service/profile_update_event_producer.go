@@ -35,7 +35,7 @@ func (s *UserProfileService) initUpdateUserProfileEventProducer() {
 	p, err := rocketmq.NewProducer(
 		producer.WithNameServer(nameSrvAddr),
 		producer.WithRetry(2),
-		producer.WithGroupName(mq.UpdateUserProfileEventProducerGroupName),
+		producer.WithGroupName(string(mq.UpdateUserProfileEventProducerGroupName)),
 	)
 	if err != nil {
 		s.logger.Fatal(err)

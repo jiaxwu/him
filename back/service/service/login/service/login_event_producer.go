@@ -42,7 +42,7 @@ func (s *LoginService) initLoginEventProducer() {
 	p, err := rocketmq.NewProducer(
 		producer.WithNameServer(nameSrvAddr),
 		producer.WithRetry(2),
-		producer.WithGroupName(mq.LoginEventProducerGroupName),
+		producer.WithGroupName(string(mq.LoginEventProducerGroupName)),
 	)
 	if err != nil {
 		s.logger.Fatal(err)
