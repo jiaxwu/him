@@ -8,7 +8,7 @@ import (
 type Config struct {
 	MySQL    *MySQL
 	Redis    *Redis
-	OSS      *OSS
+	COS      *COS
 	Server   *Server
 	SMS      *SMS
 	RocketMQ *RocketMQ
@@ -38,11 +38,9 @@ type Redis struct {
 	Password string
 }
 
-type OSS struct {
-	Endpoint        string
-	AccessKeyID     string
-	SecretAccessKey string
-	BucketName      string
+type COS struct {
+	SecretID  string
+	SecretKey string
 }
 
 type Server struct {

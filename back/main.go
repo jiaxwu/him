@@ -5,7 +5,6 @@ import (
 	"him/conf"
 	"him/core/db"
 	"him/core/logger"
-	"him/core/oss"
 	"him/core/rdb"
 	"him/core/validate"
 	"him/service/server"
@@ -28,7 +27,6 @@ func NewApp() *fx.App {
 			validate.NewValidate,
 			conf.NewConf,
 			db.NewDB,
-			oss.NewOSS,
 			rdb.NewRDB,
 			server.NewEngine,
 			server.NewServer,

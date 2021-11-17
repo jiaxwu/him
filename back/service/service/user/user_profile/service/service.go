@@ -7,9 +7,9 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
+	"github.com/tencentyun/cos-go-sdk-v5"
 	"gorm.io/gorm"
 	"him/conf"
-	"him/core/oss"
 	"him/model"
 	"him/service/common"
 	"him/service/mq"
@@ -25,19 +25,19 @@ type UserProfileService struct {
 	validate                       *validator.Validate
 	logger                         *logrus.Logger
 	config                         *conf.Config
-	oss                            *oss.OSS
+	cos                            *cos.Client
 	updateUserProfileEventProducer rocketmq.Producer
 }
 
-func NewUserProfileService(db *gorm.DB, validate *validator.Validate, logger *logrus.Logger, config *conf.Config,
-	oss *oss.OSS) *UserProfileService {
+func NewUserProfileService(db *gorm.DB, validate *validator.Validate, logger *logrus.Logger,
+	config *conf.Config) *UserProfileService {
 	userProfileService := &UserProfileService{
 		db:       db,
 		validate: validate,
 		logger:   logger,
 		config:   config,
-		oss:      oss,
 	}
+	userProfileService.initCOS()
 	userProfileService.initUpdateUserProfileEventProducer()
 	userProfileService.startConsumeLoginEvent()
 	return userProfileService
@@ -172,4 +172,34 @@ func (s *UserProfileService) UpdateProfile(req *userProfileModel.UpdateProfileRe
 		UpdateTime: uint64(time.Now().Unix()),
 	})
 	return &userProfileModel.UpdateProfileRsp{}, nil
+}
+
+// UploadAvatar 上传头像
+func (s *UserProfileService) UploadAvatar(req *userProfileModel.UpdateProfileReq) (*userProfileModel.UpdateProfileRsp,
+	common.Error) {
+
+	//name := "test/objectPut.go"
+	//// 1.通过字符串上传对象
+	//f := strings.NewReader("312312")
+	//
+	//rsp, err := c.Object.Put(context.Background(), name, f, nil)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//fmt.Println(rsp)
+
+	panic("")
+}
+
+// 初始化cos sdk
+func (s *UserProfileService) initCOS() {
+	//u, _ := url.Parse("https://him-1256931327.cos.ap-beijing.myqcloud.com")
+	//b := &cos.BaseURL{BucketURL: u}
+	//c := cos.NewClient(b, &http.Client{
+	//	Transport: &cos.AuthorizationTransport{
+	//		SecretID:  "AKIDd5IEtHQItDG3ZomUv5yavzlGUR6UbR08",
+	//		SecretKey: "tVquhDSP5UdU4NPBgurXv2sSlqeCSR9a",
+	//	},
+	//})
+	fmt.Printf(s.config.COS.SecretKey)
 }
