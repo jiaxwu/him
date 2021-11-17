@@ -26,12 +26,12 @@ func NewLoginEventConsumer(db *gorm.DB, logger *logrus.Logger, config *conf.Conf
 		logger: logger,
 		config: config,
 	}
-	loginEventConsumer.startConsumeLoginEvent()
+	loginEventConsumer.start()
 	return loginEventConsumer
 }
 
-// StartConsumeLoginEvent 消费登录事件
-func (c *LoginEventConsumer) startConsumeLoginEvent() {
+// 开始消费登录事件
+func (c *LoginEventConsumer) start() {
 	// 创建消费者
 	nameSrvAddr, err := primitive.NewNamesrvAddr(c.config.RocketMQ.NameSrvAddrs...)
 	if err != nil {

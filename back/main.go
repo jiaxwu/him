@@ -16,6 +16,7 @@ import (
 	userProfileConsumer "him/service/service/user/user_profile/consumer"
 	userProfileHandler "him/service/service/user/user_profile/handler"
 	userProfileService "him/service/service/user/user_profile/service"
+	userProfileTask "him/service/service/user/user_profile/task"
 	"him/service/wrapper"
 )
 
@@ -60,6 +61,10 @@ func NewApp() *fx.App {
 			loginHandler.RegisterLoginHandler,
 			userProfileHandler.RegisterUserProfileHandler,
 			userProfileConsumer.NewLoginEventConsumer,
+			fx.Annotate(
+				userProfileTask.NewUserAvatarClearTask,
+				fx.ParamTags(`name:"UserAvatarBucketOSSClient"`),
+			),
 			server.Start,
 		),
 		fx.WithLogger(logger.NewFxEventLogger),
