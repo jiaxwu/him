@@ -24,4 +24,9 @@ func RegisterUserProfileHandler(engine *gin.Engine, userProfileService *service.
 		req.UserID = session.UserID
 		return userProfileService.UpdateProfile(req)
 	}, true, common.UserTypePlayer))
+
+	engine.POST("user/profile/avatar/upload", wrapper.Wrap(func(req *userProfileModel.UploadAvatarReq,
+		session *common.Session) (*userProfileModel.UploadAvatarRsp, common.Error) {
+		return userProfileService.UploadAvatar(req)
+	}, true, common.UserTypePlayer))
 }

@@ -5,6 +5,7 @@ import (
 	"him/service/common"
 	loginModel "him/service/service/login/model"
 	loginService "him/service/service/login/service"
+	"mime/multipart"
 	"reflect"
 )
 
@@ -84,11 +85,14 @@ func (w *Wrapper) getParamValue(fn reflect.Type, paramIndex int, c *gin.Context,
 	if reflect.TypeOf(&common.Session{}).AssignableTo(paramPointType) {
 		return session, nil
 	}
+	if reflect.TypeOf(&multipart.Form{}).AssignableTo(paramPointType) {
+		return c.MultipartForm()
+	}
 
 	// 否则必须是自定义struct，并从请求获取参数
 	reqStructType := paramPointType.Elem()
 	req := reflect.New(reqStructType)
-	if err := c.ShouldBindJSON(req.Interface()); err != nil {
+	if err := c.ShouldBind(req.Interface()); err != nil {
 		return nil, err
 	}
 	return req.Interface(), nil

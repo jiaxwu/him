@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/apache/rocketmq-client-go/v2"
@@ -14,8 +15,11 @@ import (
 	"him/service/common"
 	"him/service/mq"
 	"him/service/service/user/user_profile/code"
+	"him/service/service/user/user_profile/constant"
 	userProfileModel "him/service/service/user/user_profile/model"
 	"him/service/service/user/user_profile/util"
+	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -25,7 +29,7 @@ type UserProfileService struct {
 	validate                       *validator.Validate
 	logger                         *logrus.Logger
 	config                         *conf.Config
-	cos                            *cos.Client
+	oss                            *cos.Client
 	updateUserProfileEventProducer rocketmq.Producer
 }
 
@@ -175,31 +179,54 @@ func (s *UserProfileService) UpdateProfile(req *userProfileModel.UpdateProfileRe
 }
 
 // UploadAvatar 上传头像
-func (s *UserProfileService) UploadAvatar(req *userProfileModel.UpdateProfileReq) (*userProfileModel.UpdateProfileRsp,
+func (s *UserProfileService) UploadAvatar(req *userProfileModel.UploadAvatarReq) (*userProfileModel.UploadAvatarRsp,
 	common.Error) {
+	// 头像不能为空
+	if req.Avatar == nil {
+		return nil, common.NewError(code.InvalidParameterAvatarEmpty)
+	}
 
-	//name := "test/objectPut.go"
-	//// 1.通过字符串上传对象
-	//f := strings.NewReader("312312")
-	//
-	//rsp, err := c.Object.Put(context.Background(), name, f, nil)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//fmt.Println(rsp)
+	// 用户头像最大1MB
+	if req.Avatar.Size > constant.MaxUserAvatarSize {
+		return nil, common.NewError(code.InvalidParameterAvatarSize)
+	}
 
-	panic("")
+	// 检查头像类型
+	contentType := req.Avatar.Header.Get("Content-Type")
+	if constant.UserAvatarContentTypeToFileTypeMap[contentType] == "" {
+		return nil, common.NewError(code.InvalidParameterAvatarContentType)
+	}
+
+	// 上传头像
+	avatar, err := req.Avatar.Open()
+	if err != nil {
+		s.logger.WithField("err", err).Error("can not open file")
+		return nil, common.NewError(code.CanNotOpenFile)
+	}
+	objectName := gofakeit.UUID()
+	if _, err := s.oss.Object.Put(context.Background(), objectName, avatar, &cos.ObjectPutOptions{
+		ObjectPutHeaderOptions: &cos.ObjectPutHeaderOptions{
+			ContentType: contentType,
+		},
+	}); err != nil {
+		s.logger.WithField("err", err).Error("put object to cos exception")
+		return nil, common.WrapError(common.ErrCodeInternalErrorOSS, err)
+	}
+
+	return &userProfileModel.UploadAvatarRsp{
+		Avatar: constant.UserAvatarBucketURL + objectName,
+	}, nil
 }
 
 // 初始化cos sdk
 func (s *UserProfileService) initCOS() {
-	//u, _ := url.Parse("https://him-1256931327.cos.ap-beijing.myqcloud.com")
-	//b := &cos.BaseURL{BucketURL: u}
-	//c := cos.NewClient(b, &http.Client{
-	//	Transport: &cos.AuthorizationTransport{
-	//		SecretID:  "AKIDd5IEtHQItDG3ZomUv5yavzlGUR6UbR08",
-	//		SecretKey: "tVquhDSP5UdU4NPBgurXv2sSlqeCSR9a",
-	//	},
-	//})
-	fmt.Printf(s.config.COS.SecretKey)
+	bucketURL, _ := url.Parse(constant.UserAvatarBucketURL)
+	baseURL := &cos.BaseURL{BucketURL: bucketURL}
+	client := cos.NewClient(baseURL, &http.Client{
+		Transport: &cos.AuthorizationTransport{
+			SecretID:  s.config.COS.SecretID,
+			SecretKey: s.config.COS.SecretKey,
+		},
+	})
+	s.oss = client
 }

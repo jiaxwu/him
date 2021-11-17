@@ -9,7 +9,6 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v8"
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -199,7 +198,7 @@ func (s *LoginService) login(userID uint64) (*loginModel.LoginRsp, common.Error)
 	}
 
 	// 生成Token并添加到Redis
-	token := uuid.New().String()
+	token := gofakeit.UUID()
 	tokenKey := s.tokenRedisKey(token)
 	session := &common.Session{
 		UserID:   userID,
