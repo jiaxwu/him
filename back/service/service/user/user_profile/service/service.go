@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/apache/rocketmq-client-go/v2"
+	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
@@ -18,32 +20,29 @@ import (
 	"him/service/service/user/user_profile/constant"
 	userProfileModel "him/service/service/user/user_profile/model"
 	"him/service/service/user/user_profile/util"
-	"net/http"
-	"net/url"
 	"strings"
 	"time"
 )
 
 type UserProfileService struct {
-	db                             *gorm.DB
-	validate                       *validator.Validate
-	logger                         *logrus.Logger
-	config                         *conf.Config
-	oss                            *cos.Client
-	updateUserProfileEventProducer rocketmq.Producer
+	db                        *gorm.DB
+	validate                  *validator.Validate
+	logger                    *logrus.Logger
+	config                    *conf.Config
+	userAvatarBucketOSSClient *cos.Client
+	userProfileEventProducer  rocketmq.Producer
 }
 
-func NewUserProfileService(db *gorm.DB, validate *validator.Validate, logger *logrus.Logger,
-	config *conf.Config) *UserProfileService {
-	userProfileService := &UserProfileService{
-		db:       db,
-		validate: validate,
-		logger:   logger,
-		config:   config,
+func NewUserProfileService(userAvatarBucketOSSClient *cos.Client, userProfileEventProducer rocketmq.Producer,
+	db *gorm.DB, validate *validator.Validate, logger *logrus.Logger, config *conf.Config) *UserProfileService {
+	return &UserProfileService{
+		db:                        db,
+		validate:                  validate,
+		logger:                    logger,
+		config:                    config,
+		userAvatarBucketOSSClient: userAvatarBucketOSSClient,
+		userProfileEventProducer:  userProfileEventProducer,
 	}
-	userProfileService.initCOS()
-	userProfileService.initUpdateUserProfileEventProducer()
-	return userProfileService
 }
 
 // GetUserProfile 获取用户信息
@@ -203,7 +202,7 @@ func (s *UserProfileService) UploadAvatar(req *userProfileModel.UploadAvatarReq)
 		return nil, common.NewError(code.CanNotOpenFile)
 	}
 	objectName := gofakeit.UUID()
-	if _, err = s.oss.Object.Put(context.Background(), objectName, avatar, &cos.ObjectPutOptions{
+	if _, err = s.userAvatarBucketOSSClient.Object.Put(context.Background(), objectName, avatar, &cos.ObjectPutOptions{
 		ObjectPutHeaderOptions: &cos.ObjectPutHeaderOptions{
 			ContentType: contentType,
 		},
@@ -217,15 +216,19 @@ func (s *UserProfileService) UploadAvatar(req *userProfileModel.UploadAvatarReq)
 	}, nil
 }
 
-// 初始化cos sdk
-func (s *UserProfileService) initCOS() {
-	bucketURL, _ := url.Parse(constant.UserAvatarBucketURL)
-	baseURL := &cos.BaseURL{BucketURL: bucketURL}
-	client := cos.NewClient(baseURL, &http.Client{
-		Transport: &cos.AuthorizationTransport{
-			SecretID:  s.config.COS.SecretID,
-			SecretKey: s.config.COS.SecretKey,
-		},
-	})
-	s.oss = client
+// 发送用户信息更新事件
+func (s *UserProfileService) sendProfileUpdateEvent(event *mq.UpdateUserProfileEvent) {
+	body, _ := json.Marshal(event)
+	message := primitive.NewMessage(s.config.RocketMQ.Topic, body).WithTag(string(mq.TagUpdateUserProfileEvent))
+	s.sendEventMessage(message)
+}
+
+// sendEventMessage 发送事件消息
+func (s *UserProfileService) sendEventMessage(message *primitive.Message) {
+	resCB := func(ctx context.Context, result *primitive.SendResult, err error) {
+		s.logger.WithField("res", result).Info("send message success")
+	}
+	if err := s.userProfileEventProducer.SendAsync(context.Background(), resCB, message); err != nil {
+		s.logger.WithField("err", err).Error("consumer message exception")
+	}
 }

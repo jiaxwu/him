@@ -3,10 +3,10 @@ package mq
 import "him/service/service/user/user_profile/model"
 
 const (
-	// UpdateUserProfileEventProducerGroupName 更新用户信息事件生产者群名
-	UpdateUserProfileEventProducerGroupName GroupName = "ProducerUpdateUserProfileEvent"
-	// UpdateUserProfileEventConsumerGroupName 更新用户信息事件消费者群名
-	UpdateUserProfileEventConsumerGroupName GroupName = "ConsumerUpdateUserProfileEvent"
+	// UserProfileEventProducerGroupName 用户信息事件生产者群名
+	UserProfileEventProducerGroupName GroupName = "UserProfileEventProducer"
+	// UserProfileEventConsumerGroupName 用户信息事件消费者群名
+	UserProfileEventConsumerGroupName GroupName = "UserProfileEventConsumer"
 )
 
 // UpdateUserProfileEvent 更新用户信息事件

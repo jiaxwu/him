@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/apache/rocketmq-client-go/v2"
+	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v8"
@@ -33,18 +34,17 @@ type LoginService struct {
 	config             *conf.Config
 }
 
-func NewLoginService(db *gorm.DB, rdb *redis.Client, validate *validator.Validate, logger *logrus.Logger,
-	smsService *smsService.SMSService, config *conf.Config) *LoginService {
-	loginService := &LoginService{
-		db:         db,
-		rdb:        rdb,
-		validate:   validate,
-		logger:     logger,
-		smsService: smsService,
-		config:     config,
+func NewLoginService(loginEventProducer rocketmq.Producer, db *gorm.DB, rdb *redis.Client, validate *validator.Validate,
+	logger *logrus.Logger, smsService *smsService.SMSService, config *conf.Config) *LoginService {
+	return &LoginService{
+		db:                 db,
+		rdb:                rdb,
+		validate:           validate,
+		logger:             logger,
+		smsService:         smsService,
+		config:             config,
+		loginEventProducer: loginEventProducer,
 	}
-	loginService.initLoginEventProducer()
-	return loginService
 }
 
 // Login 登录
@@ -442,4 +442,28 @@ func (s *LoginService) tokenRedisKey(token string) string {
 // antiTokenRedisKey 反向Token Redis Key
 func (s *LoginService) antiTokenRedisKey(userID uint64) string {
 	return fmt.Sprintf("login:token:anti:%d", userID)
+}
+
+// sendLoginEvent 发送登录事件
+func (s *LoginService) sendLoginEvent(loginEvent *mq.LoginEvent) {
+	body, _ := json.Marshal(loginEvent)
+	message := primitive.NewMessage(s.config.RocketMQ.Topic, body).WithTag(string(mq.TagLoginEvent))
+	s.sendEventMessage(message)
+}
+
+// sendLogoutEvent 发送退出登录事件
+func (s *LoginService) sendLogoutEvent(logoutEvent *mq.LogoutEvent) {
+	body, _ := json.Marshal(logoutEvent)
+	message := primitive.NewMessage(s.config.RocketMQ.Topic, body).WithTag(string(mq.TagLogoutEvent))
+	s.sendEventMessage(message)
+}
+
+// sendEventMessage 发送事件消息
+func (s *LoginService) sendEventMessage(message *primitive.Message) {
+	resCB := func(ctx context.Context, result *primitive.SendResult, err error) {
+		s.logger.WithField("res", result).Info("send message success")
+	}
+	if err := s.loginEventProducer.SendAsync(context.Background(), resCB, message); err != nil {
+		s.logger.WithField("err", err).Error("consumer message exception")
+	}
 }
