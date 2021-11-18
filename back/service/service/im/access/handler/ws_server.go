@@ -32,7 +32,7 @@ func NewAccessHandler(engine *gin.Engine, wrapper *wrap.Wrapper, logger *logrus.
 			HandshakeTimeout: constant.WSHandshakeTimeout,
 			ReadBufferSize:   constant.WSReadBufferSize,
 			CheckOrigin:      newWSOriginChecker(),
-			Error:            newWSUpgraderErrorHandler(logger),
+			Error:            newWSUpgradeErrorHandler(logger),
 		},
 	}
 	engine.GET("/im", wrapper.Wrap(func(w http.ResponseWriter, r *http.Request) {

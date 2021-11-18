@@ -3,6 +3,6 @@ package code
 import "him/service/common"
 
 var (
-	InvalidProtocolWebsocket = common.NewErrCode("InvalidProtocol.Websocket", "the protocol not is Websocket",
-		"必须使用Websocket协议")
+	WebsocketUpgradeException = common.NewErrCode("Websocket.UpgradeException",
+		"the upgrade of websocket is exception", "升级到Websocket异常，请重试")
 )
