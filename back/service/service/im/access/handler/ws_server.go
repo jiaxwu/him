@@ -5,7 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
-	"him/service/common"
 	"him/service/service/im/access/constant"
 	"him/service/wrap"
 	"net/http"
@@ -36,17 +35,16 @@ func NewAccessHandler(engine *gin.Engine, wrapper *wrap.Wrapper, logger *logrus.
 			Error:            newWSUpgraderErrorHandler(logger),
 		},
 	}
-	engine.POST("/im", wrapper.Wrap(func(w http.ResponseWriter, r *http.Request, session *common.Session) {
+	engine.GET("/im", wrapper.Wrap(func(w http.ResponseWriter, r *http.Request) {
 		conn, err := server.upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			return
 		}
+
 		fmt.Println(conn)
 		//conn.WriteJSON("xxxxxx")
 	}, &wrap.Config{
-		UserTypes: []common.UserType{
-			common.UserTypePlayer,
-		},
+		NotNeedLogin:    true,
 		NotNeedResponse: true,
 	}))
 	return &server
