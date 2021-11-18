@@ -461,9 +461,9 @@ func (s *LoginService) sendLogoutEvent(logoutEvent *mq.LogoutEvent) {
 // sendEventMessage 发送事件消息
 func (s *LoginService) sendEventMessage(message *primitive.Message) {
 	resCB := func(ctx context.Context, result *primitive.SendResult, err error) {
-		s.logger.WithField("res", result).Info("send message success")
+		s.logger.WithField("res", result).Info("send im success")
 	}
 	if err := s.loginEventProducer.SendAsync(context.Background(), resCB, message); err != nil {
-		s.logger.WithField("err", err).Error("consumer message exception")
+		s.logger.WithField("err", err).Error("consumer im exception")
 	}
 }

@@ -73,7 +73,7 @@ func (c *LoginEventConsumer) consumeLoginEventMessages(messages []*primitive.Mes
 		case string(mq.TagLogoutEvent):
 			c.consumeLogoutMessage(message)
 		default:
-			c.logger.WithField("message", message).Error("receive an unknown tag message")
+			c.logger.WithField("im", message).Error("receive an unknown tag im")
 		}
 	}
 }
@@ -85,8 +85,8 @@ func (c *LoginEventConsumer) consumeLoginMessage(message *primitive.MessageExt) 
 	if err := json.Unmarshal(message.Body, &loginEvent); err != nil {
 		c.logger.WithFields(logrus.Fields{
 			"err":     err,
-			"message": message,
-		}).Error("unmarshal message exception")
+			"im": message,
+		}).Error("unmarshal im exception")
 		return
 	}
 
@@ -101,8 +101,8 @@ func (c *LoginEventConsumer) consumeLogoutMessage(message *primitive.MessageExt)
 	if err := json.Unmarshal(message.Body, &logoutEvent); err != nil {
 		c.logger.WithFields(logrus.Fields{
 			"err":     err,
-			"message": message,
-		}).Error("unmarshal message exception")
+			"im": message,
+		}).Error("unmarshal im exception")
 		return
 	}
 

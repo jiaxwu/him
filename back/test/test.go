@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"him/service/service/user/user_profile/constant"
-	"time"
 )
 
 func main() {
@@ -21,9 +19,18 @@ func main() {
 	//for _, avatar := range avatars {
 	//	fmt.Println(avatar[avatarHostLength:])
 	//}
-	parse, err := time.Parse("2006-01-02T15:04:05.000Z", "2020-12-10T03:37:30.000Z")
-	fmt.Println(err)
-	fmt.Println(parse.Unix())
-	fmt.Println(time.Now().Add(-constant.UserAvatarClearTaskAvatarExpireTime).Unix())
+	//parse, err := time.Parse("2006-01-02T15:04:05.000Z", "2020-12-10T03:37:30.000Z")
+	//fmt.Println(err)
+	//fmt.Println(parse.Unix())
+	//fmt.Println(time.Now().Add(-constant.UserAvatarClearTaskAvatarExpireTime).Unix())
+	fmt.Println(Get32Byte("吴嘉贤吴嘉贤吴嘉贤吴吴嘉贤吴嘉贤嘉贤"))
+}
 
+func Get32Byte(data string) []byte {
+	bytes32 := make([]byte, 32)
+	dataBytes := []byte(data)
+	for i := 0; i < 32 && i < len(dataBytes); i++ {
+		bytes32[i] = dataBytes[i]
+	}
+	return bytes32
 }
