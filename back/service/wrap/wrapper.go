@@ -1,4 +1,4 @@
-package wrapper
+package wrap
 
 import (
 	"github.com/gin-gonic/gin"
@@ -8,6 +8,13 @@ import (
 	"mime/multipart"
 	"reflect"
 )
+
+// Config 配置
+type Config struct {
+	NotNeedResponse bool              // 不需要响应
+	NotNeedLogin    bool              // 不需要登录
+	UserTypes       []common.UserType // 有权访问的用户类型
+}
 
 // Wrapper Handler的包装器
 type Wrapper struct {
@@ -22,14 +29,14 @@ func NewWrapper(loginService *loginService.LoginService) *Wrapper {
 }
 
 // Wrap 对handler进行包装，成为一个 func(*gin.Context) Handler
-func (w *Wrapper) Wrap(handler interface{}, isNeedLogin bool, userTypes ...common.UserType) func(*gin.Context) {
+func (w *Wrapper) Wrap(handler interface{}, config *Config) func(*gin.Context) {
 	return func(c *gin.Context) {
-		w.wrap(c, handler, isNeedLogin, userTypes...)
+		w.wrap(c, handler, config)
 	}
 }
 
 // wrap 抽象包装类
-func (w *Wrapper) wrap(c *gin.Context, handler interface{}, isNeedLogin bool, userTypes ...common.UserType) {
+func (w *Wrapper) wrap(c *gin.Context, handler interface{}, config *Config) {
 	// 获取header
 	var header common.Header
 	if err := c.ShouldBindHeader(&header); err != nil {
@@ -39,11 +46,11 @@ func (w *Wrapper) wrap(c *gin.Context, handler interface{}, isNeedLogin bool, us
 
 	// 如果需要登录则进行验证
 	var session *common.Session
-	if isNeedLogin {
+	if !config.NotNeedLogin {
 		// 获取session
 		authorizeRsp, err := w.loginService.Authorize(&loginModel.AuthorizeReq{
 			Token:     header.Token,
-			UserTypes: userTypes,
+			UserTypes: config.UserTypes,
 		})
 		if err != nil {
 			common.Failure(c, err)
@@ -67,6 +74,11 @@ func (w *Wrapper) wrap(c *gin.Context, handler interface{}, isNeedLogin bool, us
 	// 调用函数
 	rets := reflect.ValueOf(handler).Call(params)
 
+	// 不需要响应就直接返回
+	if config.NotNeedResponse {
+		return
+	}
+
 	// 结果处理
 	if !rets[1].IsNil() {
 		common.Failure(c, rets[1].Interface().(common.ErrCode))
@@ -87,6 +99,12 @@ func (w *Wrapper) getParamValue(fn reflect.Type, paramIndex int, c *gin.Context,
 	}
 	if reflect.TypeOf(&multipart.Form{}).AssignableTo(paramPointType) {
 		return c.MultipartForm()
+	}
+	if reflect.TypeOf(c.Writer).AssignableTo(paramPointType) {
+		return c.Writer, nil
+	}
+	if reflect.TypeOf(c.Request).AssignableTo(paramPointType) {
+		return c.Request, nil
 	}
 
 	// 否则必须是自定义struct，并从请求获取参数

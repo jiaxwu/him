@@ -8,6 +8,7 @@ import (
 	"him/conf/rdb"
 	"him/conf/validate"
 	"him/service/server"
+	imAccessHandler "him/service/service/im/access/handler"
 	loginConf "him/service/service/login/conf"
 	loginHandler "him/service/service/login/handler"
 	loginService "him/service/service/login/service"
@@ -17,7 +18,7 @@ import (
 	userProfileHandler "him/service/service/user/user_profile/handler"
 	userProfileService "him/service/service/user/user_profile/service"
 	userProfileTask "him/service/service/user/user_profile/task"
-	"him/service/wrapper"
+	"him/service/wrap"
 )
 
 func main() {
@@ -34,7 +35,7 @@ func NewApp() *fx.App {
 			rdb.NewRDB,
 			server.NewEngine,
 			server.NewServer,
-			wrapper.NewWrapper,
+			wrap.NewWrapper,
 			smsService.NewSMSService,
 			fx.Annotate(
 				loginConf.NewLoginEventProducer,
@@ -60,6 +61,7 @@ func NewApp() *fx.App {
 		fx.Invoke(
 			loginHandler.RegisterLoginHandler,
 			userProfileHandler.RegisterUserProfileHandler,
+			imAccessHandler.NewAccessHandler,
 			userProfileConsumer.NewLoginEventConsumer,
 			fx.Annotate(
 				userProfileTask.NewUserAvatarClearTask,

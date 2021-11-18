@@ -84,8 +84,8 @@ func (c *LoginEventConsumer) consumeLoginMessage(message *primitive.MessageExt) 
 	var loginEvent mq.LoginEvent
 	if err := json.Unmarshal(message.Body, &loginEvent); err != nil {
 		c.logger.WithFields(logrus.Fields{
-			"err":     err,
-			"im": message,
+			"err": err,
+			"im":  message,
 		}).Error("unmarshal im exception")
 		return
 	}
@@ -100,8 +100,8 @@ func (c *LoginEventConsumer) consumeLogoutMessage(message *primitive.MessageExt)
 	var logoutEvent mq.LogoutEvent
 	if err := json.Unmarshal(message.Body, &logoutEvent); err != nil {
 		c.logger.WithFields(logrus.Fields{
-			"err":     err,
-			"im": message,
+			"err": err,
+			"im":  message,
 		}).Error("unmarshal im exception")
 		return
 	}

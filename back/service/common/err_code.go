@@ -32,9 +32,9 @@ type ErrCode interface {
 
 // errCodeImpl 错误码实现
 type errCodeImpl struct {
-	Code_   string `json:"code"`
-	Msg_    string `json:"msg"`
-	Advice_ string `json:"advice"`
+	Code_   string `json:"Code"`
+	Msg_    string `json:"Msg"`
+	Advice_ string `json:"Advice"`
 }
 
 func (e *errCodeImpl) Code() string {

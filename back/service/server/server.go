@@ -27,5 +27,5 @@ func NewServer(engine *gin.Engine) *Server {
 
 // Start 启动服务器
 func Start(server *Server, logger *logrus.Logger, config *conf.Config) {
-	logger.WithField("msg", "server exit").Warn(server.engine.Run(config.Server.Addr))
+	logger.WithField("msg", "handler exit").Warn(server.engine.Run(config.Server.Addr))
 }

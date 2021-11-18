@@ -12,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"gorm.io/gorm"
+	httpHeaderKey "him/common/constant/http/header/key"
 	"him/conf"
 	"him/model"
 	"him/service/common"
@@ -190,7 +191,7 @@ func (s *UserProfileService) UploadAvatar(req *userProfileModel.UploadAvatarReq)
 	}
 
 	// 检查头像类型
-	contentType := req.Avatar.Header.Get("Content-Type")
+	contentType := req.Avatar.Header.Get(httpHeaderKey.ContentType)
 	if constant.UserAvatarContentTypeToFileTypeMap[contentType] == "" {
 		return nil, common.NewError(code.InvalidParameterAvatarContentType)
 	}
