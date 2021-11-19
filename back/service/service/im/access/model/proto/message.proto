@@ -1,0 +1,8 @@
+syntax = "proto3";
+package him;
+option go_package = "service/service/im/access/model/proto";
+
+
+message Test {
+  string Name = 1;
+}

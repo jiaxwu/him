@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus'
 import {Person} from '@/model/proto/person'
+import Reader from "protobufjs/minimal";
 import Long from 'long';
 
 const person = Person.encode({name:"xhsf", age: Long.MAX_VALUE}).finish()
