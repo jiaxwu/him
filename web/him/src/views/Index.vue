@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus'
+import {Person} from '@/model/proto/person'
+import Long from 'long';
 
+const person = Person.encode({name:"xhsf", age: Long.MAX_VALUE}).finish()
+console.log(person)
+const pe = Person.decode(person);
+console.log(Person.toJSON(pe))
 
 // const msg = ref('111')
 var ws = new WebSocket("ws://localhost:8080/im"); 
-// socket("ws://localhost:8080/im", {
-//   extraHeaders: {
-//     Authorization: "Bearer authorization_token_here"
-//   }
-// });
 
 //申请一个WebSocket对象，参数是服务端地址，同http协议使用http://开头一样，WebSocket协议的url使用ws://开头，另外安全的WebSocket协议使用wss://开头
 ws.onopen = function(){
