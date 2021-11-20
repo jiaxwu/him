@@ -24,7 +24,7 @@ func RegisterLoginHandler(engine *gin.Engine, loginService *service.LoginService
 		return loginService.Logout(req)
 	}, &wrap.Config{
 		UserTypes: []common.UserType{
-			common.UserTypePlayer,
+			common.UserTypeUser,
 		},
 	}))
 
@@ -34,7 +34,7 @@ func RegisterLoginHandler(engine *gin.Engine, loginService *service.LoginService
 		return loginService.BindPasswordLogin(req)
 	}, &wrap.Config{
 		UserTypes: []common.UserType{
-			common.UserTypePlayer,
+			common.UserTypeUser,
 		},
 	}))
 }

@@ -9,8 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"him/conf"
-	"him/model"
 	"him/service/mq"
+	"him/service/service/user/profile/db"
 	"strings"
 )
 
@@ -112,7 +112,7 @@ func (c *LoginEventConsumer) consumeLogoutMessage(message *primitive.MessageExt)
 
 // updateLastOnLineTime 更新最后一次登录时间
 func (c *LoginEventConsumer) updateLastOnLineTime(userID uint64, lasOnLineTime uint64) {
-	if err := c.db.Model(&model.UserProfile{}).Where("user_id = ? and last_on_line_time < ?", userID,
+	if err := c.db.Model(&db.UserProfile{}).Where("user_id = ? and last_on_line_time < ?", userID,
 		lasOnLineTime).Update("last_on_line_time", lasOnLineTime).Error; err != nil {
 		c.logger.WithField("err", err).Error("db exception")
 	}

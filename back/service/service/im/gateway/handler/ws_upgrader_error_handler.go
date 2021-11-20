@@ -6,7 +6,7 @@ import (
 	httpHeaderKey "him/common/constant/http/header/key"
 	httpHeaderValue "him/common/constant/http/header/value"
 	"him/service/common"
-	"him/service/service/im/access/code"
+	"him/service/service/im/gateway/code"
 	"net/http"
 )
 

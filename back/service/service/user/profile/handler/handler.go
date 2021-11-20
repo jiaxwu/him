@@ -3,8 +3,8 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"him/service/common"
-	userProfileModel "him/service/service/user/user_profile/model"
-	"him/service/service/user/user_profile/service"
+	userProfileModel "him/service/service/user/profile/model"
+	"him/service/service/user/profile/service"
 	"him/service/wrap"
 )
 
@@ -12,7 +12,7 @@ func RegisterUserProfileHandler(engine *gin.Engine, userProfileService *service.
 	wrapper *wrap.Wrapper) {
 	engine.POST("user/profile/get", wrapper.Wrap(userProfileService.GetUserProfile, &wrap.Config{
 		UserTypes: []common.UserType{
-			common.UserTypePlayer,
+			common.UserTypeUser,
 		},
 	}))
 
@@ -22,7 +22,7 @@ func RegisterUserProfileHandler(engine *gin.Engine, userProfileService *service.
 		return userProfileService.GetUserProfile(req)
 	}, &wrap.Config{
 		UserTypes: []common.UserType{
-			common.UserTypePlayer,
+			common.UserTypeUser,
 		},
 	}))
 
@@ -32,13 +32,13 @@ func RegisterUserProfileHandler(engine *gin.Engine, userProfileService *service.
 		return userProfileService.UpdateProfile(req)
 	}, &wrap.Config{
 		UserTypes: []common.UserType{
-			common.UserTypePlayer,
+			common.UserTypeUser,
 		},
 	}))
 
 	engine.POST("user/profile/avatar/upload", wrapper.Wrap(userProfileService.UploadAvatar, &wrap.Config{
 		UserTypes: []common.UserType{
-			common.UserTypePlayer,
+			common.UserTypeUser,
 		},
 	}))
 }

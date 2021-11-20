@@ -17,8 +17,8 @@ func GenNickName() string {
 var adjectives = MustReadJSONFileToStringSlice(adjectivesFileName)
 var nouns = MustReadJSONFileToStringSlice(nounsFileName)
 
-const adjectivesFileName = "service/service/user/user_profile/util/adjectives.json"
-const nounsFileName = "service/service/user/user_profile/util/nouns.json"
+const adjectivesFileName = "service/service/user/profile/util/adjectives.json"
+const nounsFileName = "service/service/user/profile/util/nouns.json"
 
 // MustReadJSONFileToStringSlice 从JSON文件中读取字符串数组
 func MustReadJSONFileToStringSlice(filename string) []string {

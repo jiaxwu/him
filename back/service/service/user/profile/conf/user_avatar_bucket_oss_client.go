@@ -3,7 +3,7 @@ package conf
 import (
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"him/conf"
-	"him/service/service/user/user_profile/constant"
+	"him/service/service/user/profile/constant"
 	"net/http"
 	"net/url"
 )

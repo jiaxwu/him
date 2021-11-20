@@ -1,4 +1,4 @@
-package model
+package db
 
 // PasswordLogin 密码登录
 type PasswordLogin struct {
@@ -17,3 +17,4 @@ type PhoneLogin struct {
 	CreatedAt uint64 `gorm:"not null; index"`
 	UpdatedAt uint64 `gorm:"not null; index"`
 }
+

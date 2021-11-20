@@ -1,6 +1,6 @@
 package mq
 
-import "him/service/service/user/user_profile/model"
+import "him/service/service/user/profile/model"
 
 const (
 	// UserProfileEventProducerGroupName 用户信息事件生产者群名

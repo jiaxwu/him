@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
-	"him/service/service/im/access/constant"
+	"him/service/service/im/gateway/constant"
 	"him/service/wrap"
 	"net/http"
 	"sync"
@@ -23,8 +23,8 @@ type Handler struct {
 	userToConn map[string]*Conn
 }
 
-// NewAccessHandler 创建一个长连接入口
-func NewAccessHandler(engine *gin.Engine, wrapper *wrap.Wrapper, logger *logrus.Logger) *Handler {
+// NewGatewayHandler 创建一个长连接入口
+func NewGatewayHandler(engine *gin.Engine, wrapper *wrap.Wrapper, logger *logrus.Logger) *Handler {
 	server := Handler{
 		connToUser: make(map[*Conn]string),
 		userToConn: make(map[string]*Conn),

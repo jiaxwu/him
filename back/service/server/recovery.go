@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"him/conf/logger"
+	"him/common/logger"
 	"him/service/common"
 )
 

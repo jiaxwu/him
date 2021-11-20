@@ -14,13 +14,14 @@ import (
 	"gorm.io/gorm"
 	httpHeaderKey "him/common/constant/http/header/key"
 	"him/conf"
-	"him/model"
 	"him/service/common"
 	"him/service/mq"
-	"him/service/service/user/user_profile/code"
-	"him/service/service/user/user_profile/constant"
-	userProfileModel "him/service/service/user/user_profile/model"
-	"him/service/service/user/user_profile/util"
+	loginDB "him/service/service/login/db"
+	"him/service/service/user/profile/code"
+	"him/service/service/user/profile/constant"
+	"him/service/service/user/profile/db"
+	"him/service/service/user/profile/model"
+	"him/service/service/user/profile/util"
 	"strings"
 	"time"
 )
@@ -47,9 +48,9 @@ func NewUserProfileService(userAvatarBucketOSSClient *cos.Client, userProfileEve
 }
 
 // GetUserProfile 获取用户信息
-func (s *UserProfileService) GetUserProfile(req *userProfileModel.GetUserProfileReq) (
-	*userProfileModel.GetUserProfileRsp, common.Error) {
-	var userProfile model.UserProfile
+func (s *UserProfileService) GetUserProfile(req *model.GetUserProfileReq) (
+	*model.GetUserProfileRsp, common.Error) {
+	var userProfile db.UserProfile
 	err := s.db.Where("user_id = ?", req.UserID).Take(&userProfile).Error
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		s.logger.WithField("err", err).Error("db exception")
@@ -57,7 +58,7 @@ func (s *UserProfileService) GetUserProfile(req *userProfileModel.GetUserProfile
 	}
 
 	// 如果查询不到用户信息，先进行初始化
-	var rsp userProfileModel.GetUserProfileRsp
+	var rsp model.GetUserProfileRsp
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		userProfile, err := s.initUserProfile(req.UserID)
 		if err != nil {
@@ -67,7 +68,7 @@ func (s *UserProfileService) GetUserProfile(req *userProfileModel.GetUserProfile
 	} else
 	// 如果查询得到直接返回
 	{
-		rsp.UserProfile = &userProfileModel.UserProfile{
+		rsp.UserProfile = &model.UserProfile{
 			UserID:         userProfile.UserID,
 			Username:       userProfile.Username,
 			NickName:       userProfile.NickName,
@@ -80,10 +81,10 @@ func (s *UserProfileService) GetUserProfile(req *userProfileModel.GetUserProfile
 }
 
 // initUserProfile 初始化用户信息
-func (s *UserProfileService) initUserProfile(userID uint64) (*userProfileModel.UserProfile, common.Error) {
+func (s *UserProfileService) initUserProfile(userID uint64) (*model.UserProfile, common.Error) {
 	// 判断用户是否存在
 	var count int64
-	if err := s.db.Model(&model.User{}).Where("id = ?", userID).Count(&count).Error; err != nil {
+	if err := s.db.Model(&loginDB.User{}).Where("id = ?", userID).Count(&count).Error; err != nil {
 		s.logger.WithField("err", err).Error("db exception")
 		return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
 	}
@@ -92,13 +93,13 @@ func (s *UserProfileService) initUserProfile(userID uint64) (*userProfileModel.U
 	}
 
 	// 判断是否已经初始化了
-	if err := s.db.Model(&model.UserProfile{}).Where("user_id = ?", userID).Count(&count).Error; err != nil {
+	if err := s.db.Model(&db.UserProfile{}).Where("user_id = ?", userID).Count(&count).Error; err != nil {
 		s.logger.WithField("err", err).Error("db exception")
 		return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
 	}
 
 	// 用户已经初始化则直接查询返回
-	var userProfile model.UserProfile
+	var userProfile db.UserProfile
 	if count > 0 {
 		if err := s.db.Where("user_id = ?", userID).Take(&userProfile).Error; err != nil {
 			s.logger.WithField("err", err).Error("db exception")
@@ -116,7 +117,7 @@ func (s *UserProfileService) initUserProfile(userID uint64) (*userProfileModel.U
 		}
 	}
 
-	return &userProfileModel.UserProfile{
+	return &model.UserProfile{
 		UserID:         userProfile.UserID,
 		Username:       userProfile.Username,
 		NickName:       userProfile.NickName,
@@ -126,26 +127,26 @@ func (s *UserProfileService) initUserProfile(userID uint64) (*userProfileModel.U
 }
 
 // UpdateProfile 更新个人信息
-func (s *UserProfileService) UpdateProfile(req *userProfileModel.UpdateProfileReq) (*userProfileModel.UpdateProfileRsp,
+func (s *UserProfileService) UpdateProfile(req *model.UpdateProfileReq) (*model.UpdateProfileRsp,
 	common.Error) {
 	// 判断更新类型是否支持
-	column := userProfileModel.UpdateProfileActionToDBColumnMap[req.Action]
+	column := model.UpdateProfileActionToDBColumnMap[req.Action]
 	if column == "" {
 		return nil, common.NewError(common.ErrCodeInvalidParameter)
 	}
 
 	// 参数校验
-	if req.Action == userProfileModel.UpdateProfileActionAvatar {
+	if req.Action == model.UpdateProfileActionAvatar {
 		if len(req.Value) > 200 {
 			return nil, common.NewError(code.InvalidParameterAvatarLength)
 		}
 	}
-	if req.Action == userProfileModel.UpdateProfileActionUsername {
+	if req.Action == model.UpdateProfileActionUsername {
 		if len(req.Value) < 4 || len(req.Value) > 30 {
 			return nil, common.NewError(code.InvalidParameterUsernameLength)
 		}
 		var count int64
-		if err := s.db.Model(&model.UserProfile{}).Where("username = ?", req.Value).
+		if err := s.db.Model(&db.UserProfile{}).Where("username = ?", req.Value).
 			Count(&count).Error; err != nil {
 			s.logger.WithField("err", err).Error("db exception")
 			return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
@@ -154,14 +155,14 @@ func (s *UserProfileService) UpdateProfile(req *userProfileModel.UpdateProfileRe
 			return nil, common.NewError(code.ExistsUsername)
 		}
 	}
-	if req.Action == userProfileModel.UpdateProfileActionNickName {
+	if req.Action == model.UpdateProfileActionNickName {
 		if len(req.Value) < 2 || len(req.Value) > 10 {
 			return nil, common.NewError(code.InvalidParameterNickNameLength)
 		}
 	}
 
 	// 更新参数
-	if err := s.db.Model(&model.UserProfile{}).Where("user_id = ?", req.UserID).
+	if err := s.db.Model(&db.UserProfile{}).Where("user_id = ?", req.UserID).
 		Update(column, req.Value).Error; err != nil {
 		s.logger.WithField("err", err).Error("db exception")
 		return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
@@ -174,11 +175,11 @@ func (s *UserProfileService) UpdateProfile(req *userProfileModel.UpdateProfileRe
 		Value:      req.Value,
 		UpdateTime: uint64(time.Now().Unix()),
 	})
-	return &userProfileModel.UpdateProfileRsp{}, nil
+	return &model.UpdateProfileRsp{}, nil
 }
 
 // UploadAvatar 上传头像
-func (s *UserProfileService) UploadAvatar(req *userProfileModel.UploadAvatarReq) (*userProfileModel.UploadAvatarRsp,
+func (s *UserProfileService) UploadAvatar(req *model.UploadAvatarReq) (*model.UploadAvatarRsp,
 	common.Error) {
 	// 头像不能为空
 	if req.Avatar == nil {
@@ -212,7 +213,7 @@ func (s *UserProfileService) UploadAvatar(req *userProfileModel.UploadAvatarReq)
 		return nil, common.WrapError(common.ErrCodeInternalErrorOSS, err)
 	}
 
-	return &userProfileModel.UploadAvatarRsp{
+	return &model.UploadAvatarRsp{
 		Avatar: constant.UserAvatarBucketURL + objectName,
 	}, nil
 }

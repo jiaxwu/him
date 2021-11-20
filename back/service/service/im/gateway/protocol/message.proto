@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package him;
+
+option go_package = "service/service/im/gateway/model/protocol";
+
+// 请求
+message Request {
+    Header Header = 1;
+    bytes Body = 2;
+}
+
+// 请求类型
+enum RequestType {
+    Unknown = 0; // 未知
+    SendMessage = 1; // 发送消息
+}
+
+// 请求版本
+enum RequestVersion {
+    Unknown = 0; // 未知
+    VVV = 1; // 第一个版本
+}
+
+// 请求头
+message Header {
+    RequestType RequestType = 1; // 请求的类型
+    RequestVersion RequestVersion = 2; // 请求的版本
+    uint32 CorrelationID = 3; // 请求唯一标识
+}
+
+// 消息类型
+enum MessageType {
+    Unknown = 0; // 未知
+    Text = 1; // 文字
+    Image = 2; // 图片
+}
+
+
+
+// 发送消息
+message SendMessage {
+    MessageType Type = 1; // 消息类型
+
+    uint64 ReceiverID = 2; // 接收者编号
+    bytes Content = 3; // 消息内容
+}
+
+
+
+//        PullMsg
+//
+//        GetNewestSeq
+//
+//        PullMsgBySeqList

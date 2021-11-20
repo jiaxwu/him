@@ -7,7 +7,9 @@ import (
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 	"him/conf"
-	"him/model"
+	loginDB "him/service/service/login/db"
+	userProfileDB "him/service/service/user/profile/db"
+	model2 "him/test/model"
 )
 
 func NewDB(log *logrus.Logger, config *conf.Config) *gorm.DB {
@@ -26,9 +28,9 @@ func NewDB(log *logrus.Logger, config *conf.Config) *gorm.DB {
 	if err != nil {
 		log.Fatal("打开数据库失败", err)
 	}
-	if err := db.AutoMigrate(model.User{}, model.UserProfile{}, model.Wallet{}, model.Trade{}, model.Friend{},
-		model.ChatChannel{}, model.ChatChannelSubscribe{}, model.Message{}, model.UnAckMessage{},
-		model.PasswordLogin{}, model.PhoneLogin{}, model.Announcement{}); err != nil {
+	if err := db.AutoMigrate(loginDB.User{}, userProfileDB.UserProfile{}, model2.Wallet{}, model2.Trade{},
+		model2.Friend{}, model2.ChatChannel{}, model2.ChatChannelSubscribe{}, model2.Message{}, model2.UnAckMessage{},
+		loginDB.PasswordLogin{}, loginDB.PhoneLogin{}, model2.Announcement{}); err != nil {
 		log.Fatal("自动迁移数据库失败", err)
 	}
 	return db

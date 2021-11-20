@@ -2,22 +2,22 @@ package main
 
 import (
 	"go.uber.org/fx"
+	"him/common/db"
+	logger2 "him/common/logger"
+	"him/common/rdb"
+	"him/common/validate"
 	"him/conf"
-	"him/conf/db"
-	"him/conf/logger"
-	"him/conf/rdb"
-	"him/conf/validate"
 	"him/service/server"
-	imAccessHandler "him/service/service/im/access/handler"
+	imGatewayHandler "him/service/service/im/gateway/handler"
 	loginConf "him/service/service/login/conf"
 	loginHandler "him/service/service/login/handler"
 	loginService "him/service/service/login/service"
 	smsService "him/service/service/sms/service"
-	userProfileConf "him/service/service/user/user_profile/conf"
-	userProfileConsumer "him/service/service/user/user_profile/consumer"
-	userProfileHandler "him/service/service/user/user_profile/handler"
-	userProfileService "him/service/service/user/user_profile/service"
-	userProfileTask "him/service/service/user/user_profile/task"
+	userProfileConf "him/service/service/user/profile/conf"
+	userProfileConsumer "him/service/service/user/profile/consumer"
+	userProfileHandler "him/service/service/user/profile/handler"
+	userProfileService "him/service/service/user/profile/service"
+	userProfileTask "him/service/service/user/profile/task"
 	"him/service/wrap"
 )
 
@@ -28,7 +28,7 @@ func main() {
 func NewApp() *fx.App {
 	return fx.New(
 		fx.Provide(
-			logger.NewLogger,
+			logger2.NewLogger,
 			validate.NewValidate,
 			conf.NewConf,
 			db.NewDB,
@@ -61,7 +61,7 @@ func NewApp() *fx.App {
 		fx.Invoke(
 			loginHandler.RegisterLoginHandler,
 			userProfileHandler.RegisterUserProfileHandler,
-			imAccessHandler.NewAccessHandler,
+			imGatewayHandler.NewGatewayHandler,
 			userProfileConsumer.NewLoginEventConsumer,
 			fx.Annotate(
 				userProfileTask.NewUserAvatarClearTask,
@@ -69,6 +69,6 @@ func NewApp() *fx.App {
 			),
 			server.Start,
 		),
-		fx.WithLogger(logger.NewFxEventLogger),
+		fx.WithLogger(logger2.NewFxEventLogger),
 	)
 }

@@ -7,8 +7,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"gorm.io/gorm"
-	"him/model"
-	"him/service/service/user/user_profile/constant"
+	"him/service/service/user/profile/constant"
+	"him/service/service/user/profile/db"
 	"log"
 	"time"
 )
@@ -64,7 +64,7 @@ func (t *UserAvatarClearTask) clear() {
 func (t *UserAvatarClearTask) getBloom() *bloom.BloomFilter {
 	filter := bloom.NewWithEstimates(constant.UserAvatarClearTaskBloomLength, constant.UserAvatarClearTaskBloomFP)
 	var avatars []string
-	if err := t.db.Model(&model.UserProfile{}).Select("avatar").Find(&avatars).Error; err != nil {
+	if err := t.db.Model(&db.UserProfile{}).Select("avatar").Find(&avatars).Error; err != nil {
 		log.Fatal(err)
 	}
 	avatarHostLength := len(constant.UserAvatarBucketURL)

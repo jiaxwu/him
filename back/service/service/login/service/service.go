@@ -14,11 +14,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"him/conf"
-	"him/model"
 	"him/service/common"
 	"him/service/mq"
 	"him/service/service/login/code"
-	loginModel "him/service/service/login/model"
+	"him/service/service/login/db"
+	"him/service/service/login/model"
 	smsModel "him/service/service/sms/model"
 	smsService "him/service/service/sms/service"
 	"time"
@@ -48,15 +48,15 @@ func NewLoginService(loginEventProducer rocketmq.Producer, db *gorm.DB, rdb *red
 }
 
 // Login 登录
-func (s *LoginService) Login(req *loginModel.LoginReq) (*loginModel.LoginRsp, common.Error) {
+func (s *LoginService) Login(req *model.LoginReq) (*model.LoginRsp, common.Error) {
 	var (
-		rsp *loginModel.LoginRsp
+		rsp *model.LoginRsp
 		err common.Error
 	)
-	if req.Type == loginModel.LoginTypeSMS {
+	if req.Type == model.LoginTypeSMS {
 		// sms登录
 		rsp, err = s.loginBySMS(req.Phone, req.AuthCode)
-	} else if req.Type == loginModel.LoginTypePwd {
+	} else if req.Type == model.LoginTypePwd {
 		// pwd登录
 		rsp, err = s.loginByPwd(req.Username, req.Password)
 	} else {
@@ -77,7 +77,7 @@ func (s *LoginService) Login(req *loginModel.LoginReq) (*loginModel.LoginRsp, co
 }
 
 // 短信验证码登录
-func (s *LoginService) loginBySMS(phone, authCode string) (*loginModel.LoginRsp, common.Error) {
+func (s *LoginService) loginBySMS(phone, authCode string) (*model.LoginRsp, common.Error) {
 	// 验证手机号码和验证码格式
 	var req = struct {
 		Phone    string `validate:"required,phone"`
@@ -114,9 +114,9 @@ func (s *LoginService) loginBySMS(phone, authCode string) (*loginModel.LoginRsp,
 }
 
 // loginByPhone 通过手机登录
-func (s LoginService) loginByPhone(phone string) (*loginModel.LoginRsp, common.Error) {
+func (s LoginService) loginByPhone(phone string) (*model.LoginRsp, common.Error) {
 	// 获取用户编号
-	phoneLogin := model.PhoneLogin{
+	phoneLogin := db.PhoneLogin{
 		Phone: phone,
 	}
 	err := s.db.Where(&phoneLogin).Take(&phoneLogin).Error
@@ -137,9 +137,9 @@ func (s LoginService) loginByPhone(phone string) (*loginModel.LoginRsp, common.E
 }
 
 // 密码登录
-func (s *LoginService) loginByPwd(username, password string) (*loginModel.LoginRsp, common.Error) {
+func (s *LoginService) loginByPwd(username, password string) (*model.LoginRsp, common.Error) {
 	// 获取对应的用户
-	phoneLogin := model.PhoneLogin{
+	phoneLogin := db.PhoneLogin{
 		Phone: username,
 	}
 	err := s.db.Where(&phoneLogin).Take(&phoneLogin).Error
@@ -152,7 +152,7 @@ func (s *LoginService) loginByPwd(username, password string) (*loginModel.LoginR
 	}
 
 	// 获取密码
-	passwordLogin := model.PasswordLogin{
+	passwordLogin := db.PasswordLogin{
 		UserID: phoneLogin.UserID,
 	}
 	err = s.db.Where(&passwordLogin).Take(&passwordLogin).Error
@@ -173,9 +173,9 @@ func (s *LoginService) loginByPwd(username, password string) (*loginModel.LoginR
 }
 
 // login 登录
-func (s *LoginService) login(userID uint64) (*loginModel.LoginRsp, common.Error) {
+func (s *LoginService) login(userID uint64) (*model.LoginRsp, common.Error) {
 	// 获取用户类型
-	var user model.User
+	var user db.User
 	if err := s.db.Take(&user).Error; err != nil {
 		return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
 	}
@@ -206,33 +206,33 @@ func (s *LoginService) login(userID uint64) (*loginModel.LoginRsp, common.Error)
 	}
 	sessionBytes, _ := json.Marshal(session)
 	// 先插入反向Token
-	if err := s.rdb.Set(context.Background(), antiKey, token, loginModel.TokenExp).Err(); err != nil {
+	if err := s.rdb.Set(context.Background(), antiKey, token, model.TokenExp).Err(); err != nil {
 		s.logger.WithField("err", err).Error("rdb exception")
 		return nil, common.WrapError(common.ErrCodeInternalErrorRDB, err)
 	}
 	// 再插入正向token
-	if err := s.rdb.Set(context.Background(), tokenKey, sessionBytes, loginModel.TokenExp).Err(); err != nil {
+	if err := s.rdb.Set(context.Background(), tokenKey, sessionBytes, model.TokenExp).Err(); err != nil {
 		s.logger.WithField("err", err).Error("rdb exception")
 		return nil, common.WrapError(common.ErrCodeInternalErrorRDB, err)
 	}
 
-	return &loginModel.LoginRsp{
+	return &model.LoginRsp{
 		Token:  token,
 		UserID: userID,
 	}, nil
 }
 
 // SendSMSForLogin 发送登录需要的短信验证码
-func (s *LoginService) SendSMSForLogin(req *loginModel.SendSMSForLoginReq) (
-	*loginModel.SendSMSForLoginRsp, common.Error) {
+func (s *LoginService) SendSMSForLogin(req *model.SendSMSForLoginReq) (
+	*model.SendSMSForLoginRsp, common.Error) {
 	if err := s.validate.Struct(req); err != nil {
 		return nil, common.NewError(common.ErrCodeInvalidParameter)
 	}
 
 	// 把验证码加到缓存
-	authCode := gofakeit.DigitN(loginModel.SMSAuthCodeLen)
+	authCode := gofakeit.DigitN(model.SMSAuthCodeLen)
 	key := s.smsAuthCodeRedisKeyForLogin(req.Phone)
-	expireTime := loginModel.SMSAuthCodeExpMinute * time.Minute
+	expireTime := model.SMSAuthCodeExpMinute * time.Minute
 	if err := s.rdb.Set(context.Background(), key, authCode, expireTime).Err(); err != nil {
 		s.logger.WithField("err", err).Error("rdb exception")
 		return nil, common.WrapError(common.ErrCodeInternalErrorRDB, err)
@@ -242,18 +242,18 @@ func (s *LoginService) SendSMSForLogin(req *loginModel.SendSMSForLoginReq) (
 	if _, err := s.smsService.SendAuthCodeForLogin(&smsModel.SendAuthCodeForLoginReq{
 		Phone:     req.Phone,
 		AuthCode:  authCode,
-		ExpMinute: loginModel.SMSAuthCodeExpMinute,
+		ExpMinute: model.SMSAuthCodeExpMinute,
 	}); err != nil {
 		return nil, err
 	}
 
-	return &loginModel.SendSMSForLoginRsp{}, nil
+	return &model.SendSMSForLoginRsp{}, nil
 }
 
 // 注册账号
 func (s *LoginService) register(phone string) (uint64, common.Error) {
-	var user = model.User{
-		Type:         uint8(common.UserTypePlayer),
+	var user = db.User{
+		Type:         uint8(common.UserTypeUser),
 		RegisteredAt: uint64(time.Now().Unix()),
 	}
 	if err := s.db.Transaction(func(tx *gorm.DB) error {
@@ -263,7 +263,7 @@ func (s *LoginService) register(phone string) (uint64, common.Error) {
 		}
 
 		// 创建手机登录
-		if err := tx.Create(&model.PhoneLogin{
+		if err := tx.Create(&db.PhoneLogin{
 			UserID: user.ID,
 			Phone:  phone,
 		}).Error; err != nil {
@@ -279,15 +279,15 @@ func (s *LoginService) register(phone string) (uint64, common.Error) {
 }
 
 // BindPasswordLogin 绑定密码
-func (s *LoginService) BindPasswordLogin(req *loginModel.BindPasswordLoginReq) (
-	*loginModel.BindPasswordLoginRsp, common.Error) {
+func (s *LoginService) BindPasswordLogin(req *model.BindPasswordLoginReq) (
+	*model.BindPasswordLoginRsp, common.Error) {
 	// 检查密码强度
 	if err := s.checkPasswordLevel(req.Password); err != nil {
 		return nil, err
 	}
 
 	// 获取原始密码
-	passwordLogin := model.PasswordLogin{
+	passwordLogin := db.PasswordLogin{
 		UserID: req.UserID,
 	}
 	takeErr := s.db.Where(&passwordLogin).Take(&passwordLogin).Error
@@ -310,7 +310,7 @@ func (s *LoginService) BindPasswordLogin(req *loginModel.BindPasswordLoginReq) (
 			s.logger.WithField("err", err).Error("db exception")
 			return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
 		}
-		return &loginModel.BindPasswordLoginRsp{}, nil
+		return &model.BindPasswordLoginRsp{}, nil
 	}
 
 	// 否则更新密码
@@ -318,7 +318,7 @@ func (s *LoginService) BindPasswordLogin(req *loginModel.BindPasswordLoginReq) (
 		s.logger.WithField("err", err).Error("db exception")
 		return nil, common.WrapError(common.ErrCodeInternalErrorDB, err)
 	}
-	return &loginModel.BindPasswordLoginRsp{}, nil
+	return &model.BindPasswordLoginRsp{}, nil
 }
 
 // checkPasswordLevel 检查密码强度
@@ -328,7 +328,7 @@ func (s *LoginService) checkPasswordLevel(password string) common.Error {
 	}
 
 	var count uint
-	for _, regexp := range loginModel.PasswordCharRegexpSet {
+	for _, regexp := range model.PasswordCharRegexpSet {
 		if regexp.MatchString(password) {
 			count++
 		}
@@ -340,11 +340,11 @@ func (s *LoginService) checkPasswordLevel(password string) common.Error {
 }
 
 // Logout 退出登录
-func (s *LoginService) Logout(req *loginModel.LogoutReq) (*loginModel.LogoutRsp, common.Error) {
+func (s *LoginService) Logout(req *model.LogoutReq) (*model.LogoutRsp, common.Error) {
 	// 退出登录
 	tokenKey := s.tokenRedisKey(req.Token)
 	antiKey := s.antiTokenRedisKey(req.UserID)
-	sha1, err := s.rdb.ScriptLoad(context.Background(), loginModel.LogoutRedisScript).Result()
+	sha1, err := s.rdb.ScriptLoad(context.Background(), model.LogoutRedisScript).Result()
 	if err != nil {
 		s.logger.WithField("err", err).Error("rdb exception")
 		return nil, common.WrapError(common.ErrCodeInternalErrorRDB, err)
@@ -360,13 +360,13 @@ func (s *LoginService) Logout(req *loginModel.LogoutReq) (*loginModel.LogoutRsp,
 		LogoutTime: uint64(time.Now().Unix()),
 	})
 
-	return &loginModel.LogoutRsp{}, nil
+	return &model.LogoutRsp{}, nil
 }
 
 // Authorize 权限验证
-func (s *LoginService) Authorize(req *loginModel.AuthorizeReq) (*loginModel.AuthorizeRsp, common.Error) {
+func (s *LoginService) Authorize(req *model.AuthorizeReq) (*model.AuthorizeRsp, common.Error) {
 	// 获取Session
-	rsp, err := s.GetSession(&loginModel.GetSessionReq{Token: req.Token})
+	rsp, err := s.GetSession(&model.GetSessionReq{Token: req.Token})
 	if err != nil {
 		return nil, err
 	}
@@ -385,13 +385,13 @@ func (s *LoginService) Authorize(req *loginModel.AuthorizeReq) (*loginModel.Auth
 		}
 	}
 
-	return &loginModel.AuthorizeRsp{
+	return &model.AuthorizeRsp{
 		Session: rsp.Session,
 	}, nil
 }
 
 // GetSession 获取Session
-func (s *LoginService) GetSession(req *loginModel.GetSessionReq) (*loginModel.GetSessionRsp, common.Error) {
+func (s *LoginService) GetSession(req *model.GetSessionReq) (*model.GetSessionRsp, common.Error) {
 	if err := s.validate.Struct(req); err != nil {
 		return nil, common.WrapError(code.UnauthorizedInvalidToken, err)
 	}
@@ -412,19 +412,19 @@ func (s *LoginService) GetSession(req *loginModel.GetSessionReq) (*loginModel.Ge
 	_ = json.Unmarshal(sessionBytes, &session)
 
 	// 延长Token的过期时间
-	if err := s.rdb.Expire(context.Background(), key, loginModel.TokenExp).Err(); err != nil {
+	if err := s.rdb.Expire(context.Background(), key, model.TokenExp).Err(); err != nil {
 		s.logger.WithField("err", err).Error("rdb exception")
 		return nil, common.WrapError(common.ErrCodeInternalErrorRDB, err)
 	}
 
 	// 延长AntiToken过期时间
 	antiKey := s.antiTokenRedisKey(session.UserID)
-	if err := s.rdb.Expire(context.Background(), antiKey, loginModel.TokenExp).Err(); err != nil {
+	if err := s.rdb.Expire(context.Background(), antiKey, model.TokenExp).Err(); err != nil {
 		s.logger.WithField("err", err).Error("rdb exception")
 		return nil, common.WrapError(common.ErrCodeInternalErrorRDB, err)
 	}
 
-	return &loginModel.GetSessionRsp{
+	return &model.GetSessionRsp{
 		Session: &session,
 	}, nil
 }

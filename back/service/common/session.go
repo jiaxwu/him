@@ -4,7 +4,7 @@ package common
 type UserType uint8
 
 const (
-	UserTypePlayer UserType = 1 // 玩家
+	UserTypeUser UserType = 1 // 用户
 )
 
 // Session 会话

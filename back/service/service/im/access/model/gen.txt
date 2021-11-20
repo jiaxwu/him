@@ -1,1 +1,0 @@
-protoc --go_out=. service/service/im/access/model/protocol/*.proto
