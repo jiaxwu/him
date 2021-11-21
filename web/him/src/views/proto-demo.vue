@@ -24,7 +24,7 @@ axios.post("test", blob, {
   },
   responseType: "blob"
 }).then(rsp => {
-    rsp.data.arrayBuffer().then((arrayBuf: ArrayBuffer) => {
+  rsp.data.arrayBuffer().then((arrayBuf: ArrayBuffer) => {
     const resp = Response.decode(new Uint8Array(arrayBuf));
     console.log(resp)
   })
