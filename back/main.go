@@ -9,6 +9,7 @@ import (
 	"him/conf"
 	"him/service/server"
 	imGatewayHandler "him/service/service/im/gateway/handler"
+	imServiceHandler "him/service/service/im/service/handler"
 	loginConf "him/service/service/login/conf"
 	loginHandler "him/service/service/login/handler"
 	loginService "him/service/service/login/service"
@@ -61,6 +62,7 @@ func NewApp() *fx.App {
 		fx.Invoke(
 			loginHandler.RegisterLoginHandler,
 			userProfileHandler.RegisterUserProfileHandler,
+			imServiceHandler.RegisterIMServiceHandler,
 			imGatewayHandler.NewGatewayHandler,
 			userProfileConsumer.NewLoginEventConsumer,
 			fx.Annotate(
