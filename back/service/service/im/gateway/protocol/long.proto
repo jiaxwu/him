@@ -1,0 +1,125 @@
+syntax = "proto3";
+
+package him;
+
+option go_package = "service/service/im/gateway/protocol/long";
+
+// 消息类型
+enum MsgType {
+    MsgTypeUnknown = 0; // 未知
+    MsgTypeText = 1; // 文字
+    MsgTypeImage = 2; // 图片
+    MsgTypeVoice = 3; // 语音
+    MsgTypeVideo = 4; // 视频
+    MsgTypeTip = 5; // 提示
+    MsgTypeWithdraw = 6; // 回撤消息
+}
+
+// 接收者类型
+enum ReceiverType {
+    ReceiverTypeUnknown = 0; // 未知
+    ReceiverTypeUser = 1; // 用户
+    ReceiverTypeGroup = 2; // 群
+}
+
+// 接收者
+message Receiver {
+    ReceiverType Type = 1; // 接收者类型
+    uint64 ReceiverID = 2; // 接收者编号
+}
+
+// 请求
+message Req {
+    uint64 CorrelationID = 1; // 请求唯一标识
+    MsgType Type = 2; // 消息类型
+    Receiver Receiver = 3; // 接收者
+    bytes Content = 4; // 消息内容
+}
+
+// 响应
+message Rsp {
+    uint64 CorrelationID = 1; // 请求唯一标识
+    uint64 MailBoxMsgID = 2; // 信箱里消息编号
+    uint64 MsgID = 3; // 消息编号
+    uint64 SendTime = 4; // 发送时间
+}
+
+// 事件类型
+enum EventType {
+    EventTypeUnknown = 0; // 未知
+    EventTypeRsp = 1; // 响应
+    EventTypeNewMsg = 2; // 新消息
+    EventTypeAddFriendApplication = 3; // 新的添加好友申请
+}
+
+// 事件
+message Event {
+    EventType Type = 1; // 事件类型
+    bytes Content = 2; // 事件内容
+}
+
+// 消息
+message Msg {
+    uint64 MsgID = 1; // 消息编号，全局唯一，根据到达服务器时间生成，可以用户消息排序（保证有序性）
+    MsgType Type = 2; // 消息类型
+    uint64 Sender = 3; // 发送者
+    Receiver Receiver = 4; // 接收者
+    bytes Content = 5; // 消息内容
+    uint64 SendTime = 6; // 发送时间，消息到达服务器时间
+    // 发送者的一个终端的一个请求的唯一标识
+    // （避免消息重复，比如消息发送成功，但是用户没有收到响应（断网），
+    // 再回来的时候同步消息，通过CorrelationID就可以把发送失败的消息设置为发送成功）
+    // 唯一标识可以是 Terminal_UserID_UUID_IncrementID
+    string CorrelationID = 7;
+}
+
+// 文本消息
+message TextMsg {
+    string Content = 1; // 文本消息内容
+}
+
+// 图片消息
+message ImageMsg {
+
+}
+
+// 提示类型
+enum TipType {
+    TipTypeUnknown = 0 ; // 未知
+    TipTypeText = 1; // 文本类型提示
+    TipTypeNickNameText = 2; // 昵称文本类型提示
+}
+
+// 提示消息
+message TipMsg {
+    TipType Type = 1; // 提示类型
+    bytes Content = 2; // 提示内容
+}
+
+// 文本提示
+message TextTip {
+    string Content = 1; // 提示内容
+}
+
+// 昵称文本
+message NickNameText {
+    uint64 UserID = 1; // 用户编号
+    string NickName = 2; // 昵称
+}
+
+// 昵称文本提示
+message NickNameTextTip {
+    string Format = 1; // 格式字符串
+    repeated NickNameText NickNameTexts = 2; // 昵称文本
+}
+
+// 撤回消息
+message WithdrawMsg {
+    uint64 MsgID = 1; // 被撤回消息的编号
+}
+
+// 信箱消息
+message MailBoxMsg {
+    uint64 MailBoxMsgID = 1; // 信箱里消息编号，每个人一个信箱，信箱里消息编号会递增（保证不丢失消息）
+    Msg Msg = 2; // 消息
+}

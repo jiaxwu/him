@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package him;
+
+option go_package = "service/service/im/gateway/protocol/short";
+
+// 终端
+enum Terminal {
+    TerminalUnknown = 0; // 未知
+    TerminalApp = 1; // App
+    TerminalPC = 2; // PC
+    TerminalWeb = 3; // Web
+}
+
+// 撤回消息请求
+message WithdrawMsgReq {
+    uint64 UserID = 1; // 用户编号（标识谁撤回的）
+    Terminal Terminal = 2; // 终端（标识撤回的人从哪个终端发出的撤回消息
+    uint64 MsgID = 3; // 消息编号
+}
+
+// 撤回消息响应
+message WithdrawMsgRsp {
+    uint64 MailBoxMsgID = 2; // 信箱里消息编号
+    uint64 MsgID = 3; // 消息编号
+    uint64 SendTime = 4; // 发送时间
+}
+
+// 获取添加好友申请请求
+message GetAddFriendApplicationsReq {
+    uint64 UserID = 1; // 用户编号
+    uint64 LastAddFriendApplicationID = 2; // 最后一个添加好友请求的编号（因为是反过来排序的）
+    uint32 Size = 3; // 多少条
+}
+
+// 添加好友申请
+message AddFriendApplication {
+    uint64 AddFriendApplicationID = 1; // 添加好友申请编号
+    uint64 UserID = 2; // 申请者用户编号
+    string NickName = 3; // 申请者昵称
+    string Avatar = 4; // 申请者头像
+    uint64 ApplicationTime = 5; // 申请时间
+}
+
+// 获取添加好友申请响应
+message GetAddFriendApplicationsRsp {
+    repeated AddFriendApplication AddFriendApplications = 1; // 添加好友申请
+}
+
+// 添加好友申请
+message AddFriendApplicationReq {
+    uint64 UserID = 1; // 用户编号
+    uint64 FriendID = 2; // 好友编号
+    string ApplicationMessage = 3; // 申请消息
+}
+
+// 添加好友申请响应
+message AddFriendApplicationRsp {}
+
+// 接受添加好友请求
+message AcceptAddFriendApplicationReq {
+    uint64 AddFriendApplicationID = 1; // 添加好友申请编号
+}
+
+// 接受添加好友响应
+message AcceptAddFriendApplicationRsp {}
+
+// 获取好友请求
+message GetFriendsReq {
+    uint64 UserID = 1; // 用户编号
+}
+
+// 好友
+message Friend {
+    uint64 UserID = 1; // 用户编号
+    string NickName = 2; // 昵称
+    string Avatar = 3; // 头像
+}
+
+// 获取好友响应
+message GetFriendsRsp {
+    repeated Friend Friends = 1; // 好友列表
+}
