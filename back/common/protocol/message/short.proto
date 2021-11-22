@@ -1,29 +1,23 @@
 syntax = "proto3";
 
-package him;
+package message;
 
-option go_package = "service/service/im/gateway/protocol/short";
+import "common/protocol/constant/constant.proto";
 
-// 终端
-enum Terminal {
-    TerminalUnknown = 0; // 未知
-    TerminalApp = 1; // App
-    TerminalPC = 2; // PC
-    TerminalWeb = 3; // Web
-}
+option go_package = "him/common/protocol/message";
 
 // 撤回消息请求
 message WithdrawMsgReq {
     uint64 UserID = 1; // 用户编号（标识谁撤回的）
-    Terminal Terminal = 2; // 终端（标识撤回的人从哪个终端发出的撤回消息
+    constant.Terminal Terminal = 2; // 终端（标识撤回的人从哪个终端发出的撤回消息）
     uint64 MsgID = 3; // 消息编号
 }
 
 // 撤回消息响应
 message WithdrawMsgRsp {
-    uint64 MailBoxMsgID = 2; // 信箱里消息编号
-    uint64 MsgID = 3; // 消息编号
-    uint64 SendTime = 4; // 发送时间
+    uint64 MailBoxMsgID = 1; // 撤回消息的信箱里消息编号
+    uint64 MsgID = 2; // 撤回消息的消息编号
+    uint64 SendTime = 3; // 撤回消息的发送时间
 }
 
 // 获取添加好友申请请求

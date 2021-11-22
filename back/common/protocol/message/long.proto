@@ -1,8 +1,10 @@
 syntax = "proto3";
 
-package him;
+package message;
 
-option go_package = "service/service/im/gateway/protocol/long";
+import "common/protocol/constant/constant.proto";
+
+option go_package = "him/common/protocol/message";
 
 // 消息类型
 enum MsgType {
@@ -12,7 +14,8 @@ enum MsgType {
     MsgTypeVoice = 3; // 语音
     MsgTypeVideo = 4; // 视频
     MsgTypeTip = 5; // 提示
-    MsgTypeWithdraw = 6; // 回撤消息
+    MsgTypeFile = 6; // 文件
+    MsgTypeWithdraw = 7; // 回撤消息
 }
 
 // 接收者类型
@@ -66,11 +69,12 @@ message Msg {
     Receiver Receiver = 4; // 接收者
     bytes Content = 5; // 消息内容
     uint64 SendTime = 6; // 发送时间，消息到达服务器时间
+    constant.Terminal SenderTerminal = 7; // 发送者终端
     // 发送者的一个终端的一个请求的唯一标识
     // （避免消息重复，比如消息发送成功，但是用户没有收到响应（断网），
     // 再回来的时候同步消息，通过CorrelationID就可以把发送失败的消息设置为发送成功）
-    // 唯一标识可以是 Terminal_UserID_UUID_IncrementID
-    string CorrelationID = 7;
+    // 唯一标识可以是 UUID_IncrementID
+    string CorrelationID = 8;
 }
 
 // 文本消息
@@ -78,9 +82,47 @@ message TextMsg {
     string Content = 1; // 文本消息内容
 }
 
+// 图片
+message Image {
+    string URL = 1; // 地址
+    uint32 Width = 2; // 宽
+    uint32 Height = 3; // 高
+    uint32 Size = 4; // 大小，单位B
+}
+
 // 图片消息
 message ImageMsg {
+    Image Thumbnail = 1; // 缩略图
+    Image BigImage = 2; // 大图
+    Image OriginalImage = 3; // 原图
+}
 
+// 语音类型
+enum VoiceType {
+    VoiceTypeUnknown = 0; // 未知
+    VoiceTypeMP3 = 1; // MP3格式
+}
+
+// 语音消息
+message VoiceMsg {
+    string URL = 1; // 地址
+    uint32 Duration = 2; // 时长，单位秒
+    VoiceType Type = 3; // 语音类型
+    uint32 Size = 4; // 大小，单位B
+}
+
+// 视频类型
+enum VideoType {
+    VideoTypeUnknown = 0; // 未知
+    VideoTypeAVI = 1; // AVI格式
+}
+
+// 视频消息
+message VideoMsg {
+    string URL = 1; // 地址
+    uint32 Duration = 2; // 时长，单位秒
+    VideoType Type = 3; // 视频类型
+    uint32 Size = 4; // 大小，单位B
 }
 
 // 提示类型
@@ -90,15 +132,15 @@ enum TipType {
     TipTypeNickNameText = 2; // 昵称文本类型提示
 }
 
+// 文本提示
+message TextTip {
+    string Content = 1; // 提示内容
+}
+
 // 提示消息
 message TipMsg {
     TipType Type = 1; // 提示类型
     bytes Content = 2; // 提示内容
-}
-
-// 文本提示
-message TextTip {
-    string Content = 1; // 提示内容
 }
 
 // 昵称文本
@@ -111,6 +153,20 @@ message NickNameText {
 message NickNameTextTip {
     string Format = 1; // 格式字符串
     repeated NickNameText NickNameTexts = 2; // 昵称文本
+}
+
+// 文件类型
+enum FileType {
+    FileTypeUnknown = 0; // 未知
+    FileTypePDF = 1; // PDF格式
+}
+
+// 文件消息
+message FileMsg {
+    string URL = 1; // 地址
+    string Name = 2; // 文件名
+    FileType Type = 3; // 文件类型
+    uint32 Size = 4; // 大小，单位B
 }
 
 // 撤回消息

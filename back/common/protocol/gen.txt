@@ -1,0 +1,2 @@
+protoc --go_out=paths=source_relative:. common/protocol/message/*.proto
+protoc --go_out=paths=source_relative:. common/protocol/constant/*.proto
