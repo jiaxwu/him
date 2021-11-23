@@ -22,3 +22,12 @@ message UploadReq {
 message UploadRsp {
     bytes Content = 1; // 内容，比如Image
 }
+
+// @存储模型
+// 使用对象存储服务存储
+message ObjectStore {
+    string ContentType = 1; // HTTP头设置ContentType这样可以直接打开
+    string URL = 2; // URL用于访问
+    bytes Content = 3; // 对象
+}
+
