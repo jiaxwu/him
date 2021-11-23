@@ -2,23 +2,7 @@ syntax = "proto3";
 
 package message;
 
-import "common/protocol/constant/constant.proto";
-
 option go_package = "him/common/protocol/message";
-
-// 撤回消息请求
-message WithdrawMsgReq {
-    uint64 UserID = 1; // 用户编号（标识谁撤回的）
-    constant.Terminal Terminal = 2; // 终端（标识撤回的人从哪个终端发出的撤回消息）
-    uint64 MsgID = 3; // 消息编号
-}
-
-// 撤回消息响应
-message WithdrawMsgRsp {
-    uint64 MailBoxMsgID = 1; // 撤回消息的信箱里消息编号
-    uint64 MsgID = 2; // 撤回消息的消息编号
-    uint64 SendTime = 3; // 撤回消息的发送时间
-}
 
 // 获取添加好友申请请求
 message GetAddFriendApplicationsReq {
@@ -27,13 +11,24 @@ message GetAddFriendApplicationsReq {
     uint32 Size = 3; // 多少条
 }
 
+// 添加好友申请状态
+enum AddFriendApplicationStatus {
+    AddFriendApplicationStatusUnknown = 0; // 未知
+    AddFriendApplicationStatusWaitConfirm = 1; // 等待确认
+    AddFriendApplicationStatusReject = 2; // 拒绝
+    AddFriendApplicationStatusAccept = 3; // 接受
+    AddFriendApplicationStatusExpire = 4; // 过期
+}
+
 // 添加好友申请
 message AddFriendApplication {
     uint64 AddFriendApplicationID = 1; // 添加好友申请编号
-    uint64 UserID = 2; // 申请者用户编号
-    string NickName = 3; // 申请者昵称
-    string Avatar = 4; // 申请者头像
-    uint64 ApplicationTime = 5; // 申请时间
+    uint64 ApplicantID = 2; // 申请者用户编号
+    uint64 FriendID = 3; // 好友编号
+    string ApplicationMsg = 4; // 申请消息
+    string FriendReply = 5; // 好友回复
+    AddFriendApplicationStatus Status = 6; // 申请状态
+    uint64 ApplicationTime = 7; // 申请时间
 }
 
 // 获取添加好友申请响应
@@ -43,13 +38,33 @@ message GetAddFriendApplicationsRsp {
 
 // 添加好友申请
 message AddFriendApplicationReq {
-    uint64 UserID = 1; // 用户编号
+    uint64 ApplicantID = 1; // 申请人编号
     uint64 FriendID = 2; // 好友编号
-    string ApplicationMessage = 3; // 申请消息
+    string ApplicationMsg = 3; // 申请消息
 }
 
 // 添加好友申请响应
-message AddFriendApplicationRsp {}
+message AddFriendApplicationRsp {
+    uint64 AddFriendApplicationID = 1; // 添加好友申请编号
+}
+
+// 更新添加好友申请申请消息请求
+message UpdateAddFriendApplicationApplicationMsgReq {
+    uint64 AddFriendApplicationID = 1; // 添加好友申请编号
+    string ApplicationMsg = 2; // 申请消息
+}
+
+// 更新添加好友申请申请消息响应
+message UpdateAddFriendApplicationApplicationMsgRsp {}
+
+// 更新添加好友申请好友回复请求
+message UpdateAddFriendApplicationFriendReplyReq {
+    uint64 AddFriendApplicationID = 1; // 添加好友申请编号
+    string FriendReply = 2; // 好友回复
+}
+
+// 更新添加好友申请好友回复响应
+message UpdateAddFriendApplicationFriendReplyRsp {}
 
 // 接受添加好友请求
 message AcceptAddFriendApplicationReq {
@@ -75,3 +90,12 @@ message Friend {
 message GetFriendsRsp {
     repeated Friend Friends = 1; // 好友列表
 }
+
+// 删除好友请求
+message DeleteFriendReq {
+    uint64 UserID = 1; // 用户编号
+    uint64 FriendID = 2; // 好友编号
+}
+
+// 删除好友响应
+message DeleteFriendRsp {}

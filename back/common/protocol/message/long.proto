@@ -6,7 +6,9 @@ import "common/protocol/constant/constant.proto";
 
 option go_package = "him/common/protocol/message";
 
-// 消息类型
+// 消息类型，消息会持久化存储
+// 通过客户端信箱编号同步机制，保证消息可靠性，同时客户端需要保证消息被成功处理
+// 消息通过事件推送给客户端
 enum MsgType {
     MsgTypeUnknown = 0; // 未知
     MsgTypeText = 1; // 文字
@@ -15,7 +17,8 @@ enum MsgType {
     MsgTypeVideo = 4; // 视频
     MsgTypeTip = 5; // 提示
     MsgTypeFile = 6; // 文件
-    MsgTypeWithdraw = 7; // 回撤消息
+    MsgTypeWithdraw = 7; // 撤回
+    MsgTypeEvent = 8; // 事件
 }
 
 // 接收者类型
@@ -31,31 +34,68 @@ message Receiver {
     uint64 ReceiverID = 2; // 接收者编号
 }
 
+// 发送者类型
+enum SenderType {
+    SenderTypeUnknown = 0; // 未知
+    SenderTypeUser = 1; // 用户
+    SenderTypeSys = 2; // 系统
+}
+
+// 发送者
+message Sender {
+    SenderType Type = 1; // 发送者类型
+    uint64 SenderID = 2; // 发送者编号
+    constant.Terminal SenderTerminal = 3; // 发送者终端
+}
+
 // 请求
 message Req {
-    uint64 CorrelationID = 1; // 请求唯一标识
-    MsgType Type = 2; // 消息类型
-    Receiver Receiver = 3; // 接收者
-    bytes Content = 4; // 消息内容
+    Sender Sender = 1; // 发送者
+    uint64 CorrelationID = 2; // 请求唯一标识
+    MsgType Type = 3; // 消息类型
+    Receiver Receiver = 4; // 接收者
+    bytes Content = 5; // 消息内容
+}
+
+// 文本消息请求内容
+message TextReqContent {
+    string Content = 1; // 内容
+}
+
+// 图片消息请求内容
+message ImageReqContent {
+
+}
+
+//        MsgTypeImage = 2; // 图片
+//        MsgTypeVoice = 3; // 语音
+//        MsgTypeVideo = 4; // 视频
+//        MsgTypeFile = 6; // 文件
+
+
+// 回撤消息请求内容
+message WithdrawReqContent {
+    uint64 MsgID = 1; // 被撤回消息的编号
 }
 
 // 响应
 message Rsp {
     uint64 CorrelationID = 1; // 请求唯一标识
     uint64 MailBoxMsgID = 2; // 信箱里消息编号
-    uint64 MsgID = 3; // 消息编号
-    uint64 SendTime = 4; // 发送时间
+    uint64 MsgID = 3; // 消息编号，递增
 }
 
 // 事件类型
+// 会被发送到客户端，不会持久化，不可靠
+// 用于推送响应，消息或其他事件给客户端，同时客户端应该尽量保证消息被成功处理
+// 必须是客户端在线才会推送
 enum EventType {
     EventTypeUnknown = 0; // 未知
-    EventTypeRsp = 1; // 响应
-    EventTypeNewMsg = 2; // 新消息
-    EventTypeAddFriendApplication = 3; // 新的添加好友申请
+    EventTypeRsp = 1; // 响应，用户不一定收到，但是可以通过用户本地自行同步消息最终同步到消息
+    EventTypeMsg = 2; // 消息，用户不一定收到，但是可以通过用户本地自行同步消息最终同步到消息
 }
 
-// 事件
+// 事件，事件用于给用户推送消息
 message Event {
     EventType Type = 1; // 事件类型
     bytes Content = 2; // 事件内容
@@ -174,8 +214,33 @@ message WithdrawMsg {
     uint64 MsgID = 1; // 被撤回消息的编号
 }
 
+// 事件消息类型
+enum EventMsgType {
+    EventMsgTypeUnknown = 0; // 未知
+    EventMsgTypeNewAddFriendApplication = 100; // 新的添加好友申请
+    EventMsgTypeAddFriendApplicationStatusChange = 101; // 添加好友申请状态改变
+}
+
+// 事件消息
+// 事件消息用于需要保证客户端能够收到的事件
+// 本质上是消息，但是一般不用于展示，只用于通知
+message EventMsg {
+    EventMsgType Type = 1; // 事件消息类型
+    bytes Content = 2; // 事件消息内容
+}
+
+// 新的添加好友申请事件消息
+message NewAddFriendApplicationEventMsg {}
+
+// 添加好友申请状态改变事件消息
+message AddFriendApplicationStatusChangeEventMsg {
+    uint64 AddFriendApplicationID = 1; // 状态改变的添加好友申请编号
+}
+
 // 信箱消息
+// 每个消息都会转换成信箱消息进行存储
 message MailBoxMsg {
-    uint64 MailBoxMsgID = 1; // 信箱里消息编号，每个人一个信箱，信箱里消息编号会递增（保证不丢失消息）
-    Msg Msg = 2; // 消息
+    uint64 UserID = 1; // 信箱拥有者用户编号
+    uint64 MailBoxMsgID = 2; // 信箱里消息编号，每个人一个信箱，信箱里消息编号会递增（保证不丢失消息）
+    Msg Msg = 3; // 消息
 }
