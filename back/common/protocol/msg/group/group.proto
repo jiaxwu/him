@@ -6,7 +6,7 @@ import "common/protocol/constant/constant.proto";
 
 option go_package = "him/common/protocol/msg/group";
 
-
+message Create
 
 
 // 获取添加好友申请请求

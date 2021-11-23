@@ -52,6 +52,8 @@ enum MsgType {
     MsgTypeFile = 6; // 文件
     MsgTypeWithdraw = 7; // 撤回
     MsgTypeEvent = 8; // 事件
+
+    // 合并消息 转发消息 位置消息
 }
 
 // 消息
@@ -73,6 +75,9 @@ message Msg {
 // 文本消息
 message TextMsg {
     string Content = 1; // 文本消息内容
+    bool AtAll = 2; // @所有人
+    repeated string AtUserIDS = 3; // 被@的用户
+    uint64 QuotedMsgID = 4; // 被引用消息编号
 }
 
 // 图片消息
