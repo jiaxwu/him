@@ -6,6 +6,16 @@ import "common/protocol/constant/constant.proto";
 
 option go_package = "him/common/protocol/msg/friend";
 
+// 获取好友请求
+message GetFriendReq {
+    string Username = 1; // 用户名
+}
+
+// 获取好友响应
+message GetFriendRsp {
+    FriendInfo FriendInfo = 1; // 好友信息
+}
+
 // 获取添加好友申请请求
 message GetAddFriendApplicationsReq {
     uint64 UserID = 1; // 用户编号
