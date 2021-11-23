@@ -1,33 +1,61 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/golang/protobuf/proto"
-	"him/service/service/im/gateway/protocol"
+	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
+	"io"
 	"net/http"
 )
 
 func main() {
+	//imagePath := "./test/课表"
+	//file, _ := os.Open(imagePath)
+	//c, s, err := image.DecodeConfig(file)
+	//if err != nil {
+	//	fmt.Println("err1 = ", err)
+	//	return
+	//}
+	//fmt.Printf("%+v\n", c)
+	//fmt.Println(s)
+
 	engine := gin.Default()
 	engine.Use(cors.Default())
 	engine.POST("test", func(c *gin.Context) {
-		c
-		//bytes := []byte{10, 7, 8, 1, 16, 1, 24, 205, 2}
-		var req protocol.Request
-
-		if err := c.ShouldBind(&req); err != nil {
+		file, err := c.FormFile("test")
+		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		response := protocol.Response{
-			CorrelationID: req.Header.CorrelationID,
-			Code:          "333",
-			Msg:           "4444",
-			Body:          nil,
+		open, err := file.Open()
+		if err != nil {
+			fmt.Println(err)
+			return
 		}
-		c.ProtoBuf(http.StatusOK, &response)
+		defer open.Close()
+		file1, err := io.ReadAll(open)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		buffer := bytes.NewBuffer(file1)
+		config, fileType, err := image.DecodeConfig(buffer)
+		if err != nil {
+			fmt.Println("err1 = ", err)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"Size": len(file1),
+			"Width": config.Width,
+			"Height": config.Height,
+			"Type": fileType,
+		})
 	})
 	engine.Run()
 }
+
