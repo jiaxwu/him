@@ -2,10 +2,10 @@ syntax = "proto3";
 
 package message;
 
-import "common/api/constant/constant.proto";
-import "common/api/msg/content/content.proto";
+import "api/constant/constant.proto";
+import "api/msg/content/content.proto";
 
-option go_package = "him/common/api/msg/long";
+option go_package = "github.com/xiaohuashifu/him/api/msg/long";
 
 // ----------------------- 发送者，接收者
 

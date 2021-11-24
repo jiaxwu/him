@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package message;
 
-import "common/api/constant/constant.proto";
+import "api/constant/constant.proto";
 
-option go_package = "him/common/api/msg/friend";
+option go_package = "github.com/xiaohuashifu/him/api/msg/friend";
 
 // ---------------------------好友管理
 

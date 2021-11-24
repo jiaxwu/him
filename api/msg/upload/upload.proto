@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package message;
 
-option go_package = "him/common/api/msg/upload";
+option go_package = "github.com/xiaohuashifu/him/api/msg/upload";
 
 // 上传类型
 enum UploadType {

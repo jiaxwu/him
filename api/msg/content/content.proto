@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package message;
 
-option go_package = "him/common/api/msg/content";
+option go_package = "github.com/xiaohuashifu/him/api/msg/content";
 
 // 图片类型
 enum ImageType {

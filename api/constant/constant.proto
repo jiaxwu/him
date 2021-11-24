@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package constant;
 
-option go_package = "him/common/api/constant";
+option go_package = "github.com/xiaohuashifu/him/api/constant";
 
 // 终端
 enum Terminal {
