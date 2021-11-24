@@ -1,5 +1,0 @@
-protoc --go_out=paths=source_relative:. common/protocol/msg/long/*.proto
-protoc --go_out=paths=source_relative:. common/protocol/msg/friend/*.proto
-protoc --go_out=paths=source_relative:. common/protocol/msg/content/*.proto
-protoc --go_out=paths=source_relative:. common/protocol/msg/upload/*.proto
-protoc --go_out=paths=source_relative:. common/protocol/constant/*.proto

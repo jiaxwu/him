@@ -1,0 +1,11 @@
+protoc --plugin=protoc-gen-ts_proto=.\node_modules\.bin\protoc-gen-ts_proto.cmd --ts_proto_out=. .\common\protocol\msg\group\*.proto --ts_proto_opt=forceLong=long,esModuleInterop=true,oneof=unions,outputTypeRegistry=true
+
+protoc --plugin=protoc-gen-ts_proto=.\node_modules\.bin\protoc-gen-ts_proto.cmd --ts_proto_out=. .\common\protocol\msg\friend\*.proto --ts_proto_opt=forceLong=long,esModuleInterop=true,oneof=unions,outputTypeRegistry=true
+
+protoc --plugin=protoc-gen-ts_proto=.\node_modules\.bin\protoc-gen-ts_proto.cmd --ts_proto_out=. .\common\protocol\msg\upload\*.proto --ts_proto_opt=forceLong=long,esModuleInterop=true,oneof=unions,outputTypeRegistry=true
+
+protoc --plugin=protoc-gen-ts_proto=.\node_modules\.bin\protoc-gen-ts_proto.cmd --ts_proto_out=. .\common\protocol\msg\long\*.proto --ts_proto_opt=forceLong=long,esModuleInterop=true,oneof=unions,outputTypeRegistry=true
+
+protoc --plugin=protoc-gen-ts_proto=.\node_modules\.bin\protoc-gen-ts_proto.cmd --ts_proto_out=. .\common\protocol\msg\content\*.proto --ts_proto_opt=forceLong=long,esModuleInterop=true,oneof=unions,outputTypeRegistry=true
+
+protoc --plugin=protoc-gen-ts_proto=.\node_modules\.bin\protoc-gen-ts_proto.cmd --ts_proto_out=. .\common\protocol\constant\*.proto --ts_proto_opt=forceLong=long,esModuleInterop=true,oneof=unions,outputTypeRegistry=true

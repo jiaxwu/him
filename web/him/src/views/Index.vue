@@ -1,22 +1,22 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus'
-import { Header, Request, RequestType, RequestVersion, Response } from '@/model/proto/message'
 import { encode } from '@/model/proto/proto'
 import Long from 'long'
 import axios from '@/utils/axios';
 import { format } from 'path/posix';
 import { prototype } from 'events';
 import { Buffer } from 'buffer'
+import { Image, ImageType } from '../../common/protocol/msg/content/content'
 
 
-const header = Header.fromPartial({
-  RequestType: RequestType.RequestTypeSendMessage,
-  RequestVersion: RequestVersion.RequestVersionArcane,
-  CorrelationID: Long.fromString("333")
+const image = Image.fromPartial({
+  URL: "xxxxxxxx",
+  Type: ImageType.ImageTypeJPG,
+  Height: 11111
 })
-const request = Request.fromPartial({ Header: header })
-const bytes = encode(request)
+const bytes = encode(image);
+console.log(bytes)
 let blob = new Blob([bytes]);
 axios.post("test", blob, {
   headers: {
@@ -25,7 +25,7 @@ axios.post("test", blob, {
   responseType: "blob"
 }).then(rsp => {
   rsp.data.arrayBuffer().then((arrayBuf: ArrayBuffer) => {
-    const resp = Response.decode(new Uint8Array(arrayBuf));
+    const resp = Image.decode(new Uint8Array(arrayBuf));
     console.log(resp)
   })
 })

@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package message;
+
+option go_package = "him/common/api/msg/content";
+
+// 图片类型
+enum ImageType {
+    ImageTypeUnknown = 0; // 未知
+    ImageTypeJPG = 1; // JPG格式
+    ImageTypePNG = 2; // PNG格式
+}
+
+// 图片
+message Image {
+    string URL = 1; // 地址
+    uint32 Width = 2; // 宽
+    uint32 Height = 3; // 高
+    ImageType Type = 4; // 图片类型
+    uint32 Size = 5; // 大小，单位B
+}
+
+// 语音类型
+enum VoiceType {
+    VoiceTypeUnknown = 0; // 未知
+    VoiceTypeMP3 = 1; // MP3格式
+}
+
+// 语音
+message Voice {
+    string URL = 1; // 地址
+    uint32 Duration = 2; // 时长，单位秒
+    VoiceType Type = 3; // 语音类型
+    uint32 Size = 4; // 大小，单位B
+}
+
+// 视频类型
+enum VideoType {
+    VideoTypeUnknown = 0; // 未知
+    VideoTypeMP4 = 1; // MP4格式
+}
+
+// 视频
+message Video {
+    string URL = 1; // 地址
+    uint32 Duration = 2; // 时长，单位秒
+    VideoType Type = 3; // 视频类型
+    uint32 Size = 4; // 大小，单位B
+}
+
+// 提示类型
+enum TipType {
+    TipTypeUnknown = 0 ; // 未知
+    TipTypeText = 1; // 文本类型提示
+    TipTypeNickNameText = 2; // 昵称文本类型提示
+}
+
+// 文本提示
+message TextTip {
+    string Content = 1; // 提示内容
+}
+
+// 昵称文本提示
+message NickNameTextTip {
+    string Format = 1; // 格式字符串
+    repeated NickNameText NickNameTexts = 2; // 昵称文本
+}
+
+// 昵称文本
+message NickNameText {
+    uint64 UserID = 1; // 用户编号
+    string NickName = 2; // 昵称
+}
+
+// 文件类型
+enum FileType {
+    FileTypeUnknown = 0; // 未知
+    FileTypePDF = 1; // PDF格式
+}
+
+// 文件
+message File {
+    string URL = 1; // 地址
+    string Name = 2; // 文件名
+    FileType Type = 3; // 文件类型
+    uint32 Size = 4; // 大小，单位B
+}

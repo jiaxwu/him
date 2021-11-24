@@ -1,0 +1,274 @@
+syntax = "proto3";
+
+package message;
+
+import "common/api/constant/constant.proto";
+import "common/api/msg/content/content.proto";
+
+option go_package = "him/common/api/msg/long";
+
+// ----------------------- 发送者，接收者
+
+// 接收者类型
+enum ReceiverType {
+    ReceiverTypeUnknown = 0; // 未知
+    ReceiverTypeUser = 1; // 用户
+    ReceiverTypeGroup = 2; // 群
+}
+
+// 接收者
+message Receiver {
+    ReceiverType Type = 1; // 接收者类型
+    uint64 ReceiverID = 2; // 接收者编号
+}
+
+// 发送者类型
+enum SenderType {
+    SenderTypeUnknown = 0; // 未知
+    SenderTypeUser = 1; // 用户
+    SenderTypeSys = 2; // 系统
+}
+
+// 发送者
+message Sender {
+    SenderType Type = 1; // 发送者类型
+    uint64 SenderID = 2; // 发送者编号
+    constant.Terminal SenderTerminal = 3; // 发送者终端
+}
+
+
+// ----------------------- 消息
+
+// 消息类型，消息会持久化存储
+// 通过客户端信箱编号同步机制，保证消息可靠性，同时客户端需要保证消息被成功处理
+// 消息通过事件推送给客户端
+enum MsgType {
+    MsgTypeUnknown = 0; // 未知
+    MsgTypeText = 1; // 文字
+    MsgTypeImage = 2; // 图片
+    MsgTypeVoice = 3; // 语音
+    MsgTypeVideo = 4; // 视频
+    MsgTypeTip = 5; // 提示
+    MsgTypeFile = 6; // 文件
+    MsgTypeWithdraw = 7; // 撤回
+    MsgTypeEvent = 8; // 事件
+
+    // 合并消息 转发消息 位置消息
+}
+
+// 消息
+message Msg {
+    uint64 MsgID = 1; // 消息编号，全局唯一，根据到达服务器时间生成，可以用户消息排序（保证有序性）
+    MsgType Type = 2; // 消息类型
+    uint64 Sender = 3; // 发送者
+    Receiver Receiver = 4; // 接收者
+    bytes Content = 5; // 消息内容
+    uint64 SendTime = 6; // 发送时间，消息到达服务器时间
+    constant.Terminal SenderTerminal = 7; // 发送者终端
+    // 发送者的一个终端的一个请求的唯一标识
+    // （避免消息重复，比如消息发送成功，但是用户没有收到响应（断网），
+    // 再回来的时候同步消息，通过CorrelationID就可以把发送失败的消息设置为发送成功）
+    // 唯一标识可以是 UUID_IncrementID
+    string CorrelationID = 8;
+}
+
+// 文本消息
+message TextMsg {
+    string Content = 1; // 文本消息内容
+    bool IsAtAll = 2; // 是否@所有人
+    bool IsNotice = 3; // 是否群公告
+    repeated string AtUserIDS = 4; // 被@的用户
+    uint64 QuotedMsgID = 5; // 被引用消息编号
+}
+
+// 图片消息
+message ImageMsg {
+    Image Thumbnail = 1; // 缩略图
+    Image OriginalImage = 2; // 原图
+}
+
+// 语音消息
+message VoiceMsg {
+    Voice Voice = 1; // 语音
+}
+
+// 视频消息
+message VideoMsg {
+    Image Thumbnail = 1; // 缩略图
+    Video Video = 2; // 视频
+}
+
+// 提示消息
+message TipMsg {
+    TipType Type = 1; // 提示类型
+    bytes Content = 2; // 提示内容
+}
+
+// 文件消息
+message FileMsg {
+    File File = 1; // 文件
+}
+
+// 撤回消息
+message WithdrawMsg {
+    uint64 MsgID = 1; // 被撤回消息的编号
+}
+
+// 事件消息类型
+enum EventMsgType {
+    EventMsgTypeUnknown = 0; // 未知
+    EventMsgTypeNewFriend = 1; // 新的好友（你已添加了xx，现在可以开始聊天了tip）
+    EventMsgTypeFriendInfoChange = 2; // 好友信息改变
+    EventMsgTypeDeleteFriend = 3; // 删除好友（对方删除了你tip）
+    EventMsgTypeNewAddFriendApplication = 4; // 新的添加好友申请
+    EventMsgTypeAddFriendApplicationStatusChange = 5; // 添加好友申请状态改变
+
+    EventMsgTypeNewGroup = 100; // 新的群（xx邀请xx，xxx，xxx等加入了群聊tip，你通过扫描xx分享的二维码加入群聊tip，xx邀请你加入了群聊tip）
+    EventMsgTypeGroupInfoChange = 101; // 群信息改变（头像、群名、群公告，xx修改群名为xx tip）
+    // 群成员信息更改（换群主，管理员变动，xx成为了新的群主tip，xx成为了新的管理员）
+    // 群成员加入（加入，邀请加入，xx通过扫描xx分析的二维码进群tip，xx邀请xx，xx，xx加入了群聊tip）
+    // 群成员退出（退出，被踢，xx退出了群聊tip，xx被踢出群聊tip）
+    EventMsgTypeGroupMemberInfoChange = 102;
+    EventMsgTypeNewJoinGroupEvent = 103; // 新的入群事件
+    EventMsgTypeJoinGroupEventChange = 104; // 入群事件改变
+}
+
+// 新的好友事件消息
+message NewFriendEventMsg {
+    uint64 FriendID = 1; // 用户编号
+}
+
+// 好友信息改变事件消息
+message FriendInfoChangeEventMsg {
+    uint64 FriendID = 1; // 用户编号
+}
+
+// 删除好友事件消息
+message DeleteFriendEventMsg {
+    uint64 FriendID = 1; // 用户编号
+}
+
+// 新的添加好友申请事件消息
+message NewAddFriendApplicationEventMsg {}
+
+// 添加好友申请状态改变事件消息
+message AddFriendApplicationStatusChangeEventMsg {
+    uint64 AddFriendApplicationID = 1; // 状态改变的添加好友申请编号
+}
+
+// 新的群事件消息
+message NewGroupEventMsg {
+    uint64 GroupID = 1; // 群编号
+}
+
+// 群信息改变事件消息
+message GroupInfoChangeEventMsg {
+    uint64 GroupID = 1; // 群编号
+}
+
+// 群成员信息改变事件消息（直接拉群群成员信息列表和本地比较进行同步）
+message GroupMemberInfoChangeEventMsg {
+    uint64 GroupID = 1; // 群编号
+}
+
+// 新的入群事件事件消息
+message NewJoinGroupEventEventMsg {
+    uint64 JoinGroupEventID = 1; // 入群事件编号
+}
+
+// 入群事件改变事件消息
+message JoinGroupEventChangeEventMsg {
+    uint64 JoinGroupEventID = 1; // 入群事件编号
+}
+
+// 事件消息
+// 事件消息用于需要保证客户端能够收到的事件
+// 本质上是消息，但是一般不用于展示，只用于通知
+message EventMsg {
+    EventMsgType Type = 1; // 事件消息类型
+    bytes Content = 2; // 事件消息内容
+}
+
+
+// ----------------------- 请求，响应，事件
+
+// 请求
+message Req {
+    Sender Sender = 1; // 发送者
+    uint64 CorrelationID = 2; // 请求唯一标识
+    MsgType Type = 3; // 消息类型
+    Receiver Receiver = 4; // 接收者
+    bytes Content = 5; // 消息内容
+}
+
+// 文本消息请求内容
+message TextReqContent {
+    string Content = 1; // 内容
+}
+
+// 图片消息请求内容
+// 会先上传图片，拿到图片的信息，然后再把这些信息上传
+message ImageReqContent {
+    Image Thumbnail = 1; // 缩略图
+    Image OriginalImage = 2; // 原图
+}
+
+// 语音消息请求内容
+message VoiceReqContent {
+    Voice Voice = 1; // 语音
+}
+
+// 视频消息请求内容
+message VideoReqContent {
+    Image Thumbnail = 1; // 缩略图
+    Video Video = 2; // 视频
+}
+
+// 文件消息请求内容
+message FileReqContent {
+    File File = 1; // 文件
+}
+
+// 回撤消息请求内容
+message WithdrawReqContent {
+    uint64 MsgID = 1; // 被撤回消息的编号
+}
+
+// 响应
+message Rsp {
+    uint64 CorrelationID = 1; // 请求唯一标识
+    uint64 MailBoxMsgID = 2; // 信箱里消息编号
+    uint64 MsgID = 3; // 消息编号，递增
+}
+
+// 事件类型
+// 会被发送到客户端，不会持久化，不可靠
+// 用于推送响应，消息或其他事件给客户端，同时客户端应该尽量保证消息被成功处理
+// 必须是客户端在线才会推送
+enum EventType {
+    EventTypeUnknown = 0; // 未知
+    EventTypeRsp = 1; // 响应，用户不一定收到，但是可以通过用户本地自行同步消息最终同步到消息
+    EventTypeMsg = 2; // 消息，用户不一定收到，但是可以通过用户本地自行同步消息最终同步到消息
+}
+
+// 事件，事件用于给用户推送消息
+message Event {
+    EventType Type = 1; // 事件类型
+    bytes Content = 2; // 事件内容
+}
+
+
+
+
+
+
+
+
+// @存储模型
+// 信箱消息
+// 每个消息都会转换成信箱消息进行存储
+message MailBoxMsg {
+    uint64 UserID = 1; // 信箱拥有者用户编号
+    uint64 MailBoxMsgID = 2; // 信箱里消息编号，每个人一个信箱，信箱里消息编号会递增（保证不丢失消息）
+    Msg Msg = 3; // 消息
+}
