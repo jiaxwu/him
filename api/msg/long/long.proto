@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package message;
+package msg.long;
 
 import "api/constant/constant.proto";
 import "api/msg/content/content.proto";
@@ -83,30 +83,30 @@ message TextMsg {
 
 // 图片消息
 message ImageMsg {
-    Image Thumbnail = 1; // 缩略图
-    Image OriginalImage = 2; // 原图
+    msg.content.Image Thumbnail = 1; // 缩略图
+    msg.content.Image OriginalImage = 2; // 原图
 }
 
 // 语音消息
 message VoiceMsg {
-    Voice Voice = 1; // 语音
+    msg.content.Voice Voice = 1; // 语音
 }
 
 // 视频消息
 message VideoMsg {
-    Image Thumbnail = 1; // 缩略图
-    Video Video = 2; // 视频
+    msg.content.Image Thumbnail = 1; // 缩略图
+    msg.content.Video Video = 2; // 视频
 }
 
 // 提示消息
 message TipMsg {
-    TipType Type = 1; // 提示类型
+    msg.content.TipType Type = 1; // 提示类型
     bytes Content = 2; // 提示内容
 }
 
 // 文件消息
 message FileMsg {
-    File File = 1; // 文件
+    msg.content.File File = 1; // 文件
 }
 
 // 撤回消息
@@ -209,24 +209,24 @@ message TextReqContent {
 // 图片消息请求内容
 // 会先上传图片，拿到图片的信息，然后再把这些信息上传
 message ImageReqContent {
-    Image Thumbnail = 1; // 缩略图
-    Image OriginalImage = 2; // 原图
+    msg.content.Image Thumbnail = 1; // 缩略图
+    msg.content.Image OriginalImage = 2; // 原图
 }
 
 // 语音消息请求内容
 message VoiceReqContent {
-    Voice Voice = 1; // 语音
+    msg.content.Voice Voice = 1; // 语音
 }
 
 // 视频消息请求内容
 message VideoReqContent {
-    Image Thumbnail = 1; // 缩略图
-    Video Video = 2; // 视频
+    msg.content.Image Thumbnail = 1; // 缩略图
+    msg.content.Video Video = 2; // 视频
 }
 
 // 文件消息请求内容
 message FileReqContent {
-    File File = 1; // 文件
+    msg.content.File File = 1; // 文件
 }
 
 // 回撤消息请求内容

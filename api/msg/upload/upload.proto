@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package message;
+package msg.upload;
 
 option go_package = "github.com/xiaohuashifu/him/api/msg/upload";
 
