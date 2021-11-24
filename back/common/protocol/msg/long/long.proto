@@ -75,9 +75,10 @@ message Msg {
 // 文本消息
 message TextMsg {
     string Content = 1; // 文本消息内容
-    bool AtAll = 2; // @所有人
-    repeated string AtUserIDS = 3; // 被@的用户
-    uint64 QuotedMsgID = 4; // 被引用消息编号
+    bool IsAtAll = 2; // 是否@所有人
+    bool IsNotice = 3; // 是否群公告
+    repeated string AtUserIDS = 4; // 被@的用户
+    uint64 QuotedMsgID = 5; // 被引用消息编号
 }
 
 // 图片消息
@@ -116,11 +117,20 @@ message WithdrawMsg {
 // 事件消息类型
 enum EventMsgType {
     EventMsgTypeUnknown = 0; // 未知
-    EventMsgTypeNewFriend = 1; // 新的好友
+    EventMsgTypeNewFriend = 1; // 新的好友（你已添加了xx，现在可以开始聊天了tip）
     EventMsgTypeFriendInfoChange = 2; // 好友信息改变
-    EventMsgTypeDeleteFriend = 3; // 删除好友
-    EventMsgTypeNewAddFriendApplication = 100; // 新的添加好友申请
-    EventMsgTypeAddFriendApplicationStatusChange = 101; // 添加好友申请状态改变
+    EventMsgTypeDeleteFriend = 3; // 删除好友（对方删除了你tip）
+    EventMsgTypeNewAddFriendApplication = 4; // 新的添加好友申请
+    EventMsgTypeAddFriendApplicationStatusChange = 5; // 添加好友申请状态改变
+
+    EventMsgTypeNewGroup = 100; // 新的群（xx邀请xx，xxx，xxx等加入了群聊tip，你通过扫描xx分享的二维码加入群聊tip，xx邀请你加入了群聊tip）
+    EventMsgTypeGroupInfoChange = 101; // 群信息改变（头像、群名、群公告，xx修改群名为xx tip）
+    // 群成员信息更改（换群主，管理员变动，xx成为了新的群主tip，xx成为了新的管理员）
+    // 群成员加入（加入，邀请加入，xx通过扫描xx分析的二维码进群tip，xx邀请xx，xx，xx加入了群聊tip）
+    // 群成员退出（退出，被踢，xx退出了群聊tip，xx被踢出群聊tip）
+    EventMsgTypeGroupMemberInfoChange = 102;
+    EventMsgTypeNewJoinGroupEvent = 103; // 新的入群事件
+    EventMsgTypeJoinGroupEventChange = 104; // 入群事件改变
 }
 
 // 新的好友事件消息
@@ -144,6 +154,31 @@ message NewAddFriendApplicationEventMsg {}
 // 添加好友申请状态改变事件消息
 message AddFriendApplicationStatusChangeEventMsg {
     uint64 AddFriendApplicationID = 1; // 状态改变的添加好友申请编号
+}
+
+// 新的群事件消息
+message NewGroupEventMsg {
+    uint64 GroupID = 1; // 群编号
+}
+
+// 群信息改变事件消息
+message GroupInfoChangeEventMsg {
+    uint64 GroupID = 1; // 群编号
+}
+
+// 群成员信息改变事件消息（直接拉群群成员信息列表和本地比较进行同步）
+message GroupMemberInfoChangeEventMsg {
+    uint64 GroupID = 1; // 群编号
+}
+
+// 新的入群事件事件消息
+message NewJoinGroupEventEventMsg {
+    uint64 JoinGroupEventID = 1; // 入群事件编号
+}
+
+// 入群事件改变事件消息
+message JoinGroupEventChangeEventMsg {
+    uint64 JoinGroupEventID = 1; // 入群事件编号
 }
 
 // 事件消息

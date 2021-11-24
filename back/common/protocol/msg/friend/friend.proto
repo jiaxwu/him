@@ -6,6 +6,8 @@ import "common/protocol/constant/constant.proto";
 
 option go_package = "him/common/protocol/msg/friend";
 
+// ---------------------------好友管理
+
 // 获取好友请求
 message GetFriendReq {
     string Username = 1; // 用户名
@@ -15,6 +17,80 @@ message GetFriendReq {
 message GetFriendRsp {
     FriendInfo FriendInfo = 1; // 好友信息
 }
+
+// 获取好友信息请求
+message GetFriendInfosReq {
+    uint64 UserID = 1; // 用户编号
+}
+
+// 好友信息
+message FriendInfo {
+    uint64 FriendID = 1; // 好友编号
+    string NickName = 2; // 昵称
+    string Username = 3; // 用户名
+    string Description = 4; // 描述
+    string Remark = 5; // 备注
+    string Avatar = 6; // 头像
+    constant.Gender Gender = 7; // 性别
+    bool IsDisturb = 8; // 是否免打扰
+    bool IsBlacklist = 9; // 是否黑名单
+    bool IsTop = 10; // 是否置顶
+}
+
+// 获取好友信息响应
+message GetFriendInfosRsp {
+    repeated FriendInfo FriendInfos = 1; // 好友信息列表
+}
+
+// 获取好友信息请求
+message GetFriendInfoReq {
+    uint64 UserID = 1; // 用户编号
+    uint64 FriendID = 2; // 好友编号
+}
+
+// 获取好友信息响应
+message GetFriendInfoRsp {
+    FriendInfo FriendInfo = 1; // 好友信息
+}
+
+// 好友免打扰请求
+message FriendDisturbReq {
+    uint64 FriendID = 1; // 好友编号
+    bool IsDisturb = 2; // 是否免打扰
+}
+
+// 好友免打扰响应
+message FriendDisturbRsp {}
+
+// 好友黑名单请求
+message FriendBlacklistReq {
+    uint64 FriendID = 1; // 好友编号
+    bool IsBlacklist = 2; // 是否黑名单
+}
+
+// 好友黑名单响应
+message FriendBlacklistRsp {}
+
+// 删除好友请求
+message DeleteFriendReq {
+    uint64 UserID = 1; // 用户编号
+    uint64 FriendID = 2; // 好友编号
+}
+
+// 删除好友响应
+message DeleteFriendRsp {}
+
+// 获取所有好友请求
+message GetAllFriendsReq {
+    uint64 UserID = 1; // 用户编号
+}
+
+// 获取所有好友响应
+message GetAllFriendsRsp {
+    repeated FriendInfo FriendInfos = 1; // 好友信息列表
+}
+
+// --------------------------------好友申请
 
 // 获取添加好友申请请求
 message GetAddFriendApplicationsReq {
@@ -48,7 +124,7 @@ message GetAddFriendApplicationsRsp {
     repeated AddFriendApplication AddFriendApplications = 1; // 添加好友申请
 }
 
-// 添加好友申请
+// 添加好友申请请求
 message AddFriendApplicationReq {
     uint64 ApplicantID = 1; // 申请人编号
     uint64 FriendID = 2; // 好友编号
@@ -86,73 +162,13 @@ message AcceptAddFriendApplicationReq {
 // 接受添加好友响应
 message AcceptAddFriendApplicationRsp {}
 
-// 获取好友信息请求
-message GetFriendInfosReq {
-    uint64 UserID = 1; // 用户编号
+// 拒绝添加好友请求
+message RejectAddFriendApplicationReq {
+    uint64 AddFriendApplicationID = 1; // 添加好友申请编号
 }
 
-// 好友信息
-message FriendInfo {
-    uint64 FriendID = 1; // 好友编号
-    string NickName = 2; // 昵称
-    string Username = 3; // 用户名
-    string Description = 4; // 描述
-    string Remark = 5; // 备注
-    string Avatar = 6; // 头像
-    constant.Gender Gender = 7; // 性别
-    bool Disturb = 8; // 免打扰
-    bool Blacklist = 9; // 黑名单
-}
-
-// 获取好友信息响应
-message GetFriendInfosRsp {
-    repeated FriendInfo FriendInfos = 1; // 好友信息列表
-}
-
-// 获取好友信息请求
-message GetFriendInfoReq {
-    uint64 UserID = 1; // 用户编号
-    uint64 FriendID = 2; // 好友编号
-}
-
-// 获取好友信息响应
-message GetFriendInfoRsp {
-    FriendInfo FriendInfo = 1; // 好友信息
-}
-
-// 好友免打扰请求
-message FriendDisturbReq {
-    uint64 FriendID = 1; // 好友编号
-    bool Disturb = 2; // 免打扰
-}
-
-// 好友免打扰响应
-message FriendDisturbRsp {}
-
-// 好友黑名单请求
-message FriendBlacklistReq {
-    uint64 FriendID = 1; // 好友编号
-    bool Blacklist = 2; // 黑名单
-}
-
-// 好友黑名单响应
-message FriendBlacklistRsp {}
-
-// 删除好友请求
-message DeleteFriendReq {
-    uint64 UserID = 1; // 用户编号
-    uint64 FriendID = 2; // 好友编号
-}
-
-// 删除好友响应
-message DeleteFriendRsp {}
-
-// 获取所有好友请求
-message GetAllFriendsReq {
-    uint64 UserID = 1; // 用户编号
-}
-
-
+// 拒绝添加好友响应
+message RejectAddFriendApplicationRsp {}
 
 
 
@@ -169,11 +185,12 @@ message AddFriendApplicationStore {
 // 好友
 message FriendStore {
     uint64 UserID = 1; // 用户编号
-    uint64 FriendID = 2; // 用户编号
+    uint64 FriendID = 2; // 好友编号
     string Username = 3; // 用户名
     string Description = 4; // 描述
-    bool IgnoreMsg = 5; // 忽略对方的消息
-    bool Blacklist = 6; // 黑名单
-    uint64 CreatedAt = 7; // 建立时间
-    uint64 UpdatedAt = 8; // 修改时间
+    bool IsIgnoreMsg = 5; // 是否忽略对方的消息
+    bool IsBlacklist = 6; // 是否黑名单
+    bool IsTop = 7; // 是否置顶
+    uint64 CreatedAt = 8; // 建立时间
+    uint64 UpdatedAt = 9; // 修改时间
 }
