@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
-	"github.com/xiaohuashifu/him/api/msg/content"
+	"github.com/shopspring/decimal"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
@@ -56,15 +54,15 @@ func main() {
 	//engine.Run()
 
 
-	engine := gin.Default()
-	engine.Use(cors.Default())
-	engine.POST("test", func(c *gin.Context) {
-		var image content.Image
-		c.ShouldBind(&image)
-		fmt.Println(image)
-		return
-	})
-	engine.Run()
+	//engine := gin.Default()
+	//engine.Use(cors.Default())
+	//engine.POST("test", func(c *gin.Context) {
+	//	var image content.Image
+	//	c.ShouldBind(&image)
+	//	fmt.Println(image)
+	//	return
+	//})
+	//engine.Run()
 
 	//cli, err := clientv3.New(clientv3.Config{
 	//	Endpoints:   []string{"49.233.30.197:2379"},
@@ -81,5 +79,22 @@ func main() {
 	//fmt.Println(err)
 	//fmt.Println(dequeue)
 
+	n1, _ := decimal.NewFromString("10")
+	n2, _ := decimal.NewFromString("100")
+	n3 := n1.Mul(n2)
+	fmt.Println(n3.IntPart())
 }
 
+//
+type xxxReq struct {
+	Type string
+	Content string
+}
+
+type aTypeContent struct{
+
+}
+
+type bTypeContent struct{
+	xxxx map[string]interface{}
+}

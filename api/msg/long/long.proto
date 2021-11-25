@@ -9,6 +9,8 @@ option go_package = "github.com/xiaohuashifu/him/api/msg/long";
 
 // ----------------------- 发送者，接收者
 
+// todo 登录
+
 // 接收者类型
 enum ReceiverType {
     ReceiverTypeUnknown = 0; // 未知

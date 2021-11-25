@@ -28,10 +28,10 @@ message FriendInfo {
     uint64 FriendID = 1; // 好友编号
     string NickName = 2; // 昵称
     string Username = 3; // 用户名
-    string Description = 4; // 描述
-    string Remark = 5; // 备注
-    string Avatar = 6; // 头像
-    constant.Gender Gender = 7; // 性别
+    string Avatar = 4; // 头像
+    constant.Gender Gender = 5; // 性别
+    string Remark = 6; // 备注
+    string Description = 7; // 描述
     bool IsDisturb = 8; // 是否免打扰
     bool IsBlacklist = 9; // 是否黑名单
     bool IsTop = 10; // 是否置顶
@@ -186,7 +186,7 @@ message AddFriendApplicationStore {
 message FriendStore {
     uint64 UserID = 1; // 用户编号
     uint64 FriendID = 2; // 好友编号
-    string Username = 3; // 用户名
+    string Remark = 3; // 备注
     string Description = 4; // 描述
     bool IsIgnoreMsg = 5; // 是否忽略对方的消息
     bool IsBlacklist = 6; // 是否黑名单

@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package sms;
+
+option go_package = "github.com/xiaohuashifu/him/api/sms";
+
+// 发送验证码短信用于登录请求
+message SendVecCodeForLoginReq {
+    string Phone = 1; // 手机号码
+    string VecCode = 2; // 验证码
+    uint32 ExpMinute = 3; // 过期时间
+}
+
+// 发送验证码短信用于登录响应
+message SendVecCodeForLoginRsp {}
+
+// 发送短信请求
+message SendReq {
+    string Phone = 1;  // 手机
+    string TemplateID = 2;   // 模板ID
+    repeated string Params = 3; // 参数
+}
+
+// 发送短信响应
+message SendRsp {}
