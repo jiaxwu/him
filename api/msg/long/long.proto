@@ -7,9 +7,18 @@ import "api/msg/content/content.proto";
 
 option go_package = "github.com/xiaohuashifu/him/api/msg/long";
 
-// ----------------------- 发送者，接收者
+// ------------------------ 登录
 
-// todo 登录
+// 登录请求
+message LoginReq {
+    string Token = 1; // 凭证
+}
+
+// 登录响应
+message LoginRsp {}
+
+
+// ----------------------- 发送者，接收者
 
 // 接收者类型
 enum ReceiverType {
