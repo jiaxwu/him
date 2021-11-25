@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package authn;
+
+import "api/session/session.proto";
+import "api/user/user.proto";
+
+option go_package = "github.com/xiaohuashifu/him/api/authn";
+
+// 认证请求
+message AuthnReq {
+    string Token = 1; // 凭证
+    repeated user.UserType UserTypes = 2; // 用户类型（其中一种即可，若空表示只需要凭证有效即可）
+}
+
+// 认证响应
+message AuthnRsp {
+    Session Session = 1; // 会话
+}

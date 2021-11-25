@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "github.com/xiaohuashifu/him/api/user";
+
+// UserType 用户类型
+enum UserType {
+    UserTypeUnknown = 0; // 未知
+    UserTypeUser = 1; // 用户
+}

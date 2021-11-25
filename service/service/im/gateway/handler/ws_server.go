@@ -36,6 +36,7 @@ func NewGatewayHandler(engine *gin.Engine, wrapper *wrap.Wrapper, logger *logrus
 		},
 	}
 	engine.GET("/im", wrapper.Wrap(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(r.Header)
 		//conn, err := server.upgrader.Upgrade(w, r, nil)
 		//if err != nil {
 		//	return
