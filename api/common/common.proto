@@ -12,7 +12,8 @@ option go_package = "github.com/xiaohuashifu/him/api/common";
 message Req {
     string req_id = 1; // 请求编号
     string token = 2; // 身份凭证
-    google.protobuf.Any content = 3; // 请求内容
+    string service_name = 3; // 服务名
+    google.protobuf.Any content = 4; // 请求内容
 }
 
 // 响应，所有响应的抽象

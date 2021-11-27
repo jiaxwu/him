@@ -2,32 +2,33 @@ package wrap
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/xiaohuashifu/him/api/authnz"
 	"github.com/xiaohuashifu/him/api/authnz/authn"
-	sess "github.com/xiaohuashifu/him/api/authnz/session"
-	"github.com/xiaohuashifu/him/api/user"
 	httpHeaderKey "github.com/xiaohuashifu/him/common/constant/http/header/key"
 	"github.com/xiaohuashifu/him/service/common"
-	loginService "github.com/xiaohuashifu/him/service/service/authnz/authz/service"
+	authzService "github.com/xiaohuashifu/him/service/service/authnz/authz/service"
+	"google.golang.org/protobuf/proto"
 	"mime/multipart"
+	"net/http"
 	"reflect"
 )
 
 // Config 配置
 type Config struct {
-	NotNeedResponse bool            // 不需要响应
-	NotNeedLogin    bool            // 不需要登录
-	UserTypes       []user.UserType // 有权访问的用户类型
+	NotNeedResponse bool              // 不需要响应
+	NotNeedLogin    bool              // 不需要登录
+	UserTypes       []authnz.UserType // 有权访问的用户类型
 }
 
 // Wrapper Handler的包装器
 type Wrapper struct {
-	loginService *loginService.AuthzService
+	authzService *authzService.AuthzService
 }
 
 // NewWrapper 新建一个Handler的包装器
-func NewWrapper(loginService *loginService.AuthzService) *Wrapper {
+func NewWrapper(authzService *authzService.AuthzService) *Wrapper {
 	return &Wrapper{
-		loginService: loginService,
+		authzService: authzService,
 	}
 }
 
@@ -44,10 +45,10 @@ func (w *Wrapper) wrap(c *gin.Context, handler interface{}, config *Config) {
 	header := c.Request.Header
 
 	// 如果需要登录则进行验证
-	var session *a.Session
+	var session *authnz.Session
 	if !config.NotNeedLogin {
 		// 获取session
-		authnRsp, err := w.loginService.Authorize(&authn.AuthnReq{
+		authnResp, err := w.authzService.Authorize(&authn.AuthnReq{
 			Token:     header[httpHeaderKey.Token][0],
 			UserTypes: config.UserTypes,
 		})
@@ -55,16 +56,16 @@ func (w *Wrapper) wrap(c *gin.Context, handler interface{}, config *Config) {
 			common.Failure(c, err)
 			return
 		}
-		session = authorizeRsp.Session
+		session = authnResp.Session
 	}
 
 	// 参数绑定
 	fn := reflect.TypeOf(handler)
 	var params []reflect.Value
 	for i := 0; i < fn.NumIn(); i++ {
-		paramValue, err := w.getParamValue(fn, i, c, &header, session)
+		paramValue, err := w.getParamValue(fn, i, c, header, session)
 		if err != nil {
-			common.Failure(c, common.ErrCodeInvalidParameter)
+			common.Failure(c, common.CodeInvalidParameter)
 			return
 		}
 		params = append(params, reflect.ValueOf(paramValue))
@@ -80,20 +81,20 @@ func (w *Wrapper) wrap(c *gin.Context, handler interface{}, config *Config) {
 
 	// 结果处理
 	if !rets[1].IsNil() {
-		common.Failure(c, rets[1].Interface().(common.ErrCode))
+		common.Failure(c, rets[1].Interface().(error))
 		return
 	}
-	common.Success(c, rets[0].Interface())
+	common.Success(c, rets[0].Interface().(proto.Message))
 }
 
 // 获取参数值
-func (w *Wrapper) getParamValue(fn reflect.Type, paramIndex int, c *gin.Context, header *common.Header,
-	session *common.Session) (interface{}, error) {
+func (w *Wrapper) getParamValue(fn reflect.Type, paramIndex int, c *gin.Context, header http.Header,
+	session *authnz.Session) (interface{}, error) {
 	paramPointType := fn.In(paramIndex)
-	if reflect.TypeOf(&common.Header{}).AssignableTo(paramPointType) {
+	if reflect.TypeOf(http.Header{}).AssignableTo(paramPointType) {
 		return header, nil
 	}
-	if reflect.TypeOf(&common.Session{}).AssignableTo(paramPointType) {
+	if reflect.TypeOf(&authnz.Session{}).AssignableTo(paramPointType) {
 		return session, nil
 	}
 	if reflect.TypeOf(&multipart.Form{}).AssignableTo(paramPointType) {

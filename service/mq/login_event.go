@@ -12,8 +12,8 @@ const (
 )
 
 type LoginEvent struct {
-	UserID    uint64          `json:"userID"`    // 用户编号
-	LoginType model.LoginType `json:"type"`      // 登录类型
+	UserID    uint64          `json:"user_id"`    // 用户编号
+	LoginType authnz.LoginType `json:"type"`      // 登录类型
 	LoginTime uint64          `json:"loginTime"` // 登录时间
 }
 

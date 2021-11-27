@@ -132,7 +132,7 @@ func (s *UserProfileService) UpdateProfile(req *model.UpdateProfileReq) (*model.
 	// 判断更新类型是否支持
 	column := model.UpdateProfileActionToDBColumnMap[req.Action]
 	if column == "" {
-		return nil, common.NewError(common.ErrCodeInvalidParameter)
+		return nil, common.NewError(common.CodeInvalidParameter)
 	}
 
 	// 参数校验

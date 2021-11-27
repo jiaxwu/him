@@ -14,9 +14,9 @@ func ExceptionHandler() func(c *gin.Context) {
 		switch c.Writer.Status() {
 		case http.StatusOK:
 		case http.StatusNotFound:
-			common.Failure(c, common.ErrCodeNotFoundURL)
+			common.Failure(c, common.CodeNotFound)
 		default:
-			common.Failure(c, common.ErrCodeInternalError)
+			common.Failure(c, common.CodeInternalError)
 		}
 	}
 }

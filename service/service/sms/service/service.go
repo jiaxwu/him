@@ -43,7 +43,7 @@ func NewSMSService(config *conf.Config, logger *logrus.Logger, validate *validat
 func (s *SMSService) SendAuthCodeForLogin(req *model.SendAuthCodeForLoginReq) (
 	*model.SendAuthCodeForLoginRsp, common.Error) {
 	if err := s.validate.Struct(req); err != nil {
-		return nil, common.WrapError(common.ErrCodeInvalidParameter, err)
+		return nil, common.WrapError(common.CodeInvalidParameter, err)
 	}
 
 	if _, err := s.SendSMS(&model.SendSMSReq{
@@ -81,7 +81,7 @@ func (s *SMSService) SendSMS(req *model.SendSMSReq) (*model.SendSMSRsp, common.E
 			"req": req,
 			"err": err,
 		}).Error("unknown exception catch")
-		return nil, common.WrapError(common.ErrCodeInternalError, err)
+		return nil, common.WrapError(common.CodeInternalError, err)
 	}
 
 	// 超过限频限制

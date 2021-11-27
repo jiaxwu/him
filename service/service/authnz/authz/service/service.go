@@ -11,6 +11,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v8"
 	"github.com/sirupsen/logrus"
+	"github.com/xiaohuashifu/him/api/authnz"
+	"github.com/xiaohuashifu/him/api/authnz/authn"
 	pb "github.com/xiaohuashifu/him/api/authnz/authz"
 	"github.com/xiaohuashifu/him/conf"
 	"github.com/xiaohuashifu/him/service/common"
@@ -49,7 +51,7 @@ func NewAuthzService(loginEventProducer rocketmq.Producer, db *gorm.DB, rdb *red
 }
 
 // Login 登录
-func (s *AuthzService) Login(req *pb.LoginReq) (*pb.LoginRsp, *common.Error) {
+func (s *AuthzService) Login(req *pb.LoginReq) (*pb.LoginResp, error) {
 	var (
 		rsp *pb.LoginRsp
 		err *common.Error
@@ -61,7 +63,7 @@ func (s *AuthzService) Login(req *pb.LoginReq) (*pb.LoginRsp, *common.Error) {
 		// pwd登录
 		rsp, err = s.loginByPwd(req.Username, req.Password)
 	} else {
-		return nil, common.NewError(common.ErrCodeInvalidParameter)
+		return nil, common.NewError(common.CodeInvalidParameter)
 	}
 	if err != nil {
 		return nil, err
@@ -88,7 +90,7 @@ func (s *AuthzService) loginBySMS(phone, authCode string) (*model.LoginRsp, comm
 		AuthCode: authCode,
 	}
 	if err := s.validate.Struct(req); err != nil {
-		return nil, common.NewError(common.ErrCodeInvalidParameter)
+		return nil, common.NewError(common.CodeInvalidParameter)
 	}
 
 	// 验证短信验证码
@@ -201,9 +203,9 @@ func (s *AuthzService) login(userID uint64) (*model.LoginRsp, common.Error) {
 	// 生成Token并添加到Redis
 	token := gofakeit.UUID()
 	tokenKey := s.tokenRedisKey(token)
-	session := &common.Session{
+	session := &authnz.Session{
 		UserID:   userID,
-		UserType: common.UserType(user.Type),
+		UserType: authnz.UserType(user.Type),
 	}
 	sessionBytes, _ := json.Marshal(session)
 	// 先插入反向Token
@@ -223,11 +225,10 @@ func (s *AuthzService) login(userID uint64) (*model.LoginRsp, common.Error) {
 	}, nil
 }
 
-// SendSMSForLogin 发送登录需要的短信验证码
-func (s *AuthzService) SendSMSForLogin(req *model.SendSMSForLoginReq) (
-	*model.SendSMSForLoginRsp, common.Error) {
+// SendSmVerCodeForLogin 发送登录需要的短信验证码
+func (s *AuthzService) SendSmVerCodeForLogin(req *pb.SendSmVerCodeForLoginReq) (*pb.SendSmVerCodeForLoginResp, error) {
 	if err := s.validate.Struct(req); err != nil {
-		return nil, common.NewError(common.ErrCodeInvalidParameter)
+		return nil, common.NewError(common.CodeInvalidParameter)
 	}
 
 	// 把验证码加到缓存
@@ -279,9 +280,8 @@ func (s *AuthzService) register(phone string) (uint64, common.Error) {
 	return user.ID, nil
 }
 
-// BindPasswordLogin 绑定密码
-func (s *AuthzService) BindPasswordLogin(req *model.BindPasswordLoginReq) (
-	*model.BindPasswordLoginRsp, common.Error) {
+// SetPwdLogin 绑定密码
+func (s *AuthzService) SetPwdLogin(req *pb.SetPwdLoginReq) (*pb.SetPwdLoginResp, error) {
 	// 检查密码强度
 	if err := s.checkPasswordLevel(req.Password); err != nil {
 		return nil, err
@@ -301,7 +301,7 @@ func (s *AuthzService) BindPasswordLogin(req *model.BindPasswordLoginReq) (
 	passwordBytes, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		s.logger.WithField("err", err).Error("bcrypt GenerateFromPassword exception")
-		return nil, common.WrapError(common.ErrCodeInternalError, err)
+		return nil, common.WrapError(common.CodeInternalError, err)
 	}
 	passwordLogin.Password = string(passwordBytes)
 
@@ -365,7 +365,7 @@ func (s *AuthzService) Logout(req *model.LogoutReq) (*model.LogoutRsp, common.Er
 }
 
 // Authorize 权限验证
-func (s *AuthzService) Authorize(req *model.AuthorizeReq) (*model.AuthorizeRsp, common.Error) {
+func (s *AuthzService) Authorize(req *authn.AuthnReq) (*authn.AuthnResp, error) {
 	// 获取Session
 	rsp, err := s.GetSession(&model.GetSessionReq{Token: req.Token})
 	if err != nil {
@@ -382,7 +382,7 @@ func (s *AuthzService) Authorize(req *model.AuthorizeReq) (*model.AuthorizeRsp, 
 			}
 		}
 		if !hasRole {
-			return nil, common.NewError(common.ErrCodeForbidden)
+			return nil, common.NewError(common.CodeForbidden)
 		}
 	}
 
@@ -409,7 +409,7 @@ func (s *AuthzService) GetSession(req *model.GetSessionReq) (*model.GetSessionRs
 	}
 
 	// 解析Session
-	var session common.Session
+	var session authnz.Session
 	_ = json.Unmarshal(sessionBytes, &session)
 
 	// 延长Token的过期时间

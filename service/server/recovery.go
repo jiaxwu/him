@@ -10,6 +10,6 @@ import (
 func Recovery() func(c *gin.Context) {
 	return gin.CustomRecovery(func(c *gin.Context, err interface{}) {
 		logger.NewLogger().WithField("err", err).Error("a panic captured")
-		common.Failure(c, common.ErrCodeInternalError)
+		common.Failure(c, common.CodeInternalError)
 	})
 }

@@ -15,7 +15,6 @@ message SendSmVerCodeForLoginReq {
 // 发送短信登录验证码响应
 message SendSmVerCodeForLoginResp {}
 
-
 // 登录请求
 message LoginReq {
     constant.Terminal terminal = 1; // 终端

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/xiaohuashifu/him/api/common"
 	"github.com/xiaohuashifu/him/api/user/info"
@@ -42,5 +44,8 @@ func main() {
 		fmt.Printf("%d", b)
 		fmt.Printf(",")
 	}
-
+	fmt.Println()
+	bytes, _ := json.Marshal(r.GetContent().GetValue())
+	fmt.Printf(string(bytes))
+	context.WithValue()
 }
