@@ -13,7 +13,7 @@ const (
 	MaxUserAvatarSize = 1048576
 )
 
-// UserAvatarContentTypeToFileTypeMap 用户头像的 ContentType 到 FileType 的转换
+// UserAvatarContentTypeToFileTypeMap 用户头像的 content_type 到 FileType 的转换
 var UserAvatarContentTypeToFileTypeMap = map[string]string{
 	httpHeaderValue.ImagePNG:  imageSuffix.PNG,
 	httpHeaderValue.ImageJPG:  imageSuffix.JPG,

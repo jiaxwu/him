@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package msg.short;
+
+import "api/msg/msg.proto";
+
+option go_package = "github.com/xiaohuashifu/him/api/msg/short";
+
+// --------------------------资源上传
+
+// 上传请求（通过字节流）
+message UploadReq {
+    // 上传类型
+    enum Type {
+        TYPE_UNSPECIFIED = 0; // 未知
+        TYPE_IMAGE = 1; // 图片
+        TYPE_VOICE = 2; // 语音
+        TYPE_VIDEO = 3; // 视频
+        TYPE_FILE = 4; // 文件
+    }
+    Type type = 1; // 上传类型
+}
+
+// 上传响应
+message UploadResp {
+    // 内容
+    oneof Content {
+        msg.Image image = 1; // 图片
+        msg.Voice voice = 2; // 语音
+        msg.Video video = 3; // 视频
+        msg.File file = 4; // 文件
+    }
+}
+
+// --------------------------- 消息同步
+
+// 获取最后一个信箱消息编号请求
+message GetLastMailBoxMsgIdReq {
+    uint64 user_id = 1; // 用户编号
+}
+
+// 获取最后一个信箱消息编号响应
+message GetLastMailBoxMsgIdResp {
+    uint64 last_mail_box_msg_id = 1; // 最后一个信箱消息编号
+}
+
+// 获取消息请求
+message GetMsgsReq {
+    // 信箱消息编号范围
+    message MailBoxMsgIdRange {
+        uint64 start_id = 1; // 起始编号
+        uint64 end_id = 2; // 结尾编号
+    }
+    repeated MailBoxMsgIdRange mail_box_msg_id_ranges = 1; // 信箱消息编号范围
+}
+
+// 获取消息响应
+message GetMsgsResp {
+    repeated msg.Msg msgs = 1; // 消息
+}
+
+// ------------------------------------存储模型
+
+// @存储模型
+// 使用对象存储服务存储
+message ObjectStore {
+    string content_type = 1; // HTTP头设置ContentType这样可以直接打开
+    string url = 2; // URL用于访问
+    bytes content = 3; // 对象
+}

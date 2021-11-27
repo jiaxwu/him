@@ -1,6 +1,8 @@
 package mq
 
-import "github.com/xiaohuashifu/him/service/service/login/model"
+import (
+	"github.com/xiaohuashifu/him/service/service/authnz/authz/model"
+)
 
 const (
 	// LoginEventProducerGroupName 登录事件生产者群名

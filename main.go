@@ -7,11 +7,11 @@ import (
 	"github.com/xiaohuashifu/him/common/validate"
 	"github.com/xiaohuashifu/him/conf"
 	"github.com/xiaohuashifu/him/service/server"
+	loginConf "github.com/xiaohuashifu/him/service/service/authnz/authz/conf"
+	loginHandler "github.com/xiaohuashifu/him/service/service/authnz/authz/handler"
+	loginService "github.com/xiaohuashifu/him/service/service/authnz/authz/service"
 	imGatewayHandler "github.com/xiaohuashifu/him/service/service/im/gateway/handler"
 	imServiceHandler "github.com/xiaohuashifu/him/service/service/im/service/handler"
-	loginConf "github.com/xiaohuashifu/him/service/service/login/conf"
-	loginHandler "github.com/xiaohuashifu/him/service/service/login/handler"
-	loginService "github.com/xiaohuashifu/him/service/service/login/service"
 	smsService "github.com/xiaohuashifu/him/service/service/sms/service"
 	userProfileConf "github.com/xiaohuashifu/him/service/service/user/profile/conf"
 	userProfileConsumer "github.com/xiaohuashifu/him/service/service/user/profile/consumer"
@@ -43,7 +43,7 @@ func NewApp() *fx.App {
 				fx.ResultTags(`name:"LoginEventProducer"`),
 			),
 			fx.Annotate(
-				loginService.NewLoginService,
+				loginService.NewAuthzService,
 				fx.ParamTags(`name:"LoginEventProducer"`),
 			),
 			fx.Annotate(

@@ -9,6 +9,6 @@ const (
 
 // Session 会话
 type Session struct {
-	UserID   uint64   `json:"UserID"`
+	UserID   uint64   `json:"user_id"`
 	UserType UserType `json:"UserType"`
 }

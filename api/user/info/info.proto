@@ -8,47 +8,43 @@ option go_package = "github.com/xiaohuashifu/him/api/user/info";
 
 // 用户信息
 message UserInfo {
-    uint64 UserID = 1; // 用户编号
-    string Username = 2; // 用户名
-    string NickName = 3; // 昵称
-    string Avatar = 4; // 头像
-    constant.Gender Gender = 5; // 性别
-    uint64 LastOnLineTime = 6; // 最后一次登录时间
+    uint64 user_id = 1; // 用户编号
+    string username = 2; // 用户名
+    string nick_name = 3; // 昵称
+    string avatar = 4; // 头像
+    constant.Gender gender = 5; // 性别
+    uint64 last_on_line_time = 6; // 最后一次登录时间
 }
 
 // 获取用户信息请求
 message GetUserInfoReq {
-    uint64 UserID = 1; // 用户编号
+    uint64 user_id = 1; // 用户编号
 }
 
 // 获取用户信息响应
-message GetUserInfoRsp {
-    UserInfo UserInfo = 1; // 用户信息
-}
-
-// 更新用户信息行为
-enum UpdateUserInfoAction {
-    UpdateUserInfoActionUnknown = 0; // 未知
-    UpdateUserInfoActionAvatar = 1; // 头像
-    UpdateUserInfoActionNickName = 2; // 昵称
-    UpdateUserInfoActionUsername = 3; // 用户名
+message GetUserInfoResp {
+    UserInfo user_info = 1; // 用户信息
 }
 
 // 更新用户信息请求
 message UpdateUserInfoReq {
-    uint64 UserID = 1; // 用户编号
-    UpdateUserInfoAction Action = 2; // 更新用户信息行为
-    string Value = 3; // 更新的值
+    uint64 user_id = 1; // 用户编号
+    // 更新行为
+    oneof action {
+        string avatar = 2; // 头像
+        string nick_name = 3; // 昵称
+        string username = 4; // 用户名
+    }
 }
 
 // 更新用户信息响应
-message UpdateUserInfoRsp {}
+message UpdateUserInfoResp {}
 
 // 上传头像请求
 message UploadAvatarReq {
 }
 
 // 上传头像响应
-message UploadAvatarRsp {
-    string Avatar = 1; // 头像URL
+message UploadAvatarResp {
+    string avatar = 1; // 头像URL
 }

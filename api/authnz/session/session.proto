@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package authnz.session;
+
+import "api/authnz/authnz.proto";
+
+option go_package = "github.com/xiaohuashifu/him/api/authnz/session";
+
+// 获取会话请求
+message GetSessionReq {
+    string token = 1; // 凭证
+}
+
+// 获取会话响应
+message GetSessionResp {
+    authnz.Session session = 1; // 会话
+}

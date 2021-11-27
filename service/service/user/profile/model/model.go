@@ -3,11 +3,11 @@ package model
 import "mime/multipart"
 
 type UserProfile struct {
-	UserID         uint64 `json:"UserID"`
-	Username       string `json:"Username"`
-	NickName       string `json:"NickName"`
-	Avatar         string `json:"Avatar"`
-	LastOnLineTime uint64 `json:"LastOnLineTime"`
+	UserID         uint64 `json:"user_id"`
+	Username       string `json:"username"`
+	NickName       string `json:"nick_name"`
+	Avatar         string `json:"avatar"`
+	LastOnLineTime uint64 `json:"last_on_line_time"`
 }
 
 type GetUserProfileReq struct {
@@ -22,9 +22,9 @@ type GetUserProfileRsp struct {
 type UpdateProfileAction string
 
 const (
-	UpdateProfileActionAvatar   = "Avatar"
-	UpdateProfileActionNickName = "NickName"
-	UpdateProfileActionUsername = "Username"
+	UpdateProfileActionAvatar   = "avatar"
+	UpdateProfileActionNickName = "nick_name"
+	UpdateProfileActionUsername = "username"
 )
 
 // UpdateProfileActionToDBColumnMap 转数据库字段
@@ -35,7 +35,7 @@ var UpdateProfileActionToDBColumnMap = map[UpdateProfileAction]string{
 }
 
 type UpdateProfileReq struct {
-	UserID uint64              `json:"UserID" validate:"required"`
+	UserID uint64              `json:"user_id" validate:"required"`
 	Action UpdateProfileAction `json:"Action" validate:"required"`
 	Value  string              `json:"Value" validate:"required"`
 }
@@ -43,9 +43,9 @@ type UpdateProfileReq struct {
 type UpdateProfileRsp struct{}
 
 type UploadAvatarReq struct {
-	Avatar *multipart.FileHeader `form:"Avatar"`
+	Avatar *multipart.FileHeader `form:"avatar"`
 }
 
 type UploadAvatarRsp struct {
-	Avatar string `json:"Avatar"`
+	Avatar string `json:"avatar"`
 }

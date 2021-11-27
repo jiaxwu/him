@@ -1,0 +1,262 @@
+syntax = "proto3";
+
+package grp;
+
+option go_package = "github.com/xiaohuashifu/him/api/grp";
+
+// -----------------------------群管理
+
+// 群信息
+message GroupInfo {
+    uint64 group_id = 1; // 群编号
+    string name = 2; // 群名
+    string icon = 3; // 图标
+    uint32 members = 4; // 成员数
+    string notice = 5; // 群公告
+}
+
+// 更新群信息请求
+message UpdateGroupInfoReq {
+    uint64 group_id = 1; // 群编号
+    uint64 operator_id = 2; // 操作者编号
+    oneof action {
+        string name = 3; // 群名
+        string icon = 4; // 图标
+        string notice = 5; // 群公告
+    }
+}
+
+// 更新群信息响应
+message UpdateGroupInfoResp {}
+
+// 获取群信息请求
+message GetGroupInfoReq {
+    uint64 group_id = 1; // 群编号
+}
+
+// 获取群信息响应
+message GetGroupInfoResp {
+    GroupInfo group_info = 1; // 群信息
+}
+
+// 创建群请求
+message CreateGroupReq {
+    string name = 1; // 群名
+    string icon = 2; // 图标
+    repeated uint64 member_ids = 3; // 初始成员编号列表
+}
+
+// 创建群响应
+message CreateGroupResp {
+    uint64 group_id = 1; // 群编号
+}
+
+// 踢出群成员请求
+message KickGroupMemberReq {
+    uint64 group_id = 1; // 群编号
+    uint64 operator_id = 2; // 操作者编号
+    repeated uint64 group_member_ids = 3; // 群成员编号列表
+}
+
+// 踢出群成员响应
+message KickGroupMemberResp {}
+
+// 转让群主请求
+message TransferGroupLeaderReq {
+    uint64 group_id = 1; // 群编号
+    uint64 new_leader_id = 2; // 新群主编号
+}
+
+// 转让群主响应
+message TransferGroupLeaderResp {}
+
+// 退群请求
+message QuitGroupReq {
+    uint64 group_id = 1; // 群编号
+    uint64 member_id = 2; // 成员编号
+}
+
+// 退群响应
+message QuitGroupResp {}
+
+// 群成员角色
+enum GroupMemberRole {
+    GROUP_MEMBER_ROLE_UNSPECIFIED = 0; // 未知
+    GROUP_MEMBER_ROLE_MEMBER = 1; // 成员
+    GROUP_MEMBER_ROLE_MANAGER = 2; // 管理员
+    GROUP_MEMBER_ROLE_LEADER = 3; // 群主
+}
+
+// 群成员信息
+message GroupMemberInfo {
+    uint64 group_id = 1; // 群编号
+    uint64 member_id = 2; // 成员编号
+    GroupMemberRole role = 3; // 角色
+    string group_nick_name = 4; // 群昵称
+    bool is_disturb = 5; // 是否免打扰
+    bool is_top = 6; // 是否置顶
+    bool is_show_nick_name = 7; // 是显示群成员昵称
+    uint64 join_time = 8; // 入群时间
+}
+
+// 群成员范围
+enum GroupMemberRange {
+    GROUP_MEMBER_RANGE_ALL = 0; // 全部
+    GROUP_MEMBER_RANGE_MEMBER = 1; // 成员
+    GROUP_MEMBER_RANGE_MANAGER = 2; // 管理员
+    GROUP_MEMBER_RANGE_LEADER = 3; // 群主
+}
+
+// 获取群成员信息请求
+message GetGroupMemberInfosReq {
+    uint64 group_id = 1; // 群编号
+    GroupMemberRange range = 2; // 范围
+}
+
+// 获取群成员信息响应
+message GetGroupMemberInfosResp {
+    repeated GroupMemberInfo group_member_infos = 1; // 群成员信息列表
+}
+
+// -------------------------------入群申请
+
+// 入群申请请求（用于扫码入群）
+message JoinGroupApplicationReq {
+    uint64 group_id = 1; // 群编号
+    uint64 join_group_user_id = 2; // 入群用户编号
+    string join_group_user_msg = 3; // 入群用户消息
+}
+
+// 入群申请响应
+message JoinGroupApplicationResp {
+    uint64 join_group_event_id = 1; // 入群事件编号
+}
+
+// 入群事件
+message JoinGroupEvent {
+    uint64 join_group_event_id = 1; // 入群事件编号
+    uint64 group_id = 2; // 群编号
+    uint64 join_group_user_id = 3; // 入群用户编号
+    string join_group_user_msg = 4; // 入群用户消息
+    string manager_msg = 5; // 管理员消息
+    uint64 created_at = 6; // 创建时间
+    uint64 updated_at = 7; // 更新时间
+    // 入群申请状态
+    enum ApplicationStatus {
+        APPLICATION_STATUS_UNSPECIFIED = 0; // 未知
+        APPLICATION_STATUS_WAIT_CONFIRM = 1; // 等待确认
+        APPLICATION_STATUS_REJECT = 2; // 拒绝
+        APPLICATION_STATUS_ACCEPT = 3; // 接受
+        APPLICATION_STATUS_EXPIRE = 4; // 过期
+    }
+    message ApplicationContent {
+        ApplicationStatus application_status = 1; // 入群申请状态
+    }
+    // 入群邀请状态
+    enum InviteStatus {
+        INVITE_STATUS_UNSPECIFIED = 0; // 未知
+        INVITE_STATUS_WAIT_MANAGER_CONFIRM = 1; // 等待管理员确认
+        INVITE_STATUS_WAIT_INVITEE_CONFIRM = 2; // 等待被邀请人确认
+        INVITE_STATUS_INVITEE_ACCEPT = 3; // 被邀请人接受
+        INVITE_STATUS_MANAGER_REJECT = 4; // 管理员拒绝
+        INVITE_STATUS_INVITEE_REJECT = 5; // 被邀请人拒绝
+        INVITE_STATUS_EXPIRE = 6; // 过期
+    }
+    message InviteContent {
+        uint64 inviter_id = 1; // 邀请者编号
+        InviteStatus invite_status = 2; // 入群邀请状态
+    }
+    oneof content {
+        ApplicationContent application_content = 8;
+        InviteContent invite_content = 9;
+    }
+}
+
+// 更新入群事件请求
+message UpdateJoinGroupEventReq {
+    uint64 join_group_event_id = 1; // 入群事件编号
+    oneof action {
+        string join_group_user_msg = 2; // 入群用户消息
+        string manager_msg = 3; // 管理员消息
+    }
+}
+
+// 更新入群事件响应
+message UpdateJoinGroupEventResp {}
+
+// 获取入群事件请求
+message GetJoinGroupEventsReq {
+    uint64 group_id = 1; // 群编号
+    uint64 last_join_group_event_id = 2; // 最后一个入群事件编号，分页
+    uint32 size = 3; // 获取多少个
+}
+
+// 获取入群事件响应
+message GetJoinGroupEventsResp {
+    repeated JoinGroupEvent join_group_events = 1; // 入群事件列表
+}
+
+// 邀请入群请求
+message InviteJoinGroupReq {
+    uint64 group_id = 1; // 群编号
+    uint64 inviter_id = 2; // 邀请者编号
+    repeated uint64 invitee_ids = 3; // 被邀请人编号列表
+}
+
+// 邀请入群响应
+message InviteJoinGroupResp {}
+
+// 接受入群申请请求
+message AcceptJoinGroupApplicationReq {
+    uint64 join_group_event_id = 1; // 入群事件编号
+}
+
+// 接受入群申请响应
+message AcceptJoinGroupApplicationResp {}
+
+// 拒绝入群申请请求
+message RejectJoinGroupApplicationReq {
+    uint64 join_group_event_id = 1; // 入群事件编号
+}
+
+// 拒绝入群申请响应
+message RejectJoinGroupApplicationResp {}
+
+// ------------------------- 存储模型
+
+// @存储模型
+// 群
+message GroupStore {
+    uint64 group_id = 1; // 群编号
+    string name = 2; // 群名
+    string icon = 3; // 图标
+    uint32 members = 4; // 成员数
+    string notice = 5; // 群公告
+    bool is_join_application = 6; // 是否接受入群申请（默认不需要申请直接入群）
+    bool is_invite_join_group_need_confirm = 7; // 是否邀请入群需要管理员或群主确认（默认不需要确认直接入群）
+    uint64 created_at = 8; // 建立时间
+    uint64 updated_at = 9; // 修改时间
+}
+
+// @存储模型
+// 入群事件
+// 这里在检索的时候根据JoinGroupUserID查询自己的所有申请和邀请
+// 根据GroupID查询群的所有申请和邀请
+// 还可以根据事件类型区分申请和邀请
+message JoinGroupEventStore {
+    JoinGroupEvent join_group_event = 1; // 入群事件
+}
+
+// @存储模型
+// 群成员
+message GroupMemberStore {
+    uint64 group_id = 1; // 群编号
+    uint64 member_id = 2; // 成员编号
+    GroupMemberRole role = 3; // 角色
+    string group_nick_name = 4; // 群昵称
+    bool is_disturb = 5; // 是否免打扰
+    bool is_top = 6; // 是否置顶
+    bool is_show_nick_name = 7; // 是显示群成员昵称
+    uint64 join_time = 8; // 入群时间
+    uint64 updated_at = 9; // 修改时间
+}

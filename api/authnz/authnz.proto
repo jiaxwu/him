@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package authnz;
+
+import "api/constant/constant.proto";
+
+option go_package = "github.com/xiaohuashifu/him/api/authnz";
+
+// UserType 用户类型
+enum UserType {
+    USER_TYPE_UNSPECIFIED = 0; // 未知
+    USER_TYPE_USER = 1; // 用户
+}
+
+// Session 会话
+message Session {
+    uint64 user_id = 1; // 用户编号
+    UserType user_type = 2; // 用户类型
+    constant.Terminal terminal = 3; // 终端
+}

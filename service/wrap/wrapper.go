@@ -2,27 +2,30 @@ package wrap
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/xiaohuashifu/him/api/authnz/authn"
+	sess "github.com/xiaohuashifu/him/api/authnz/session"
+	"github.com/xiaohuashifu/him/api/user"
+	httpHeaderKey "github.com/xiaohuashifu/him/common/constant/http/header/key"
 	"github.com/xiaohuashifu/him/service/common"
-	loginModel "github.com/xiaohuashifu/him/service/service/login/model"
-	loginService "github.com/xiaohuashifu/him/service/service/login/service"
+	loginService "github.com/xiaohuashifu/him/service/service/authnz/authz/service"
 	"mime/multipart"
 	"reflect"
 )
 
 // Config 配置
 type Config struct {
-	NotNeedResponse bool              // 不需要响应
-	NotNeedLogin    bool              // 不需要登录
-	UserTypes       []common.UserType // 有权访问的用户类型
+	NotNeedResponse bool            // 不需要响应
+	NotNeedLogin    bool            // 不需要登录
+	UserTypes       []user.UserType // 有权访问的用户类型
 }
 
 // Wrapper Handler的包装器
 type Wrapper struct {
-	loginService *loginService.LoginService
+	loginService *loginService.AuthzService
 }
 
 // NewWrapper 新建一个Handler的包装器
-func NewWrapper(loginService *loginService.LoginService) *Wrapper {
+func NewWrapper(loginService *loginService.AuthzService) *Wrapper {
 	return &Wrapper{
 		loginService: loginService,
 	}
@@ -38,18 +41,14 @@ func (w *Wrapper) Wrap(handler interface{}, config *Config) func(*gin.Context) {
 // wrap 抽象包装类
 func (w *Wrapper) wrap(c *gin.Context, handler interface{}, config *Config) {
 	// 获取header
-	var header common.Header
-	if err := c.ShouldBindHeader(&header); err != nil {
-		common.Failure(c, common.ErrCodeInvalidParameter)
-		return
-	}
+	header := c.Request.Header
 
 	// 如果需要登录则进行验证
-	var session *common.Session
+	var session *a.Session
 	if !config.NotNeedLogin {
 		// 获取session
-		authorizeRsp, err := w.loginService.Authorize(&loginModel.AuthorizeReq{
-			Token:     header.Token,
+		authnRsp, err := w.loginService.Authorize(&authn.AuthnReq{
+			Token:     header[httpHeaderKey.Token][0],
 			UserTypes: config.UserTypes,
 		})
 		if err != nil {

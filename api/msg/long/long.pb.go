@@ -7,8 +7,7 @@
 package long
 
 import (
-	constant "github.com/xiaohuashifu/him/api/constant"
-	content "github.com/xiaohuashifu/him/api/msg/content"
+	msg "github.com/xiaohuashifu/him/api/msg"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -22,313 +21,13 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// 接收者类型
-type ReceiverType int32
-
-const (
-	ReceiverType_ReceiverTypeUnknown ReceiverType = 0 // 未知
-	ReceiverType_ReceiverTypeUser    ReceiverType = 1 // 用户
-	ReceiverType_ReceiverTypeGroup   ReceiverType = 2 // 群
-)
-
-// Enum value maps for ReceiverType.
-var (
-	ReceiverType_name = map[int32]string{
-		0: "ReceiverTypeUnknown",
-		1: "ReceiverTypeUser",
-		2: "ReceiverTypeGroup",
-	}
-	ReceiverType_value = map[string]int32{
-		"ReceiverTypeUnknown": 0,
-		"ReceiverTypeUser":    1,
-		"ReceiverTypeGroup":   2,
-	}
-)
-
-func (x ReceiverType) Enum() *ReceiverType {
-	p := new(ReceiverType)
-	*p = x
-	return p
-}
-
-func (x ReceiverType) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (ReceiverType) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_msg_long_long_proto_enumTypes[0].Descriptor()
-}
-
-func (ReceiverType) Type() protoreflect.EnumType {
-	return &file_api_msg_long_long_proto_enumTypes[0]
-}
-
-func (x ReceiverType) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use ReceiverType.Descriptor instead.
-func (ReceiverType) EnumDescriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{0}
-}
-
-// 发送者类型
-type SenderType int32
-
-const (
-	SenderType_SenderTypeUnknown SenderType = 0 // 未知
-	SenderType_SenderTypeUser    SenderType = 1 // 用户
-	SenderType_SenderTypeSys     SenderType = 2 // 系统
-)
-
-// Enum value maps for SenderType.
-var (
-	SenderType_name = map[int32]string{
-		0: "SenderTypeUnknown",
-		1: "SenderTypeUser",
-		2: "SenderTypeSys",
-	}
-	SenderType_value = map[string]int32{
-		"SenderTypeUnknown": 0,
-		"SenderTypeUser":    1,
-		"SenderTypeSys":     2,
-	}
-)
-
-func (x SenderType) Enum() *SenderType {
-	p := new(SenderType)
-	*p = x
-	return p
-}
-
-func (x SenderType) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (SenderType) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_msg_long_long_proto_enumTypes[1].Descriptor()
-}
-
-func (SenderType) Type() protoreflect.EnumType {
-	return &file_api_msg_long_long_proto_enumTypes[1]
-}
-
-func (x SenderType) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use SenderType.Descriptor instead.
-func (SenderType) EnumDescriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{1}
-}
-
-// 消息类型，消息会持久化存储
-// 通过客户端信箱编号同步机制，保证消息可靠性，同时客户端需要保证消息被成功处理
-// 消息通过事件推送给客户端
-type MsgType int32
-
-const (
-	MsgType_MsgTypeUnknown  MsgType = 0 // 未知
-	MsgType_MsgTypeText     MsgType = 1 // 文字
-	MsgType_MsgTypeImage    MsgType = 2 // 图片
-	MsgType_MsgTypeVoice    MsgType = 3 // 语音
-	MsgType_MsgTypeVideo    MsgType = 4 // 视频
-	MsgType_MsgTypeTip      MsgType = 5 // 提示
-	MsgType_MsgTypeFile     MsgType = 6 // 文件
-	MsgType_MsgTypeWithdraw MsgType = 7 // 撤回
-	MsgType_MsgTypeEvent    MsgType = 8 // 事件
-)
-
-// Enum value maps for MsgType.
-var (
-	MsgType_name = map[int32]string{
-		0: "MsgTypeUnknown",
-		1: "MsgTypeText",
-		2: "MsgTypeImage",
-		3: "MsgTypeVoice",
-		4: "MsgTypeVideo",
-		5: "MsgTypeTip",
-		6: "MsgTypeFile",
-		7: "MsgTypeWithdraw",
-		8: "MsgTypeEvent",
-	}
-	MsgType_value = map[string]int32{
-		"MsgTypeUnknown":  0,
-		"MsgTypeText":     1,
-		"MsgTypeImage":    2,
-		"MsgTypeVoice":    3,
-		"MsgTypeVideo":    4,
-		"MsgTypeTip":      5,
-		"MsgTypeFile":     6,
-		"MsgTypeWithdraw": 7,
-		"MsgTypeEvent":    8,
-	}
-)
-
-func (x MsgType) Enum() *MsgType {
-	p := new(MsgType)
-	*p = x
-	return p
-}
-
-func (x MsgType) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (MsgType) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_msg_long_long_proto_enumTypes[2].Descriptor()
-}
-
-func (MsgType) Type() protoreflect.EnumType {
-	return &file_api_msg_long_long_proto_enumTypes[2]
-}
-
-func (x MsgType) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use MsgType.Descriptor instead.
-func (MsgType) EnumDescriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{2}
-}
-
-// 事件消息类型
-type EventMsgType int32
-
-const (
-	EventMsgType_EventMsgTypeUnknown                          EventMsgType = 0   // 未知
-	EventMsgType_EventMsgTypeNewFriend                        EventMsgType = 1   // 新的好友（你已添加了xx，现在可以开始聊天了tip）
-	EventMsgType_EventMsgTypeFriendInfoChange                 EventMsgType = 2   // 好友信息改变
-	EventMsgType_EventMsgTypeDeleteFriend                     EventMsgType = 3   // 删除好友（对方删除了你tip）
-	EventMsgType_EventMsgTypeNewAddFriendApplication          EventMsgType = 4   // 新的添加好友申请
-	EventMsgType_EventMsgTypeAddFriendApplicationStatusChange EventMsgType = 5   // 添加好友申请状态改变
-	EventMsgType_EventMsgTypeNewGroup                         EventMsgType = 100 // 新的群（xx邀请xx，xxx，xxx等加入了群聊tip，你通过扫描xx分享的二维码加入群聊tip，xx邀请你加入了群聊tip）
-	EventMsgType_EventMsgTypeGroupInfoChange                  EventMsgType = 101 // 群信息改变（头像、群名、群公告，xx修改群名为xx tip）
-	// 群成员信息更改（换群主，管理员变动，xx成为了新的群主tip，xx成为了新的管理员）
-	// 群成员加入（加入，邀请加入，xx通过扫描xx分析的二维码进群tip，xx邀请xx，xx，xx加入了群聊tip）
-	// 群成员退出（退出，被踢，xx退出了群聊tip，xx被踢出群聊tip）
-	EventMsgType_EventMsgTypeGroupMemberInfoChange EventMsgType = 102
-	EventMsgType_EventMsgTypeNewJoinGroupEvent     EventMsgType = 103 // 新的入群事件
-	EventMsgType_EventMsgTypeJoinGroupEventChange  EventMsgType = 104 // 入群事件改变
-)
-
-// Enum value maps for EventMsgType.
-var (
-	EventMsgType_name = map[int32]string{
-		0:   "EventMsgTypeUnknown",
-		1:   "EventMsgTypeNewFriend",
-		2:   "EventMsgTypeFriendInfoChange",
-		3:   "EventMsgTypeDeleteFriend",
-		4:   "EventMsgTypeNewAddFriendApplication",
-		5:   "EventMsgTypeAddFriendApplicationStatusChange",
-		100: "EventMsgTypeNewGroup",
-		101: "EventMsgTypeGroupInfoChange",
-		102: "EventMsgTypeGroupMemberInfoChange",
-		103: "EventMsgTypeNewJoinGroupEvent",
-		104: "EventMsgTypeJoinGroupEventChange",
-	}
-	EventMsgType_value = map[string]int32{
-		"EventMsgTypeUnknown":                          0,
-		"EventMsgTypeNewFriend":                        1,
-		"EventMsgTypeFriendInfoChange":                 2,
-		"EventMsgTypeDeleteFriend":                     3,
-		"EventMsgTypeNewAddFriendApplication":          4,
-		"EventMsgTypeAddFriendApplicationStatusChange": 5,
-		"EventMsgTypeNewGroup":                         100,
-		"EventMsgTypeGroupInfoChange":                  101,
-		"EventMsgTypeGroupMemberInfoChange":            102,
-		"EventMsgTypeNewJoinGroupEvent":                103,
-		"EventMsgTypeJoinGroupEventChange":             104,
-	}
-)
-
-func (x EventMsgType) Enum() *EventMsgType {
-	p := new(EventMsgType)
-	*p = x
-	return p
-}
-
-func (x EventMsgType) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (EventMsgType) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_msg_long_long_proto_enumTypes[3].Descriptor()
-}
-
-func (EventMsgType) Type() protoreflect.EnumType {
-	return &file_api_msg_long_long_proto_enumTypes[3]
-}
-
-func (x EventMsgType) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use EventMsgType.Descriptor instead.
-func (EventMsgType) EnumDescriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{3}
-}
-
-// 事件类型
-// 会被发送到客户端，不会持久化，不可靠
-// 用于推送响应，消息或其他事件给客户端，同时客户端应该尽量保证消息被成功处理
-// 必须是客户端在线才会推送
-type EventType int32
-
-const (
-	EventType_EventTypeUnknown EventType = 0 // 未知
-	EventType_EventTypeRsp     EventType = 1 // 响应，用户不一定收到，但是可以通过用户本地自行同步消息最终同步到消息
-	EventType_EventTypeMsg     EventType = 2 // 消息，用户不一定收到，但是可以通过用户本地自行同步消息最终同步到消息
-)
-
-// Enum value maps for EventType.
-var (
-	EventType_name = map[int32]string{
-		0: "EventTypeUnknown",
-		1: "EventTypeRsp",
-		2: "EventTypeMsg",
-	}
-	EventType_value = map[string]int32{
-		"EventTypeUnknown": 0,
-		"EventTypeRsp":     1,
-		"EventTypeMsg":     2,
-	}
-)
-
-func (x EventType) Enum() *EventType {
-	p := new(EventType)
-	*p = x
-	return p
-}
-
-func (x EventType) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (EventType) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_msg_long_long_proto_enumTypes[4].Descriptor()
-}
-
-func (EventType) Type() protoreflect.EnumType {
-	return &file_api_msg_long_long_proto_enumTypes[4]
-}
-
-func (x EventType) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use EventType.Descriptor instead.
-func (EventType) EnumDescriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{4}
-}
-
 // 登录请求
 type LoginReq struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Token string `protobuf:"bytes,1,opt,name=Token,proto3" json:"Token,omitempty"` // 凭证
+	Token string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"` // 凭证
 }
 
 func (x *LoginReq) Reset() {
@@ -371,14 +70,14 @@ func (x *LoginReq) GetToken() string {
 }
 
 // 登录响应
-type LoginRsp struct {
+type LoginResp struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 }
 
-func (x *LoginRsp) Reset() {
-	*x = LoginRsp{}
+func (x *LoginResp) Reset() {
+	*x = LoginResp{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_api_msg_long_long_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -386,13 +85,13 @@ func (x *LoginRsp) Reset() {
 	}
 }
 
-func (x *LoginRsp) String() string {
+func (x *LoginResp) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*LoginRsp) ProtoMessage() {}
+func (*LoginResp) ProtoMessage() {}
 
-func (x *LoginRsp) ProtoReflect() protoreflect.Message {
+func (x *LoginResp) ProtoReflect() protoreflect.Message {
 	mi := &file_api_msg_long_long_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -404,23 +103,37 @@ func (x *LoginRsp) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use LoginRsp.ProtoReflect.Descriptor instead.
-func (*LoginRsp) Descriptor() ([]byte, []int) {
+// Deprecated: Use LoginResp.ProtoReflect.Descriptor instead.
+func (*LoginResp) Descriptor() ([]byte, []int) {
 	return file_api_msg_long_long_proto_rawDescGZIP(), []int{1}
 }
 
-// 接收者
-type Receiver struct {
+// 发送消息请求
+type SendMsgReq struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Type       ReceiverType `protobuf:"varint,1,opt,name=Type,proto3,enum=msg.long.ReceiverType" json:"Type,omitempty"` // 接收者类型
-	ReceiverID uint64       `protobuf:"varint,2,opt,name=ReceiverID,proto3" json:"ReceiverID,omitempty"`                // 接收者编号
+	Sender        *msg.Sender   `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`                                     // 发送者
+	Receiver      *msg.Receiver `protobuf:"bytes,2,opt,name=receiver,proto3" json:"receiver,omitempty"`                                 // 接收者
+	SendTime      uint64        `protobuf:"varint,3,opt,name=send_time,json=sendTime,proto3" json:"send_time,omitempty"`                // 发送时间
+	CorrelationId uint64        `protobuf:"varint,4,opt,name=correlation_id,json=correlationId,proto3" json:"correlation_id,omitempty"` // 消息请求唯一标识
+	// 消息内容
+	//
+	// Types that are assignable to Content:
+	//	*SendMsgReq_TextMsg
+	//	*SendMsgReq_ImageMsg
+	//	*SendMsgReq_VoiceMsg
+	//	*SendMsgReq_VideoMsg
+	//	*SendMsgReq_FileMsg
+	//	*SendMsgReq_WithdrawMsg
+	//	*SendMsgReq_TipMsg
+	//	*SendMsgReq_EventMsg
+	Content isSendMsgReq_Content `protobuf_oneof:"content"`
 }
 
-func (x *Receiver) Reset() {
-	*x = Receiver{}
+func (x *SendMsgReq) Reset() {
+	*x = SendMsgReq{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_api_msg_long_long_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -428,13 +141,13 @@ func (x *Receiver) Reset() {
 	}
 }
 
-func (x *Receiver) String() string {
+func (x *SendMsgReq) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Receiver) ProtoMessage() {}
+func (*SendMsgReq) ProtoMessage() {}
 
-func (x *Receiver) ProtoReflect() protoreflect.Message {
+func (x *SendMsgReq) ProtoReflect() protoreflect.Message {
 	mi := &file_api_msg_long_long_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -446,38 +159,167 @@ func (x *Receiver) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Receiver.ProtoReflect.Descriptor instead.
-func (*Receiver) Descriptor() ([]byte, []int) {
+// Deprecated: Use SendMsgReq.ProtoReflect.Descriptor instead.
+func (*SendMsgReq) Descriptor() ([]byte, []int) {
 	return file_api_msg_long_long_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *Receiver) GetType() ReceiverType {
+func (x *SendMsgReq) GetSender() *msg.Sender {
 	if x != nil {
-		return x.Type
+		return x.Sender
 	}
-	return ReceiverType_ReceiverTypeUnknown
+	return nil
 }
 
-func (x *Receiver) GetReceiverID() uint64 {
+func (x *SendMsgReq) GetReceiver() *msg.Receiver {
 	if x != nil {
-		return x.ReceiverID
+		return x.Receiver
+	}
+	return nil
+}
+
+func (x *SendMsgReq) GetSendTime() uint64 {
+	if x != nil {
+		return x.SendTime
 	}
 	return 0
 }
 
-// 发送者
-type Sender struct {
+func (x *SendMsgReq) GetCorrelationId() uint64 {
+	if x != nil {
+		return x.CorrelationId
+	}
+	return 0
+}
+
+func (m *SendMsgReq) GetContent() isSendMsgReq_Content {
+	if m != nil {
+		return m.Content
+	}
+	return nil
+}
+
+func (x *SendMsgReq) GetTextMsg() *msg.TextMsg {
+	if x, ok := x.GetContent().(*SendMsgReq_TextMsg); ok {
+		return x.TextMsg
+	}
+	return nil
+}
+
+func (x *SendMsgReq) GetImageMsg() *msg.ImageMsg {
+	if x, ok := x.GetContent().(*SendMsgReq_ImageMsg); ok {
+		return x.ImageMsg
+	}
+	return nil
+}
+
+func (x *SendMsgReq) GetVoiceMsg() *msg.VoiceMsg {
+	if x, ok := x.GetContent().(*SendMsgReq_VoiceMsg); ok {
+		return x.VoiceMsg
+	}
+	return nil
+}
+
+func (x *SendMsgReq) GetVideoMsg() *msg.VideoMsg {
+	if x, ok := x.GetContent().(*SendMsgReq_VideoMsg); ok {
+		return x.VideoMsg
+	}
+	return nil
+}
+
+func (x *SendMsgReq) GetFileMsg() *msg.FileMsg {
+	if x, ok := x.GetContent().(*SendMsgReq_FileMsg); ok {
+		return x.FileMsg
+	}
+	return nil
+}
+
+func (x *SendMsgReq) GetWithdrawMsg() *msg.WithdrawMsg {
+	if x, ok := x.GetContent().(*SendMsgReq_WithdrawMsg); ok {
+		return x.WithdrawMsg
+	}
+	return nil
+}
+
+func (x *SendMsgReq) GetTipMsg() *msg.TipMsg {
+	if x, ok := x.GetContent().(*SendMsgReq_TipMsg); ok {
+		return x.TipMsg
+	}
+	return nil
+}
+
+func (x *SendMsgReq) GetEventMsg() *msg.EventMsg {
+	if x, ok := x.GetContent().(*SendMsgReq_EventMsg); ok {
+		return x.EventMsg
+	}
+	return nil
+}
+
+type isSendMsgReq_Content interface {
+	isSendMsgReq_Content()
+}
+
+type SendMsgReq_TextMsg struct {
+	TextMsg *msg.TextMsg `protobuf:"bytes,5,opt,name=text_msg,json=textMsg,proto3,oneof"`
+}
+
+type SendMsgReq_ImageMsg struct {
+	ImageMsg *msg.ImageMsg `protobuf:"bytes,6,opt,name=image_msg,json=imageMsg,proto3,oneof"`
+}
+
+type SendMsgReq_VoiceMsg struct {
+	VoiceMsg *msg.VoiceMsg `protobuf:"bytes,7,opt,name=voice_msg,json=voiceMsg,proto3,oneof"`
+}
+
+type SendMsgReq_VideoMsg struct {
+	VideoMsg *msg.VideoMsg `protobuf:"bytes,8,opt,name=video_msg,json=videoMsg,proto3,oneof"`
+}
+
+type SendMsgReq_FileMsg struct {
+	FileMsg *msg.FileMsg `protobuf:"bytes,9,opt,name=file_msg,json=fileMsg,proto3,oneof"`
+}
+
+type SendMsgReq_WithdrawMsg struct {
+	WithdrawMsg *msg.WithdrawMsg `protobuf:"bytes,10,opt,name=withdraw_msg,json=withdrawMsg,proto3,oneof"`
+}
+
+type SendMsgReq_TipMsg struct {
+	TipMsg *msg.TipMsg `protobuf:"bytes,11,opt,name=tip_msg,json=tipMsg,proto3,oneof"`
+}
+
+type SendMsgReq_EventMsg struct {
+	EventMsg *msg.EventMsg `protobuf:"bytes,12,opt,name=event_msg,json=eventMsg,proto3,oneof"`
+}
+
+func (*SendMsgReq_TextMsg) isSendMsgReq_Content() {}
+
+func (*SendMsgReq_ImageMsg) isSendMsgReq_Content() {}
+
+func (*SendMsgReq_VoiceMsg) isSendMsgReq_Content() {}
+
+func (*SendMsgReq_VideoMsg) isSendMsgReq_Content() {}
+
+func (*SendMsgReq_FileMsg) isSendMsgReq_Content() {}
+
+func (*SendMsgReq_WithdrawMsg) isSendMsgReq_Content() {}
+
+func (*SendMsgReq_TipMsg) isSendMsgReq_Content() {}
+
+func (*SendMsgReq_EventMsg) isSendMsgReq_Content() {}
+
+// 发送消息响应
+type SendMsgResp struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Type           SenderType        `protobuf:"varint,1,opt,name=Type,proto3,enum=msg.long.SenderType" json:"Type,omitempty"`                   // 发送者类型
-	SenderID       uint64            `protobuf:"varint,2,opt,name=SenderID,proto3" json:"SenderID,omitempty"`                                    // 发送者编号
-	SenderTerminal constant.Terminal `protobuf:"varint,3,opt,name=SenderTerminal,proto3,enum=constant.Terminal" json:"SenderTerminal,omitempty"` // 发送者终端
+	CorrelationId uint64 `protobuf:"varint,1,opt,name=correlation_id,json=correlationId,proto3" json:"correlation_id,omitempty"`  // 消息请求唯一标识
+	MailBoxMsgId  uint64 `protobuf:"varint,2,opt,name=mail_box_msg_id,json=mailBoxMsgId,proto3" json:"mail_box_msg_id,omitempty"` // 信箱里消息编号
+	MsgId         uint64 `protobuf:"varint,3,opt,name=msg_id,json=msgId,proto3" json:"msg_id,omitempty"`                          // 消息编号，递增
 }
 
-func (x *Sender) Reset() {
-	*x = Sender{}
+func (x *SendMsgResp) Reset() {
+	*x = SendMsgResp{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_api_msg_long_long_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -485,13 +327,13 @@ func (x *Sender) Reset() {
 	}
 }
 
-func (x *Sender) String() string {
+func (x *SendMsgResp) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Sender) ProtoMessage() {}
+func (*SendMsgResp) ProtoMessage() {}
 
-func (x *Sender) ProtoReflect() protoreflect.Message {
+func (x *SendMsgResp) ProtoReflect() protoreflect.Message {
 	mi := &file_api_msg_long_long_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -503,1630 +345,30 @@ func (x *Sender) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Sender.ProtoReflect.Descriptor instead.
-func (*Sender) Descriptor() ([]byte, []int) {
+// Deprecated: Use SendMsgResp.ProtoReflect.Descriptor instead.
+func (*SendMsgResp) Descriptor() ([]byte, []int) {
 	return file_api_msg_long_long_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *Sender) GetType() SenderType {
+func (x *SendMsgResp) GetCorrelationId() uint64 {
 	if x != nil {
-		return x.Type
-	}
-	return SenderType_SenderTypeUnknown
-}
-
-func (x *Sender) GetSenderID() uint64 {
-	if x != nil {
-		return x.SenderID
+		return x.CorrelationId
 	}
 	return 0
 }
 
-func (x *Sender) GetSenderTerminal() constant.Terminal {
+func (x *SendMsgResp) GetMailBoxMsgId() uint64 {
 	if x != nil {
-		return x.SenderTerminal
-	}
-	return constant.Terminal(0)
-}
-
-// 消息
-type Msg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	MsgID          uint64            `protobuf:"varint,1,opt,name=MsgID,proto3" json:"MsgID,omitempty"`                                          // 消息编号，全局唯一，根据到达服务器时间生成，可以用户消息排序（保证有序性）
-	Type           MsgType           `protobuf:"varint,2,opt,name=Type,proto3,enum=msg.long.MsgType" json:"Type,omitempty"`                      // 消息类型
-	Sender         uint64            `protobuf:"varint,3,opt,name=Sender,proto3" json:"Sender,omitempty"`                                        // 发送者
-	Receiver       *Receiver         `protobuf:"bytes,4,opt,name=Receiver,proto3" json:"Receiver,omitempty"`                                     // 接收者
-	Content        []byte            `protobuf:"bytes,5,opt,name=Content,proto3" json:"Content,omitempty"`                                       // 消息内容
-	SendTime       uint64            `protobuf:"varint,6,opt,name=SendTime,proto3" json:"SendTime,omitempty"`                                    // 发送时间，消息到达服务器时间
-	SenderTerminal constant.Terminal `protobuf:"varint,7,opt,name=SenderTerminal,proto3,enum=constant.Terminal" json:"SenderTerminal,omitempty"` // 发送者终端
-	// 发送者的一个终端的一个请求的唯一标识
-	// （避免消息重复，比如消息发送成功，但是用户没有收到响应（断网），
-	// 再回来的时候同步消息，通过CorrelationID就可以把发送失败的消息设置为发送成功）
-	// 唯一标识可以是 UUID_IncrementID
-	CorrelationID string `protobuf:"bytes,8,opt,name=CorrelationID,proto3" json:"CorrelationID,omitempty"`
-}
-
-func (x *Msg) Reset() {
-	*x = Msg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Msg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Msg) ProtoMessage() {}
-
-func (x *Msg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Msg.ProtoReflect.Descriptor instead.
-func (*Msg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *Msg) GetMsgID() uint64 {
-	if x != nil {
-		return x.MsgID
+		return x.MailBoxMsgId
 	}
 	return 0
 }
 
-func (x *Msg) GetType() MsgType {
+func (x *SendMsgResp) GetMsgId() uint64 {
 	if x != nil {
-		return x.Type
-	}
-	return MsgType_MsgTypeUnknown
-}
-
-func (x *Msg) GetSender() uint64 {
-	if x != nil {
-		return x.Sender
+		return x.MsgId
 	}
 	return 0
-}
-
-func (x *Msg) GetReceiver() *Receiver {
-	if x != nil {
-		return x.Receiver
-	}
-	return nil
-}
-
-func (x *Msg) GetContent() []byte {
-	if x != nil {
-		return x.Content
-	}
-	return nil
-}
-
-func (x *Msg) GetSendTime() uint64 {
-	if x != nil {
-		return x.SendTime
-	}
-	return 0
-}
-
-func (x *Msg) GetSenderTerminal() constant.Terminal {
-	if x != nil {
-		return x.SenderTerminal
-	}
-	return constant.Terminal(0)
-}
-
-func (x *Msg) GetCorrelationID() string {
-	if x != nil {
-		return x.CorrelationID
-	}
-	return ""
-}
-
-// 文本消息
-type TextMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Content     string   `protobuf:"bytes,1,opt,name=Content,proto3" json:"Content,omitempty"`          // 文本消息内容
-	IsAtAll     bool     `protobuf:"varint,2,opt,name=IsAtAll,proto3" json:"IsAtAll,omitempty"`         // 是否@所有人
-	IsNotice    bool     `protobuf:"varint,3,opt,name=IsNotice,proto3" json:"IsNotice,omitempty"`       // 是否群公告
-	AtUserIDS   []string `protobuf:"bytes,4,rep,name=AtUserIDS,proto3" json:"AtUserIDS,omitempty"`      // 被@的用户
-	QuotedMsgID uint64   `protobuf:"varint,5,opt,name=QuotedMsgID,proto3" json:"QuotedMsgID,omitempty"` // 被引用消息编号
-}
-
-func (x *TextMsg) Reset() {
-	*x = TextMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[5]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *TextMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TextMsg) ProtoMessage() {}
-
-func (x *TextMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[5]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TextMsg.ProtoReflect.Descriptor instead.
-func (*TextMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *TextMsg) GetContent() string {
-	if x != nil {
-		return x.Content
-	}
-	return ""
-}
-
-func (x *TextMsg) GetIsAtAll() bool {
-	if x != nil {
-		return x.IsAtAll
-	}
-	return false
-}
-
-func (x *TextMsg) GetIsNotice() bool {
-	if x != nil {
-		return x.IsNotice
-	}
-	return false
-}
-
-func (x *TextMsg) GetAtUserIDS() []string {
-	if x != nil {
-		return x.AtUserIDS
-	}
-	return nil
-}
-
-func (x *TextMsg) GetQuotedMsgID() uint64 {
-	if x != nil {
-		return x.QuotedMsgID
-	}
-	return 0
-}
-
-// 图片消息
-type ImageMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Thumbnail     *content.Image `protobuf:"bytes,1,opt,name=Thumbnail,proto3" json:"Thumbnail,omitempty"`         // 缩略图
-	OriginalImage *content.Image `protobuf:"bytes,2,opt,name=OriginalImage,proto3" json:"OriginalImage,omitempty"` // 原图
-}
-
-func (x *ImageMsg) Reset() {
-	*x = ImageMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[6]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ImageMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ImageMsg) ProtoMessage() {}
-
-func (x *ImageMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[6]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ImageMsg.ProtoReflect.Descriptor instead.
-func (*ImageMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *ImageMsg) GetThumbnail() *content.Image {
-	if x != nil {
-		return x.Thumbnail
-	}
-	return nil
-}
-
-func (x *ImageMsg) GetOriginalImage() *content.Image {
-	if x != nil {
-		return x.OriginalImage
-	}
-	return nil
-}
-
-// 语音消息
-type VoiceMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Voice *content.Voice `protobuf:"bytes,1,opt,name=Voice,proto3" json:"Voice,omitempty"` // 语音
-}
-
-func (x *VoiceMsg) Reset() {
-	*x = VoiceMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[7]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *VoiceMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*VoiceMsg) ProtoMessage() {}
-
-func (x *VoiceMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[7]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use VoiceMsg.ProtoReflect.Descriptor instead.
-func (*VoiceMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *VoiceMsg) GetVoice() *content.Voice {
-	if x != nil {
-		return x.Voice
-	}
-	return nil
-}
-
-// 视频消息
-type VideoMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Thumbnail *content.Image `protobuf:"bytes,1,opt,name=Thumbnail,proto3" json:"Thumbnail,omitempty"` // 缩略图
-	Video     *content.Video `protobuf:"bytes,2,opt,name=Video,proto3" json:"Video,omitempty"`         // 视频
-}
-
-func (x *VideoMsg) Reset() {
-	*x = VideoMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[8]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *VideoMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*VideoMsg) ProtoMessage() {}
-
-func (x *VideoMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[8]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use VideoMsg.ProtoReflect.Descriptor instead.
-func (*VideoMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *VideoMsg) GetThumbnail() *content.Image {
-	if x != nil {
-		return x.Thumbnail
-	}
-	return nil
-}
-
-func (x *VideoMsg) GetVideo() *content.Video {
-	if x != nil {
-		return x.Video
-	}
-	return nil
-}
-
-// 提示消息
-type TipMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Type    content.TipType `protobuf:"varint,1,opt,name=Type,proto3,enum=msg.content.TipType" json:"Type,omitempty"` // 提示类型
-	Content []byte          `protobuf:"bytes,2,opt,name=Content,proto3" json:"Content,omitempty"`                     // 提示内容
-}
-
-func (x *TipMsg) Reset() {
-	*x = TipMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[9]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *TipMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TipMsg) ProtoMessage() {}
-
-func (x *TipMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[9]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TipMsg.ProtoReflect.Descriptor instead.
-func (*TipMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *TipMsg) GetType() content.TipType {
-	if x != nil {
-		return x.Type
-	}
-	return content.TipType(0)
-}
-
-func (x *TipMsg) GetContent() []byte {
-	if x != nil {
-		return x.Content
-	}
-	return nil
-}
-
-// 文件消息
-type FileMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	File *content.File `protobuf:"bytes,1,opt,name=File,proto3" json:"File,omitempty"` // 文件
-}
-
-func (x *FileMsg) Reset() {
-	*x = FileMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[10]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *FileMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*FileMsg) ProtoMessage() {}
-
-func (x *FileMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[10]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use FileMsg.ProtoReflect.Descriptor instead.
-func (*FileMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *FileMsg) GetFile() *content.File {
-	if x != nil {
-		return x.File
-	}
-	return nil
-}
-
-// 撤回消息
-type WithdrawMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	MsgID uint64 `protobuf:"varint,1,opt,name=MsgID,proto3" json:"MsgID,omitempty"` // 被撤回消息的编号
-}
-
-func (x *WithdrawMsg) Reset() {
-	*x = WithdrawMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[11]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *WithdrawMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*WithdrawMsg) ProtoMessage() {}
-
-func (x *WithdrawMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[11]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use WithdrawMsg.ProtoReflect.Descriptor instead.
-func (*WithdrawMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *WithdrawMsg) GetMsgID() uint64 {
-	if x != nil {
-		return x.MsgID
-	}
-	return 0
-}
-
-// 新的好友事件消息
-type NewFriendEventMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	FriendID uint64 `protobuf:"varint,1,opt,name=FriendID,proto3" json:"FriendID,omitempty"` // 用户编号
-}
-
-func (x *NewFriendEventMsg) Reset() {
-	*x = NewFriendEventMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[12]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *NewFriendEventMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*NewFriendEventMsg) ProtoMessage() {}
-
-func (x *NewFriendEventMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[12]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use NewFriendEventMsg.ProtoReflect.Descriptor instead.
-func (*NewFriendEventMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *NewFriendEventMsg) GetFriendID() uint64 {
-	if x != nil {
-		return x.FriendID
-	}
-	return 0
-}
-
-// 好友信息改变事件消息
-type FriendInfoChangeEventMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	FriendID uint64 `protobuf:"varint,1,opt,name=FriendID,proto3" json:"FriendID,omitempty"` // 用户编号
-}
-
-func (x *FriendInfoChangeEventMsg) Reset() {
-	*x = FriendInfoChangeEventMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[13]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *FriendInfoChangeEventMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*FriendInfoChangeEventMsg) ProtoMessage() {}
-
-func (x *FriendInfoChangeEventMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[13]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use FriendInfoChangeEventMsg.ProtoReflect.Descriptor instead.
-func (*FriendInfoChangeEventMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *FriendInfoChangeEventMsg) GetFriendID() uint64 {
-	if x != nil {
-		return x.FriendID
-	}
-	return 0
-}
-
-// 删除好友事件消息
-type DeleteFriendEventMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	FriendID uint64 `protobuf:"varint,1,opt,name=FriendID,proto3" json:"FriendID,omitempty"` // 用户编号
-}
-
-func (x *DeleteFriendEventMsg) Reset() {
-	*x = DeleteFriendEventMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[14]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DeleteFriendEventMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteFriendEventMsg) ProtoMessage() {}
-
-func (x *DeleteFriendEventMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[14]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteFriendEventMsg.ProtoReflect.Descriptor instead.
-func (*DeleteFriendEventMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *DeleteFriendEventMsg) GetFriendID() uint64 {
-	if x != nil {
-		return x.FriendID
-	}
-	return 0
-}
-
-// 新的添加好友申请事件消息
-type NewAddFriendApplicationEventMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *NewAddFriendApplicationEventMsg) Reset() {
-	*x = NewAddFriendApplicationEventMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[15]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *NewAddFriendApplicationEventMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*NewAddFriendApplicationEventMsg) ProtoMessage() {}
-
-func (x *NewAddFriendApplicationEventMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[15]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use NewAddFriendApplicationEventMsg.ProtoReflect.Descriptor instead.
-func (*NewAddFriendApplicationEventMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{15}
-}
-
-// 添加好友申请状态改变事件消息
-type AddFriendApplicationStatusChangeEventMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	AddFriendApplicationID uint64 `protobuf:"varint,1,opt,name=AddFriendApplicationID,proto3" json:"AddFriendApplicationID,omitempty"` // 状态改变的添加好友申请编号
-}
-
-func (x *AddFriendApplicationStatusChangeEventMsg) Reset() {
-	*x = AddFriendApplicationStatusChangeEventMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[16]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *AddFriendApplicationStatusChangeEventMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AddFriendApplicationStatusChangeEventMsg) ProtoMessage() {}
-
-func (x *AddFriendApplicationStatusChangeEventMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[16]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AddFriendApplicationStatusChangeEventMsg.ProtoReflect.Descriptor instead.
-func (*AddFriendApplicationStatusChangeEventMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *AddFriendApplicationStatusChangeEventMsg) GetAddFriendApplicationID() uint64 {
-	if x != nil {
-		return x.AddFriendApplicationID
-	}
-	return 0
-}
-
-// 新的群事件消息
-type NewGroupEventMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	GroupID uint64 `protobuf:"varint,1,opt,name=GroupID,proto3" json:"GroupID,omitempty"` // 群编号
-}
-
-func (x *NewGroupEventMsg) Reset() {
-	*x = NewGroupEventMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[17]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *NewGroupEventMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*NewGroupEventMsg) ProtoMessage() {}
-
-func (x *NewGroupEventMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[17]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use NewGroupEventMsg.ProtoReflect.Descriptor instead.
-func (*NewGroupEventMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *NewGroupEventMsg) GetGroupID() uint64 {
-	if x != nil {
-		return x.GroupID
-	}
-	return 0
-}
-
-// 群信息改变事件消息
-type GroupInfoChangeEventMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	GroupID uint64 `protobuf:"varint,1,opt,name=GroupID,proto3" json:"GroupID,omitempty"` // 群编号
-}
-
-func (x *GroupInfoChangeEventMsg) Reset() {
-	*x = GroupInfoChangeEventMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[18]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GroupInfoChangeEventMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GroupInfoChangeEventMsg) ProtoMessage() {}
-
-func (x *GroupInfoChangeEventMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[18]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GroupInfoChangeEventMsg.ProtoReflect.Descriptor instead.
-func (*GroupInfoChangeEventMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *GroupInfoChangeEventMsg) GetGroupID() uint64 {
-	if x != nil {
-		return x.GroupID
-	}
-	return 0
-}
-
-// 群成员信息改变事件消息（直接拉群群成员信息列表和本地比较进行同步）
-type GroupMemberInfoChangeEventMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	GroupID uint64 `protobuf:"varint,1,opt,name=GroupID,proto3" json:"GroupID,omitempty"` // 群编号
-}
-
-func (x *GroupMemberInfoChangeEventMsg) Reset() {
-	*x = GroupMemberInfoChangeEventMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[19]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GroupMemberInfoChangeEventMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GroupMemberInfoChangeEventMsg) ProtoMessage() {}
-
-func (x *GroupMemberInfoChangeEventMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[19]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GroupMemberInfoChangeEventMsg.ProtoReflect.Descriptor instead.
-func (*GroupMemberInfoChangeEventMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{19}
-}
-
-func (x *GroupMemberInfoChangeEventMsg) GetGroupID() uint64 {
-	if x != nil {
-		return x.GroupID
-	}
-	return 0
-}
-
-// 新的入群事件事件消息
-type NewJoinGroupEventEventMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	JoinGroupEventID uint64 `protobuf:"varint,1,opt,name=JoinGroupEventID,proto3" json:"JoinGroupEventID,omitempty"` // 入群事件编号
-}
-
-func (x *NewJoinGroupEventEventMsg) Reset() {
-	*x = NewJoinGroupEventEventMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[20]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *NewJoinGroupEventEventMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*NewJoinGroupEventEventMsg) ProtoMessage() {}
-
-func (x *NewJoinGroupEventEventMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[20]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use NewJoinGroupEventEventMsg.ProtoReflect.Descriptor instead.
-func (*NewJoinGroupEventEventMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{20}
-}
-
-func (x *NewJoinGroupEventEventMsg) GetJoinGroupEventID() uint64 {
-	if x != nil {
-		return x.JoinGroupEventID
-	}
-	return 0
-}
-
-// 入群事件改变事件消息
-type JoinGroupEventChangeEventMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	JoinGroupEventID uint64 `protobuf:"varint,1,opt,name=JoinGroupEventID,proto3" json:"JoinGroupEventID,omitempty"` // 入群事件编号
-}
-
-func (x *JoinGroupEventChangeEventMsg) Reset() {
-	*x = JoinGroupEventChangeEventMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[21]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *JoinGroupEventChangeEventMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*JoinGroupEventChangeEventMsg) ProtoMessage() {}
-
-func (x *JoinGroupEventChangeEventMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[21]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use JoinGroupEventChangeEventMsg.ProtoReflect.Descriptor instead.
-func (*JoinGroupEventChangeEventMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{21}
-}
-
-func (x *JoinGroupEventChangeEventMsg) GetJoinGroupEventID() uint64 {
-	if x != nil {
-		return x.JoinGroupEventID
-	}
-	return 0
-}
-
-// 事件消息
-// 事件消息用于需要保证客户端能够收到的事件
-// 本质上是消息，但是一般不用于展示，只用于通知
-type EventMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Type    EventMsgType `protobuf:"varint,1,opt,name=Type,proto3,enum=msg.long.EventMsgType" json:"Type,omitempty"` // 事件消息类型
-	Content []byte       `protobuf:"bytes,2,opt,name=Content,proto3" json:"Content,omitempty"`                       // 事件消息内容
-}
-
-func (x *EventMsg) Reset() {
-	*x = EventMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[22]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *EventMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*EventMsg) ProtoMessage() {}
-
-func (x *EventMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[22]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use EventMsg.ProtoReflect.Descriptor instead.
-func (*EventMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{22}
-}
-
-func (x *EventMsg) GetType() EventMsgType {
-	if x != nil {
-		return x.Type
-	}
-	return EventMsgType_EventMsgTypeUnknown
-}
-
-func (x *EventMsg) GetContent() []byte {
-	if x != nil {
-		return x.Content
-	}
-	return nil
-}
-
-// 请求
-type Req struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Sender        *Sender   `protobuf:"bytes,1,opt,name=Sender,proto3" json:"Sender,omitempty"`                    // 发送者
-	CorrelationID uint64    `protobuf:"varint,2,opt,name=CorrelationID,proto3" json:"CorrelationID,omitempty"`     // 请求唯一标识
-	Type          MsgType   `protobuf:"varint,3,opt,name=Type,proto3,enum=msg.long.MsgType" json:"Type,omitempty"` // 消息类型
-	Receiver      *Receiver `protobuf:"bytes,4,opt,name=Receiver,proto3" json:"Receiver,omitempty"`                // 接收者
-	Content       []byte    `protobuf:"bytes,5,opt,name=Content,proto3" json:"Content,omitempty"`                  // 消息内容
-}
-
-func (x *Req) Reset() {
-	*x = Req{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[23]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Req) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Req) ProtoMessage() {}
-
-func (x *Req) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[23]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Req.ProtoReflect.Descriptor instead.
-func (*Req) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{23}
-}
-
-func (x *Req) GetSender() *Sender {
-	if x != nil {
-		return x.Sender
-	}
-	return nil
-}
-
-func (x *Req) GetCorrelationID() uint64 {
-	if x != nil {
-		return x.CorrelationID
-	}
-	return 0
-}
-
-func (x *Req) GetType() MsgType {
-	if x != nil {
-		return x.Type
-	}
-	return MsgType_MsgTypeUnknown
-}
-
-func (x *Req) GetReceiver() *Receiver {
-	if x != nil {
-		return x.Receiver
-	}
-	return nil
-}
-
-func (x *Req) GetContent() []byte {
-	if x != nil {
-		return x.Content
-	}
-	return nil
-}
-
-// 文本消息请求内容
-type TextReqContent struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Content string `protobuf:"bytes,1,opt,name=Content,proto3" json:"Content,omitempty"` // 内容
-}
-
-func (x *TextReqContent) Reset() {
-	*x = TextReqContent{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[24]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *TextReqContent) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TextReqContent) ProtoMessage() {}
-
-func (x *TextReqContent) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[24]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TextReqContent.ProtoReflect.Descriptor instead.
-func (*TextReqContent) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{24}
-}
-
-func (x *TextReqContent) GetContent() string {
-	if x != nil {
-		return x.Content
-	}
-	return ""
-}
-
-// 图片消息请求内容
-// 会先上传图片，拿到图片的信息，然后再把这些信息上传
-type ImageReqContent struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Thumbnail     *content.Image `protobuf:"bytes,1,opt,name=Thumbnail,proto3" json:"Thumbnail,omitempty"`         // 缩略图
-	OriginalImage *content.Image `protobuf:"bytes,2,opt,name=OriginalImage,proto3" json:"OriginalImage,omitempty"` // 原图
-}
-
-func (x *ImageReqContent) Reset() {
-	*x = ImageReqContent{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[25]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ImageReqContent) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ImageReqContent) ProtoMessage() {}
-
-func (x *ImageReqContent) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[25]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ImageReqContent.ProtoReflect.Descriptor instead.
-func (*ImageReqContent) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{25}
-}
-
-func (x *ImageReqContent) GetThumbnail() *content.Image {
-	if x != nil {
-		return x.Thumbnail
-	}
-	return nil
-}
-
-func (x *ImageReqContent) GetOriginalImage() *content.Image {
-	if x != nil {
-		return x.OriginalImage
-	}
-	return nil
-}
-
-// 语音消息请求内容
-type VoiceReqContent struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Voice *content.Voice `protobuf:"bytes,1,opt,name=Voice,proto3" json:"Voice,omitempty"` // 语音
-}
-
-func (x *VoiceReqContent) Reset() {
-	*x = VoiceReqContent{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[26]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *VoiceReqContent) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*VoiceReqContent) ProtoMessage() {}
-
-func (x *VoiceReqContent) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[26]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use VoiceReqContent.ProtoReflect.Descriptor instead.
-func (*VoiceReqContent) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{26}
-}
-
-func (x *VoiceReqContent) GetVoice() *content.Voice {
-	if x != nil {
-		return x.Voice
-	}
-	return nil
-}
-
-// 视频消息请求内容
-type VideoReqContent struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Thumbnail *content.Image `protobuf:"bytes,1,opt,name=Thumbnail,proto3" json:"Thumbnail,omitempty"` // 缩略图
-	Video     *content.Video `protobuf:"bytes,2,opt,name=Video,proto3" json:"Video,omitempty"`         // 视频
-}
-
-func (x *VideoReqContent) Reset() {
-	*x = VideoReqContent{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[27]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *VideoReqContent) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*VideoReqContent) ProtoMessage() {}
-
-func (x *VideoReqContent) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[27]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use VideoReqContent.ProtoReflect.Descriptor instead.
-func (*VideoReqContent) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{27}
-}
-
-func (x *VideoReqContent) GetThumbnail() *content.Image {
-	if x != nil {
-		return x.Thumbnail
-	}
-	return nil
-}
-
-func (x *VideoReqContent) GetVideo() *content.Video {
-	if x != nil {
-		return x.Video
-	}
-	return nil
-}
-
-// 文件消息请求内容
-type FileReqContent struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	File *content.File `protobuf:"bytes,1,opt,name=File,proto3" json:"File,omitempty"` // 文件
-}
-
-func (x *FileReqContent) Reset() {
-	*x = FileReqContent{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[28]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *FileReqContent) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*FileReqContent) ProtoMessage() {}
-
-func (x *FileReqContent) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[28]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use FileReqContent.ProtoReflect.Descriptor instead.
-func (*FileReqContent) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{28}
-}
-
-func (x *FileReqContent) GetFile() *content.File {
-	if x != nil {
-		return x.File
-	}
-	return nil
-}
-
-// 回撤消息请求内容
-type WithdrawReqContent struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	MsgID uint64 `protobuf:"varint,1,opt,name=MsgID,proto3" json:"MsgID,omitempty"` // 被撤回消息的编号
-}
-
-func (x *WithdrawReqContent) Reset() {
-	*x = WithdrawReqContent{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[29]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *WithdrawReqContent) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*WithdrawReqContent) ProtoMessage() {}
-
-func (x *WithdrawReqContent) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[29]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use WithdrawReqContent.ProtoReflect.Descriptor instead.
-func (*WithdrawReqContent) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{29}
-}
-
-func (x *WithdrawReqContent) GetMsgID() uint64 {
-	if x != nil {
-		return x.MsgID
-	}
-	return 0
-}
-
-// 响应
-type Rsp struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	CorrelationID uint64 `protobuf:"varint,1,opt,name=CorrelationID,proto3" json:"CorrelationID,omitempty"` // 请求唯一标识
-	MailBoxMsgID  uint64 `protobuf:"varint,2,opt,name=MailBoxMsgID,proto3" json:"MailBoxMsgID,omitempty"`   // 信箱里消息编号
-	MsgID         uint64 `protobuf:"varint,3,opt,name=MsgID,proto3" json:"MsgID,omitempty"`                 // 消息编号，递增
-}
-
-func (x *Rsp) Reset() {
-	*x = Rsp{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[30]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Rsp) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Rsp) ProtoMessage() {}
-
-func (x *Rsp) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[30]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Rsp.ProtoReflect.Descriptor instead.
-func (*Rsp) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{30}
-}
-
-func (x *Rsp) GetCorrelationID() uint64 {
-	if x != nil {
-		return x.CorrelationID
-	}
-	return 0
-}
-
-func (x *Rsp) GetMailBoxMsgID() uint64 {
-	if x != nil {
-		return x.MailBoxMsgID
-	}
-	return 0
-}
-
-func (x *Rsp) GetMsgID() uint64 {
-	if x != nil {
-		return x.MsgID
-	}
-	return 0
-}
-
-// 事件，事件用于给用户推送消息
-type Event struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Type    EventType `protobuf:"varint,1,opt,name=Type,proto3,enum=msg.long.EventType" json:"Type,omitempty"` // 事件类型
-	Content []byte    `protobuf:"bytes,2,opt,name=Content,proto3" json:"Content,omitempty"`                    // 事件内容
-}
-
-func (x *Event) Reset() {
-	*x = Event{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[31]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Event) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Event) ProtoMessage() {}
-
-func (x *Event) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[31]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Event.ProtoReflect.Descriptor instead.
-func (*Event) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{31}
-}
-
-func (x *Event) GetType() EventType {
-	if x != nil {
-		return x.Type
-	}
-	return EventType_EventTypeUnknown
-}
-
-func (x *Event) GetContent() []byte {
-	if x != nil {
-		return x.Content
-	}
-	return nil
-}
-
-// @存储模型
-// 信箱消息
-// 每个消息都会转换成信箱消息进行存储
-type MailBoxMsg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	UserID       uint64 `protobuf:"varint,1,opt,name=UserID,proto3" json:"UserID,omitempty"`             // 信箱拥有者用户编号
-	MailBoxMsgID uint64 `protobuf:"varint,2,opt,name=MailBoxMsgID,proto3" json:"MailBoxMsgID,omitempty"` // 信箱里消息编号，每个人一个信箱，信箱里消息编号会递增（保证不丢失消息）
-	Msg          *Msg   `protobuf:"bytes,3,opt,name=Msg,proto3" json:"Msg,omitempty"`                    // 消息
-}
-
-func (x *MailBoxMsg) Reset() {
-	*x = MailBoxMsg{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_msg_long_long_proto_msgTypes[32]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MailBoxMsg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MailBoxMsg) ProtoMessage() {}
-
-func (x *MailBoxMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_api_msg_long_long_proto_msgTypes[32]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use MailBoxMsg.ProtoReflect.Descriptor instead.
-func (*MailBoxMsg) Descriptor() ([]byte, []int) {
-	return file_api_msg_long_long_proto_rawDescGZIP(), []int{32}
-}
-
-func (x *MailBoxMsg) GetUserID() uint64 {
-	if x != nil {
-		return x.UserID
-	}
-	return 0
-}
-
-func (x *MailBoxMsg) GetMailBoxMsgID() uint64 {
-	if x != nil {
-		return x.MailBoxMsgID
-	}
-	return 0
-}
-
-func (x *MailBoxMsg) GetMsg() *Msg {
-	if x != nil {
-		return x.Msg
-	}
-	return nil
 }
 
 var File_api_msg_long_long_proto protoreflect.FileDescriptor
@@ -2134,238 +376,55 @@ var File_api_msg_long_long_proto protoreflect.FileDescriptor
 var file_api_msg_long_long_proto_rawDesc = []byte{
 	0x0a, 0x17, 0x61, 0x70, 0x69, 0x2f, 0x6d, 0x73, 0x67, 0x2f, 0x6c, 0x6f, 0x6e, 0x67, 0x2f, 0x6c,
 	0x6f, 0x6e, 0x67, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x08, 0x6d, 0x73, 0x67, 0x2e, 0x6c,
-	0x6f, 0x6e, 0x67, 0x1a, 0x1b, 0x61, 0x70, 0x69, 0x2f, 0x63, 0x6f, 0x6e, 0x73, 0x74, 0x61, 0x6e,
-	0x74, 0x2f, 0x63, 0x6f, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x1a, 0x1d, 0x61, 0x70, 0x69, 0x2f, 0x6d, 0x73, 0x67, 0x2f, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e,
-	0x74, 0x2f, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22,
-	0x20, 0x0a, 0x08, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x12, 0x14, 0x0a, 0x05, 0x54,
-	0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x54, 0x6f, 0x6b, 0x65,
-	0x6e, 0x22, 0x0a, 0x0a, 0x08, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x73, 0x70, 0x22, 0x56, 0x0a,
-	0x08, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x72, 0x12, 0x2a, 0x0a, 0x04, 0x54, 0x79, 0x70,
-	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x16, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x6c, 0x6f,
-	0x6e, 0x67, 0x2e, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x72, 0x54, 0x79, 0x70, 0x65, 0x52,
-	0x04, 0x54, 0x79, 0x70, 0x65, 0x12, 0x1e, 0x0a, 0x0a, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65,
-	0x72, 0x49, 0x44, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x52, 0x65, 0x63, 0x65, 0x69,
-	0x76, 0x65, 0x72, 0x49, 0x44, 0x22, 0x8a, 0x01, 0x0a, 0x06, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72,
-	0x12, 0x28, 0x0a, 0x04, 0x54, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x14,
-	0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x6c, 0x6f, 0x6e, 0x67, 0x2e, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72,
-	0x54, 0x79, 0x70, 0x65, 0x52, 0x04, 0x54, 0x79, 0x70, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x53, 0x65,
-	0x6e, 0x64, 0x65, 0x72, 0x49, 0x44, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x53, 0x65,
-	0x6e, 0x64, 0x65, 0x72, 0x49, 0x44, 0x12, 0x3a, 0x0a, 0x0e, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72,
-	0x54, 0x65, 0x72, 0x6d, 0x69, 0x6e, 0x61, 0x6c, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x12,
-	0x2e, 0x63, 0x6f, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x74, 0x2e, 0x54, 0x65, 0x72, 0x6d, 0x69, 0x6e,
-	0x61, 0x6c, 0x52, 0x0e, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x54, 0x65, 0x72, 0x6d, 0x69, 0x6e,
-	0x61, 0x6c, 0x22, 0xa2, 0x02, 0x0a, 0x03, 0x4d, 0x73, 0x67, 0x12, 0x14, 0x0a, 0x05, 0x4d, 0x73,
-	0x67, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x4d, 0x73, 0x67, 0x49, 0x44,
-	0x12, 0x25, 0x0a, 0x04, 0x54, 0x79, 0x70, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x11,
-	0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x6c, 0x6f, 0x6e, 0x67, 0x2e, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70,
-	0x65, 0x52, 0x04, 0x54, 0x79, 0x70, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x53, 0x65, 0x6e, 0x64, 0x65,
-	0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12,
-	0x2e, 0x0a, 0x08, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x12, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x6c, 0x6f, 0x6e, 0x67, 0x2e, 0x52, 0x65, 0x63,
-	0x65, 0x69, 0x76, 0x65, 0x72, 0x52, 0x08, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x72, 0x12,
-	0x18, 0x0a, 0x07, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0c,
-	0x52, 0x07, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x53, 0x65, 0x6e,
-	0x64, 0x54, 0x69, 0x6d, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x53, 0x65, 0x6e,
-	0x64, 0x54, 0x69, 0x6d, 0x65, 0x12, 0x3a, 0x0a, 0x0e, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x54,
-	0x65, 0x72, 0x6d, 0x69, 0x6e, 0x61, 0x6c, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x12, 0x2e,
-	0x63, 0x6f, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x74, 0x2e, 0x54, 0x65, 0x72, 0x6d, 0x69, 0x6e, 0x61,
-	0x6c, 0x52, 0x0e, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x54, 0x65, 0x72, 0x6d, 0x69, 0x6e, 0x61,
-	0x6c, 0x12, 0x24, 0x0a, 0x0d, 0x43, 0x6f, 0x72, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x49, 0x44, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x43, 0x6f, 0x72, 0x72, 0x65, 0x6c,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x44, 0x22, 0x99, 0x01, 0x0a, 0x07, 0x54, 0x65, 0x78, 0x74,
-	0x4d, 0x73, 0x67, 0x12, 0x18, 0x0a, 0x07, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x12, 0x18, 0x0a,
-	0x07, 0x49, 0x73, 0x41, 0x74, 0x41, 0x6c, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07,
-	0x49, 0x73, 0x41, 0x74, 0x41, 0x6c, 0x6c, 0x12, 0x1a, 0x0a, 0x08, 0x49, 0x73, 0x4e, 0x6f, 0x74,
-	0x69, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x08, 0x49, 0x73, 0x4e, 0x6f, 0x74,
-	0x69, 0x63, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x41, 0x74, 0x55, 0x73, 0x65, 0x72, 0x49, 0x44, 0x53,
-	0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x41, 0x74, 0x55, 0x73, 0x65, 0x72, 0x49, 0x44,
-	0x53, 0x12, 0x20, 0x0a, 0x0b, 0x51, 0x75, 0x6f, 0x74, 0x65, 0x64, 0x4d, 0x73, 0x67, 0x49, 0x44,
-	0x18, 0x05, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x51, 0x75, 0x6f, 0x74, 0x65, 0x64, 0x4d, 0x73,
-	0x67, 0x49, 0x44, 0x22, 0x76, 0x0a, 0x08, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x4d, 0x73, 0x67, 0x12,
-	0x30, 0x0a, 0x09, 0x54, 0x68, 0x75, 0x6d, 0x62, 0x6e, 0x61, 0x69, 0x6c, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x12, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74,
-	0x2e, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x09, 0x54, 0x68, 0x75, 0x6d, 0x62, 0x6e, 0x61, 0x69,
-	0x6c, 0x12, 0x38, 0x0a, 0x0d, 0x4f, 0x72, 0x69, 0x67, 0x69, 0x6e, 0x61, 0x6c, 0x49, 0x6d, 0x61,
-	0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x63,
-	0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2e, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x0d, 0x4f, 0x72,
-	0x69, 0x67, 0x69, 0x6e, 0x61, 0x6c, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x22, 0x34, 0x0a, 0x08, 0x56,
-	0x6f, 0x69, 0x63, 0x65, 0x4d, 0x73, 0x67, 0x12, 0x28, 0x0a, 0x05, 0x56, 0x6f, 0x69, 0x63, 0x65,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x63, 0x6f, 0x6e,
-	0x74, 0x65, 0x6e, 0x74, 0x2e, 0x56, 0x6f, 0x69, 0x63, 0x65, 0x52, 0x05, 0x56, 0x6f, 0x69, 0x63,
-	0x65, 0x22, 0x66, 0x0a, 0x08, 0x56, 0x69, 0x64, 0x65, 0x6f, 0x4d, 0x73, 0x67, 0x12, 0x30, 0x0a,
-	0x09, 0x54, 0x68, 0x75, 0x6d, 0x62, 0x6e, 0x61, 0x69, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x12, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2e, 0x49,
-	0x6d, 0x61, 0x67, 0x65, 0x52, 0x09, 0x54, 0x68, 0x75, 0x6d, 0x62, 0x6e, 0x61, 0x69, 0x6c, 0x12,
-	0x28, 0x0a, 0x05, 0x56, 0x69, 0x64, 0x65, 0x6f, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12,
-	0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2e, 0x56, 0x69, 0x64,
-	0x65, 0x6f, 0x52, 0x05, 0x56, 0x69, 0x64, 0x65, 0x6f, 0x22, 0x4c, 0x0a, 0x06, 0x54, 0x69, 0x70,
-	0x4d, 0x73, 0x67, 0x12, 0x28, 0x0a, 0x04, 0x54, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x0e, 0x32, 0x14, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2e,
-	0x54, 0x69, 0x70, 0x54, 0x79, 0x70, 0x65, 0x52, 0x04, 0x54, 0x79, 0x70, 0x65, 0x12, 0x18, 0x0a,
-	0x07, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x07,
-	0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x22, 0x30, 0x0a, 0x07, 0x46, 0x69, 0x6c, 0x65, 0x4d,
-	0x73, 0x67, 0x12, 0x25, 0x0a, 0x04, 0x46, 0x69, 0x6c, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x11, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2e, 0x46,
-	0x69, 0x6c, 0x65, 0x52, 0x04, 0x46, 0x69, 0x6c, 0x65, 0x22, 0x23, 0x0a, 0x0b, 0x57, 0x69, 0x74,
-	0x68, 0x64, 0x72, 0x61, 0x77, 0x4d, 0x73, 0x67, 0x12, 0x14, 0x0a, 0x05, 0x4d, 0x73, 0x67, 0x49,
-	0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x4d, 0x73, 0x67, 0x49, 0x44, 0x22, 0x2f,
-	0x0a, 0x11, 0x4e, 0x65, 0x77, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74,
-	0x4d, 0x73, 0x67, 0x12, 0x1a, 0x0a, 0x08, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x49, 0x44, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x49, 0x44, 0x22,
-	0x36, 0x0a, 0x18, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x49, 0x6e, 0x66, 0x6f, 0x43, 0x68, 0x61,
-	0x6e, 0x67, 0x65, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x12, 0x1a, 0x0a, 0x08, 0x46,
-	0x72, 0x69, 0x65, 0x6e, 0x64, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x46,
-	0x72, 0x69, 0x65, 0x6e, 0x64, 0x49, 0x44, 0x22, 0x32, 0x0a, 0x14, 0x44, 0x65, 0x6c, 0x65, 0x74,
-	0x65, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x12,
-	0x1a, 0x0a, 0x08, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x08, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x49, 0x44, 0x22, 0x21, 0x0a, 0x1f, 0x4e,
-	0x65, 0x77, 0x41, 0x64, 0x64, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x41, 0x70, 0x70, 0x6c, 0x69,
-	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x22, 0x62,
-	0x0a, 0x28, 0x41, 0x64, 0x64, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x41, 0x70, 0x70, 0x6c, 0x69,
-	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x43, 0x68, 0x61, 0x6e,
-	0x67, 0x65, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x12, 0x36, 0x0a, 0x16, 0x41, 0x64,
-	0x64, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x16, 0x41, 0x64, 0x64, 0x46,
-	0x72, 0x69, 0x65, 0x6e, 0x64, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x49, 0x44, 0x22, 0x2c, 0x0a, 0x10, 0x4e, 0x65, 0x77, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x45, 0x76,
-	0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x12, 0x18, 0x0a, 0x07, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x49,
-	0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x49, 0x44,
-	0x22, 0x33, 0x0a, 0x17, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x49, 0x6e, 0x66, 0x6f, 0x43, 0x68, 0x61,
-	0x6e, 0x67, 0x65, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x12, 0x18, 0x0a, 0x07, 0x47,
-	0x72, 0x6f, 0x75, 0x70, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x47, 0x72,
-	0x6f, 0x75, 0x70, 0x49, 0x44, 0x22, 0x39, 0x0a, 0x1d, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x4d, 0x65,
-	0x6d, 0x62, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x45, 0x76,
-	0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x12, 0x18, 0x0a, 0x07, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x49,
-	0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x49, 0x44,
-	0x22, 0x47, 0x0a, 0x19, 0x4e, 0x65, 0x77, 0x4a, 0x6f, 0x69, 0x6e, 0x47, 0x72, 0x6f, 0x75, 0x70,
-	0x45, 0x76, 0x65, 0x6e, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x12, 0x2a, 0x0a,
-	0x10, 0x4a, 0x6f, 0x69, 0x6e, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x49,
-	0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x10, 0x4a, 0x6f, 0x69, 0x6e, 0x47, 0x72, 0x6f,
-	0x75, 0x70, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x49, 0x44, 0x22, 0x4a, 0x0a, 0x1c, 0x4a, 0x6f, 0x69,
-	0x6e, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x43, 0x68, 0x61, 0x6e, 0x67,
-	0x65, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x12, 0x2a, 0x0a, 0x10, 0x4a, 0x6f, 0x69,
-	0x6e, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x49, 0x44, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x04, 0x52, 0x10, 0x4a, 0x6f, 0x69, 0x6e, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x45, 0x76,
-	0x65, 0x6e, 0x74, 0x49, 0x44, 0x22, 0x50, 0x0a, 0x08, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73,
-	0x67, 0x12, 0x2a, 0x0a, 0x04, 0x54, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32,
-	0x16, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x6c, 0x6f, 0x6e, 0x67, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74,
-	0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x52, 0x04, 0x54, 0x79, 0x70, 0x65, 0x12, 0x18, 0x0a,
-	0x07, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x07,
-	0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x22, 0xc6, 0x01, 0x0a, 0x03, 0x52, 0x65, 0x71, 0x12,
-	0x28, 0x0a, 0x06, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x10, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x6c, 0x6f, 0x6e, 0x67, 0x2e, 0x53, 0x65, 0x6e, 0x64, 0x65,
-	0x72, 0x52, 0x06, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x24, 0x0a, 0x0d, 0x43, 0x6f, 0x72,
-	0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x44, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x0d, 0x43, 0x6f, 0x72, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x44, 0x12,
-	0x25, 0x0a, 0x04, 0x54, 0x79, 0x70, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x11, 0x2e,
-	0x6d, 0x73, 0x67, 0x2e, 0x6c, 0x6f, 0x6e, 0x67, 0x2e, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65,
-	0x52, 0x04, 0x54, 0x79, 0x70, 0x65, 0x12, 0x2e, 0x0a, 0x08, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76,
-	0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x6c,
-	0x6f, 0x6e, 0x67, 0x2e, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x72, 0x52, 0x08, 0x52, 0x65,
-	0x63, 0x65, 0x69, 0x76, 0x65, 0x72, 0x12, 0x18, 0x0a, 0x07, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e,
-	0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x07, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74,
-	0x22, 0x2a, 0x0a, 0x0e, 0x54, 0x65, 0x78, 0x74, 0x52, 0x65, 0x71, 0x43, 0x6f, 0x6e, 0x74, 0x65,
-	0x6e, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x07, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x22, 0x7d, 0x0a, 0x0f,
-	0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x12,
-	0x30, 0x0a, 0x09, 0x54, 0x68, 0x75, 0x6d, 0x62, 0x6e, 0x61, 0x69, 0x6c, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x12, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74,
-	0x2e, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x09, 0x54, 0x68, 0x75, 0x6d, 0x62, 0x6e, 0x61, 0x69,
-	0x6c, 0x12, 0x38, 0x0a, 0x0d, 0x4f, 0x72, 0x69, 0x67, 0x69, 0x6e, 0x61, 0x6c, 0x49, 0x6d, 0x61,
-	0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x63,
-	0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2e, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x0d, 0x4f, 0x72,
-	0x69, 0x67, 0x69, 0x6e, 0x61, 0x6c, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x22, 0x3b, 0x0a, 0x0f, 0x56,
-	0x6f, 0x69, 0x63, 0x65, 0x52, 0x65, 0x71, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x12, 0x28,
-	0x0a, 0x05, 0x56, 0x6f, 0x69, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e,
-	0x6d, 0x73, 0x67, 0x2e, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2e, 0x56, 0x6f, 0x69, 0x63,
-	0x65, 0x52, 0x05, 0x56, 0x6f, 0x69, 0x63, 0x65, 0x22, 0x6d, 0x0a, 0x0f, 0x56, 0x69, 0x64, 0x65,
-	0x6f, 0x52, 0x65, 0x71, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x12, 0x30, 0x0a, 0x09, 0x54,
-	0x68, 0x75, 0x6d, 0x62, 0x6e, 0x61, 0x69, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12,
-	0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2e, 0x49, 0x6d, 0x61,
-	0x67, 0x65, 0x52, 0x09, 0x54, 0x68, 0x75, 0x6d, 0x62, 0x6e, 0x61, 0x69, 0x6c, 0x12, 0x28, 0x0a,
-	0x05, 0x56, 0x69, 0x64, 0x65, 0x6f, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x6d,
-	0x73, 0x67, 0x2e, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2e, 0x56, 0x69, 0x64, 0x65, 0x6f,
-	0x52, 0x05, 0x56, 0x69, 0x64, 0x65, 0x6f, 0x22, 0x37, 0x0a, 0x0e, 0x46, 0x69, 0x6c, 0x65, 0x52,
-	0x65, 0x71, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x12, 0x25, 0x0a, 0x04, 0x46, 0x69, 0x6c,
-	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x63, 0x6f,
-	0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x52, 0x04, 0x46, 0x69, 0x6c, 0x65,
-	0x22, 0x2a, 0x0a, 0x12, 0x57, 0x69, 0x74, 0x68, 0x64, 0x72, 0x61, 0x77, 0x52, 0x65, 0x71, 0x43,
-	0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x4d, 0x73, 0x67, 0x49, 0x44, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x4d, 0x73, 0x67, 0x49, 0x44, 0x22, 0x65, 0x0a, 0x03,
-	0x52, 0x73, 0x70, 0x12, 0x24, 0x0a, 0x0d, 0x43, 0x6f, 0x72, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0d, 0x43, 0x6f, 0x72, 0x72,
-	0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x44, 0x12, 0x22, 0x0a, 0x0c, 0x4d, 0x61, 0x69,
-	0x6c, 0x42, 0x6f, 0x78, 0x4d, 0x73, 0x67, 0x49, 0x44, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x0c, 0x4d, 0x61, 0x69, 0x6c, 0x42, 0x6f, 0x78, 0x4d, 0x73, 0x67, 0x49, 0x44, 0x12, 0x14, 0x0a,
-	0x05, 0x4d, 0x73, 0x67, 0x49, 0x44, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x4d, 0x73,
-	0x67, 0x49, 0x44, 0x22, 0x4a, 0x0a, 0x05, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x27, 0x0a, 0x04,
-	0x54, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x13, 0x2e, 0x6d, 0x73, 0x67,
-	0x2e, 0x6c, 0x6f, 0x6e, 0x67, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x79, 0x70, 0x65, 0x52,
-	0x04, 0x54, 0x79, 0x70, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x07, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x22,
-	0x69, 0x0a, 0x0a, 0x4d, 0x61, 0x69, 0x6c, 0x42, 0x6f, 0x78, 0x4d, 0x73, 0x67, 0x12, 0x16, 0x0a,
-	0x06, 0x55, 0x73, 0x65, 0x72, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x55,
-	0x73, 0x65, 0x72, 0x49, 0x44, 0x12, 0x22, 0x0a, 0x0c, 0x4d, 0x61, 0x69, 0x6c, 0x42, 0x6f, 0x78,
-	0x4d, 0x73, 0x67, 0x49, 0x44, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0c, 0x4d, 0x61, 0x69,
-	0x6c, 0x42, 0x6f, 0x78, 0x4d, 0x73, 0x67, 0x49, 0x44, 0x12, 0x1f, 0x0a, 0x03, 0x4d, 0x73, 0x67,
-	0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x6c, 0x6f, 0x6e,
-	0x67, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x03, 0x4d, 0x73, 0x67, 0x2a, 0x54, 0x0a, 0x0c, 0x52, 0x65,
-	0x63, 0x65, 0x69, 0x76, 0x65, 0x72, 0x54, 0x79, 0x70, 0x65, 0x12, 0x17, 0x0a, 0x13, 0x52, 0x65,
-	0x63, 0x65, 0x69, 0x76, 0x65, 0x72, 0x54, 0x79, 0x70, 0x65, 0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77,
-	0x6e, 0x10, 0x00, 0x12, 0x14, 0x0a, 0x10, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x72, 0x54,
-	0x79, 0x70, 0x65, 0x55, 0x73, 0x65, 0x72, 0x10, 0x01, 0x12, 0x15, 0x0a, 0x11, 0x52, 0x65, 0x63,
-	0x65, 0x69, 0x76, 0x65, 0x72, 0x54, 0x79, 0x70, 0x65, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x10, 0x02,
-	0x2a, 0x4a, 0x0a, 0x0a, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x54, 0x79, 0x70, 0x65, 0x12, 0x15,
-	0x0a, 0x11, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x54, 0x79, 0x70, 0x65, 0x55, 0x6e, 0x6b, 0x6e,
-	0x6f, 0x77, 0x6e, 0x10, 0x00, 0x12, 0x12, 0x0a, 0x0e, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x54,
-	0x79, 0x70, 0x65, 0x55, 0x73, 0x65, 0x72, 0x10, 0x01, 0x12, 0x11, 0x0a, 0x0d, 0x53, 0x65, 0x6e,
-	0x64, 0x65, 0x72, 0x54, 0x79, 0x70, 0x65, 0x53, 0x79, 0x73, 0x10, 0x02, 0x2a, 0xac, 0x01, 0x0a,
-	0x07, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x12, 0x12, 0x0a, 0x0e, 0x4d, 0x73, 0x67, 0x54,
-	0x79, 0x70, 0x65, 0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x10, 0x00, 0x12, 0x0f, 0x0a, 0x0b,
-	0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x54, 0x65, 0x78, 0x74, 0x10, 0x01, 0x12, 0x10, 0x0a,
-	0x0c, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x10, 0x02, 0x12,
-	0x10, 0x0a, 0x0c, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x56, 0x6f, 0x69, 0x63, 0x65, 0x10,
-	0x03, 0x12, 0x10, 0x0a, 0x0c, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x56, 0x69, 0x64, 0x65,
-	0x6f, 0x10, 0x04, 0x12, 0x0e, 0x0a, 0x0a, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x54, 0x69,
-	0x70, 0x10, 0x05, 0x12, 0x0f, 0x0a, 0x0b, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x46, 0x69,
-	0x6c, 0x65, 0x10, 0x06, 0x12, 0x13, 0x0a, 0x0f, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x57,
-	0x69, 0x74, 0x68, 0x64, 0x72, 0x61, 0x77, 0x10, 0x07, 0x12, 0x10, 0x0a, 0x0c, 0x4d, 0x73, 0x67,
-	0x54, 0x79, 0x70, 0x65, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x10, 0x08, 0x2a, 0x88, 0x03, 0x0a, 0x0c,
-	0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x12, 0x17, 0x0a, 0x13,
-	0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x55, 0x6e, 0x6b, 0x6e,
-	0x6f, 0x77, 0x6e, 0x10, 0x00, 0x12, 0x19, 0x0a, 0x15, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73,
-	0x67, 0x54, 0x79, 0x70, 0x65, 0x4e, 0x65, 0x77, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x10, 0x01,
-	0x12, 0x20, 0x0a, 0x1c, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65,
-	0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x49, 0x6e, 0x66, 0x6f, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65,
-	0x10, 0x02, 0x12, 0x1c, 0x0a, 0x18, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x54, 0x79,
-	0x70, 0x65, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x10, 0x03,
-	0x12, 0x27, 0x0a, 0x23, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65,
-	0x4e, 0x65, 0x77, 0x41, 0x64, 0x64, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x41, 0x70, 0x70, 0x6c,
-	0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x10, 0x04, 0x12, 0x30, 0x0a, 0x2c, 0x45, 0x76, 0x65,
-	0x6e, 0x74, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x41, 0x64, 0x64, 0x46, 0x72, 0x69, 0x65,
-	0x6e, 0x64, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61,
-	0x74, 0x75, 0x73, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x10, 0x05, 0x12, 0x18, 0x0a, 0x14, 0x45,
-	0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x4e, 0x65, 0x77, 0x47, 0x72,
-	0x6f, 0x75, 0x70, 0x10, 0x64, 0x12, 0x1f, 0x0a, 0x1b, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73,
-	0x67, 0x54, 0x79, 0x70, 0x65, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x49, 0x6e, 0x66, 0x6f, 0x43, 0x68,
-	0x61, 0x6e, 0x67, 0x65, 0x10, 0x65, 0x12, 0x25, 0x0a, 0x21, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d,
-	0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x4d, 0x65, 0x6d, 0x62, 0x65,
-	0x72, 0x49, 0x6e, 0x66, 0x6f, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x10, 0x66, 0x12, 0x21, 0x0a,
-	0x1d, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x4e, 0x65, 0x77,
-	0x4a, 0x6f, 0x69, 0x6e, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x10, 0x67,
-	0x12, 0x24, 0x0a, 0x20, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65,
-	0x4a, 0x6f, 0x69, 0x6e, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x43, 0x68,
-	0x61, 0x6e, 0x67, 0x65, 0x10, 0x68, 0x2a, 0x45, 0x0a, 0x09, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54,
-	0x79, 0x70, 0x65, 0x12, 0x14, 0x0a, 0x10, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x79, 0x70, 0x65,
-	0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x10, 0x00, 0x12, 0x10, 0x0a, 0x0c, 0x45, 0x76, 0x65,
-	0x6e, 0x74, 0x54, 0x79, 0x70, 0x65, 0x52, 0x73, 0x70, 0x10, 0x01, 0x12, 0x10, 0x0a, 0x0c, 0x45,
-	0x76, 0x65, 0x6e, 0x74, 0x54, 0x79, 0x70, 0x65, 0x4d, 0x73, 0x67, 0x10, 0x02, 0x42, 0x2a, 0x5a,
-	0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x69, 0x61, 0x6f,
-	0x68, 0x75, 0x61, 0x73, 0x68, 0x69, 0x66, 0x75, 0x2f, 0x68, 0x69, 0x6d, 0x2f, 0x61, 0x70, 0x69,
-	0x2f, 0x6d, 0x73, 0x67, 0x2f, 0x6c, 0x6f, 0x6e, 0x67, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x6f, 0x6e, 0x67, 0x1a, 0x11, 0x61, 0x70, 0x69, 0x2f, 0x6d, 0x73, 0x67, 0x2f, 0x6d, 0x73, 0x67,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x20, 0x0a, 0x08, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52,
+	0x65, 0x71, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x22, 0x0b, 0x0a, 0x09, 0x4c, 0x6f, 0x67, 0x69,
+	0x6e, 0x52, 0x65, 0x73, 0x70, 0x22, 0x98, 0x04, 0x0a, 0x0a, 0x53, 0x65, 0x6e, 0x64, 0x4d, 0x73,
+	0x67, 0x52, 0x65, 0x71, 0x12, 0x23, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x0b, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x53, 0x65, 0x6e, 0x64, 0x65,
+	0x72, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x29, 0x0a, 0x08, 0x72, 0x65, 0x63,
+	0x65, 0x69, 0x76, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x6d, 0x73,
+	0x67, 0x2e, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x72, 0x52, 0x08, 0x72, 0x65, 0x63, 0x65,
+	0x69, 0x76, 0x65, 0x72, 0x12, 0x1b, 0x0a, 0x09, 0x73, 0x65, 0x6e, 0x64, 0x5f, 0x74, 0x69, 0x6d,
+	0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x73, 0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d,
+	0x65, 0x12, 0x25, 0x0a, 0x0e, 0x63, 0x6f, 0x72, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0d, 0x63, 0x6f, 0x72, 0x72, 0x65,
+	0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x29, 0x0a, 0x08, 0x74, 0x65, 0x78, 0x74,
+	0x5f, 0x6d, 0x73, 0x67, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0c, 0x2e, 0x6d, 0x73, 0x67,
+	0x2e, 0x54, 0x65, 0x78, 0x74, 0x4d, 0x73, 0x67, 0x48, 0x00, 0x52, 0x07, 0x74, 0x65, 0x78, 0x74,
+	0x4d, 0x73, 0x67, 0x12, 0x2c, 0x0a, 0x09, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x5f, 0x6d, 0x73, 0x67,
+	0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x49, 0x6d, 0x61,
+	0x67, 0x65, 0x4d, 0x73, 0x67, 0x48, 0x00, 0x52, 0x08, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x4d, 0x73,
+	0x67, 0x12, 0x2c, 0x0a, 0x09, 0x76, 0x6f, 0x69, 0x63, 0x65, 0x5f, 0x6d, 0x73, 0x67, 0x18, 0x07,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x56, 0x6f, 0x69, 0x63, 0x65,
+	0x4d, 0x73, 0x67, 0x48, 0x00, 0x52, 0x08, 0x76, 0x6f, 0x69, 0x63, 0x65, 0x4d, 0x73, 0x67, 0x12,
+	0x2c, 0x0a, 0x09, 0x76, 0x69, 0x64, 0x65, 0x6f, 0x5f, 0x6d, 0x73, 0x67, 0x18, 0x08, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x56, 0x69, 0x64, 0x65, 0x6f, 0x4d, 0x73,
+	0x67, 0x48, 0x00, 0x52, 0x08, 0x76, 0x69, 0x64, 0x65, 0x6f, 0x4d, 0x73, 0x67, 0x12, 0x29, 0x0a,
+	0x08, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x6d, 0x73, 0x67, 0x18, 0x09, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x0c, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x4d, 0x73, 0x67, 0x48, 0x00, 0x52,
+	0x07, 0x66, 0x69, 0x6c, 0x65, 0x4d, 0x73, 0x67, 0x12, 0x35, 0x0a, 0x0c, 0x77, 0x69, 0x74, 0x68,
+	0x64, 0x72, 0x61, 0x77, 0x5f, 0x6d, 0x73, 0x67, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x10,
+	0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x57, 0x69, 0x74, 0x68, 0x64, 0x72, 0x61, 0x77, 0x4d, 0x73, 0x67,
+	0x48, 0x00, 0x52, 0x0b, 0x77, 0x69, 0x74, 0x68, 0x64, 0x72, 0x61, 0x77, 0x4d, 0x73, 0x67, 0x12,
+	0x26, 0x0a, 0x07, 0x74, 0x69, 0x70, 0x5f, 0x6d, 0x73, 0x67, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x0b, 0x2e, 0x6d, 0x73, 0x67, 0x2e, 0x54, 0x69, 0x70, 0x4d, 0x73, 0x67, 0x48, 0x00, 0x52,
+	0x06, 0x74, 0x69, 0x70, 0x4d, 0x73, 0x67, 0x12, 0x2c, 0x0a, 0x09, 0x65, 0x76, 0x65, 0x6e, 0x74,
+	0x5f, 0x6d, 0x73, 0x67, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x6d, 0x73, 0x67,
+	0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x73, 0x67, 0x48, 0x00, 0x52, 0x08, 0x65, 0x76, 0x65,
+	0x6e, 0x74, 0x4d, 0x73, 0x67, 0x42, 0x09, 0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74,
+	0x22, 0x72, 0x0a, 0x0b, 0x53, 0x65, 0x6e, 0x64, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x73, 0x70, 0x12,
+	0x25, 0x0a, 0x0e, 0x63, 0x6f, 0x72, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0d, 0x63, 0x6f, 0x72, 0x72, 0x65, 0x6c, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x25, 0x0a, 0x0f, 0x6d, 0x61, 0x69, 0x6c, 0x5f, 0x62,
+	0x6f, 0x78, 0x5f, 0x6d, 0x73, 0x67, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x0c, 0x6d, 0x61, 0x69, 0x6c, 0x42, 0x6f, 0x78, 0x4d, 0x73, 0x67, 0x49, 0x64, 0x12, 0x15, 0x0a,
+	0x06, 0x6d, 0x73, 0x67, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x6d,
+	0x73, 0x67, 0x49, 0x64, 0x42, 0x2a, 0x5a, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x78, 0x69, 0x61, 0x6f, 0x68, 0x75, 0x61, 0x73, 0x68, 0x69, 0x66, 0x75, 0x2f,
+	0x68, 0x69, 0x6d, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6d, 0x73, 0x67, 0x2f, 0x6c, 0x6f, 0x6e, 0x67,
+	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2380,85 +439,39 @@ func file_api_msg_long_long_proto_rawDescGZIP() []byte {
 	return file_api_msg_long_long_proto_rawDescData
 }
 
-var file_api_msg_long_long_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_api_msg_long_long_proto_msgTypes = make([]protoimpl.MessageInfo, 33)
+var file_api_msg_long_long_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_api_msg_long_long_proto_goTypes = []interface{}{
-	(ReceiverType)(0),                       // 0: msg.long.ReceiverType
-	(SenderType)(0),                         // 1: msg.long.SenderType
-	(MsgType)(0),                            // 2: msg.long.MsgType
-	(EventMsgType)(0),                       // 3: msg.long.EventMsgType
-	(EventType)(0),                          // 4: msg.long.EventType
-	(*LoginReq)(nil),                        // 5: msg.long.LoginReq
-	(*LoginRsp)(nil),                        // 6: msg.long.LoginRsp
-	(*Receiver)(nil),                        // 7: msg.long.Receiver
-	(*Sender)(nil),                          // 8: msg.long.Sender
-	(*Msg)(nil),                             // 9: msg.long.Msg
-	(*TextMsg)(nil),                         // 10: msg.long.TextMsg
-	(*ImageMsg)(nil),                        // 11: msg.long.ImageMsg
-	(*VoiceMsg)(nil),                        // 12: msg.long.VoiceMsg
-	(*VideoMsg)(nil),                        // 13: msg.long.VideoMsg
-	(*TipMsg)(nil),                          // 14: msg.long.TipMsg
-	(*FileMsg)(nil),                         // 15: msg.long.FileMsg
-	(*WithdrawMsg)(nil),                     // 16: msg.long.WithdrawMsg
-	(*NewFriendEventMsg)(nil),               // 17: msg.long.NewFriendEventMsg
-	(*FriendInfoChangeEventMsg)(nil),        // 18: msg.long.FriendInfoChangeEventMsg
-	(*DeleteFriendEventMsg)(nil),            // 19: msg.long.DeleteFriendEventMsg
-	(*NewAddFriendApplicationEventMsg)(nil), // 20: msg.long.NewAddFriendApplicationEventMsg
-	(*AddFriendApplicationStatusChangeEventMsg)(nil), // 21: msg.long.AddFriendApplicationStatusChangeEventMsg
-	(*NewGroupEventMsg)(nil),                         // 22: msg.long.NewGroupEventMsg
-	(*GroupInfoChangeEventMsg)(nil),                  // 23: msg.long.GroupInfoChangeEventMsg
-	(*GroupMemberInfoChangeEventMsg)(nil),            // 24: msg.long.GroupMemberInfoChangeEventMsg
-	(*NewJoinGroupEventEventMsg)(nil),                // 25: msg.long.NewJoinGroupEventEventMsg
-	(*JoinGroupEventChangeEventMsg)(nil),             // 26: msg.long.JoinGroupEventChangeEventMsg
-	(*EventMsg)(nil),                                 // 27: msg.long.EventMsg
-	(*Req)(nil),                                      // 28: msg.long.Req
-	(*TextReqContent)(nil),                           // 29: msg.long.TextReqContent
-	(*ImageReqContent)(nil),                          // 30: msg.long.ImageReqContent
-	(*VoiceReqContent)(nil),                          // 31: msg.long.VoiceReqContent
-	(*VideoReqContent)(nil),                          // 32: msg.long.VideoReqContent
-	(*FileReqContent)(nil),                           // 33: msg.long.FileReqContent
-	(*WithdrawReqContent)(nil),                       // 34: msg.long.WithdrawReqContent
-	(*Rsp)(nil),                                      // 35: msg.long.Rsp
-	(*Event)(nil),                                    // 36: msg.long.Event
-	(*MailBoxMsg)(nil),                               // 37: msg.long.MailBoxMsg
-	(constant.Terminal)(0),                           // 38: constant.Terminal
-	(*content.Image)(nil),                            // 39: msg.content.Image
-	(*content.Voice)(nil),                            // 40: msg.content.Voice
-	(*content.Video)(nil),                            // 41: msg.content.Video
-	(content.TipType)(0),                             // 42: msg.content.TipType
-	(*content.File)(nil),                             // 43: msg.content.File
+	(*LoginReq)(nil),        // 0: msg.long.LoginReq
+	(*LoginResp)(nil),       // 1: msg.long.LoginResp
+	(*SendMsgReq)(nil),      // 2: msg.long.SendMsgReq
+	(*SendMsgResp)(nil),     // 3: msg.long.SendMsgResp
+	(*msg.Sender)(nil),      // 4: msg.Sender
+	(*msg.Receiver)(nil),    // 5: msg.Receiver
+	(*msg.TextMsg)(nil),     // 6: msg.TextMsg
+	(*msg.ImageMsg)(nil),    // 7: msg.ImageMsg
+	(*msg.VoiceMsg)(nil),    // 8: msg.VoiceMsg
+	(*msg.VideoMsg)(nil),    // 9: msg.VideoMsg
+	(*msg.FileMsg)(nil),     // 10: msg.FileMsg
+	(*msg.WithdrawMsg)(nil), // 11: msg.WithdrawMsg
+	(*msg.TipMsg)(nil),      // 12: msg.TipMsg
+	(*msg.EventMsg)(nil),    // 13: msg.EventMsg
 }
 var file_api_msg_long_long_proto_depIdxs = []int32{
-	0,  // 0: msg.long.Receiver.Type:type_name -> msg.long.ReceiverType
-	1,  // 1: msg.long.Sender.Type:type_name -> msg.long.SenderType
-	38, // 2: msg.long.Sender.SenderTerminal:type_name -> constant.Terminal
-	2,  // 3: msg.long.Msg.Type:type_name -> msg.long.MsgType
-	7,  // 4: msg.long.Msg.Receiver:type_name -> msg.long.Receiver
-	38, // 5: msg.long.Msg.SenderTerminal:type_name -> constant.Terminal
-	39, // 6: msg.long.ImageMsg.Thumbnail:type_name -> msg.content.Image
-	39, // 7: msg.long.ImageMsg.OriginalImage:type_name -> msg.content.Image
-	40, // 8: msg.long.VoiceMsg.Voice:type_name -> msg.content.Voice
-	39, // 9: msg.long.VideoMsg.Thumbnail:type_name -> msg.content.Image
-	41, // 10: msg.long.VideoMsg.Video:type_name -> msg.content.Video
-	42, // 11: msg.long.TipMsg.Type:type_name -> msg.content.TipType
-	43, // 12: msg.long.FileMsg.File:type_name -> msg.content.File
-	3,  // 13: msg.long.EventMsg.Type:type_name -> msg.long.EventMsgType
-	8,  // 14: msg.long.Req.Sender:type_name -> msg.long.Sender
-	2,  // 15: msg.long.Req.Type:type_name -> msg.long.MsgType
-	7,  // 16: msg.long.Req.Receiver:type_name -> msg.long.Receiver
-	39, // 17: msg.long.ImageReqContent.Thumbnail:type_name -> msg.content.Image
-	39, // 18: msg.long.ImageReqContent.OriginalImage:type_name -> msg.content.Image
-	40, // 19: msg.long.VoiceReqContent.Voice:type_name -> msg.content.Voice
-	39, // 20: msg.long.VideoReqContent.Thumbnail:type_name -> msg.content.Image
-	41, // 21: msg.long.VideoReqContent.Video:type_name -> msg.content.Video
-	43, // 22: msg.long.FileReqContent.File:type_name -> msg.content.File
-	4,  // 23: msg.long.Event.Type:type_name -> msg.long.EventType
-	9,  // 24: msg.long.MailBoxMsg.Msg:type_name -> msg.long.Msg
-	25, // [25:25] is the sub-list for method output_type
-	25, // [25:25] is the sub-list for method input_type
-	25, // [25:25] is the sub-list for extension type_name
-	25, // [25:25] is the sub-list for extension extendee
-	0,  // [0:25] is the sub-list for field type_name
+	4,  // 0: msg.long.SendMsgReq.sender:type_name -> msg.Sender
+	5,  // 1: msg.long.SendMsgReq.receiver:type_name -> msg.Receiver
+	6,  // 2: msg.long.SendMsgReq.text_msg:type_name -> msg.TextMsg
+	7,  // 3: msg.long.SendMsgReq.image_msg:type_name -> msg.ImageMsg
+	8,  // 4: msg.long.SendMsgReq.voice_msg:type_name -> msg.VoiceMsg
+	9,  // 5: msg.long.SendMsgReq.video_msg:type_name -> msg.VideoMsg
+	10, // 6: msg.long.SendMsgReq.file_msg:type_name -> msg.FileMsg
+	11, // 7: msg.long.SendMsgReq.withdraw_msg:type_name -> msg.WithdrawMsg
+	12, // 8: msg.long.SendMsgReq.tip_msg:type_name -> msg.TipMsg
+	13, // 9: msg.long.SendMsgReq.event_msg:type_name -> msg.EventMsg
+	10, // [10:10] is the sub-list for method output_type
+	10, // [10:10] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_api_msg_long_long_proto_init() }
@@ -2480,7 +493,7 @@ func file_api_msg_long_long_proto_init() {
 			}
 		}
 		file_api_msg_long_long_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LoginRsp); i {
+			switch v := v.(*LoginResp); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2492,7 +505,7 @@ func file_api_msg_long_long_proto_init() {
 			}
 		}
 		file_api_msg_long_long_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Receiver); i {
+			switch v := v.(*SendMsgReq); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2504,355 +517,7 @@ func file_api_msg_long_long_proto_init() {
 			}
 		}
 		file_api_msg_long_long_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Sender); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Msg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TextMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ImageMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*VoiceMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*VideoMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TipMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FileMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*WithdrawMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NewFriendEventMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FriendInfoChangeEventMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteFriendEventMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NewAddFriendApplicationEventMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddFriendApplicationStatusChangeEventMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NewGroupEventMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GroupInfoChangeEventMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GroupMemberInfoChangeEventMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NewJoinGroupEventEventMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*JoinGroupEventChangeEventMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventMsg); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Req); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TextReqContent); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ImageReqContent); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*VoiceReqContent); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*VideoReqContent); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FileReqContent); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*WithdrawReqContent); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Rsp); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Event); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_api_msg_long_long_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MailBoxMsg); i {
+			switch v := v.(*SendMsgResp); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2864,19 +529,28 @@ func file_api_msg_long_long_proto_init() {
 			}
 		}
 	}
+	file_api_msg_long_long_proto_msgTypes[2].OneofWrappers = []interface{}{
+		(*SendMsgReq_TextMsg)(nil),
+		(*SendMsgReq_ImageMsg)(nil),
+		(*SendMsgReq_VoiceMsg)(nil),
+		(*SendMsgReq_VideoMsg)(nil),
+		(*SendMsgReq_FileMsg)(nil),
+		(*SendMsgReq_WithdrawMsg)(nil),
+		(*SendMsgReq_TipMsg)(nil),
+		(*SendMsgReq_EventMsg)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_api_msg_long_long_proto_rawDesc,
-			NumEnums:      5,
-			NumMessages:   33,
+			NumEnums:      0,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_api_msg_long_long_proto_goTypes,
 		DependencyIndexes: file_api_msg_long_long_proto_depIdxs,
-		EnumInfos:         file_api_msg_long_long_proto_enumTypes,
 		MessageInfos:      file_api_msg_long_long_proto_msgTypes,
 	}.Build()
 	File_api_msg_long_long_proto = out.File

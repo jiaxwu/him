@@ -1,0 +1,181 @@
+syntax = "proto3";
+
+package friend;
+
+import "api/constant/constant.proto";
+
+option go_package = "github.com/xiaohuashifu/him/api/friend";
+
+// ---------------------------好友管理
+
+// 好友信息
+message FriendInfo {
+    uint64 friend_id = 1; // 好友编号
+    string nick_name = 2; // 昵称
+    string username = 3; // 用户名
+    string avatar = 4; // 头像
+    constant.Gender gender = 5; // 性别
+    string remark = 6; // 备注
+    string description = 7; // 描述
+    bool is_disturb = 8; // 是否免打扰
+    bool is_blacklist = 9; // 是否黑名单
+    bool is_top = 10; // 是否置顶
+}
+
+// 获取好友信息请求
+message GetFriendInfosReq {
+    uint64 user_id = 1; // 用户编号
+}
+
+// 获取好友信息响应
+message GetFriendInfosResp {
+    repeated FriendInfo friend_infos = 1; // 好友信息列表
+}
+
+// 获取好友信息请求
+message GetFriendInfoReq {
+    uint64 user_id = 1; // 用户编号
+    oneof condition {
+        string username = 2; // 好友用户名
+        uint64 friend_id = 3; // 好友编号
+    }
+}
+
+// 获取好友信息响应
+message GetFriendInfoResp {
+    FriendInfo friend_info = 1; // 好友信息
+}
+
+// 设置好友免打扰请求
+message SetFriendDisturbReq {
+    uint64 friend_id = 1; // 好友编号
+    bool is_disturb = 2; // 是否免打扰
+}
+
+// 设置好友免打扰响应
+message SetFriendDisturbResp {}
+
+// 设置好友黑名单请求
+message SetFriendBlacklistReq {
+    uint64 friend_id = 1; // 好友编号
+    bool is_blacklist = 2; // 是否黑名单
+}
+
+// 设置好友黑名单响应
+message SetFriendBlacklistResp {}
+
+// 删除好友请求
+message DeleteFriendReq {
+    uint64 user_id = 1; // 用户编号
+    uint64 friend_id = 2; // 好友编号
+}
+
+// 删除好友响应
+message DeleteFriendResp {}
+
+// 获取所有好友请求
+message GetAllFriendsReq {
+    uint64 user_id = 1; // 用户编号
+}
+
+// 获取所有好友响应
+message GetAllFriendsResp {
+    repeated FriendInfo friend_infos = 1; // 好友信息列表
+}
+
+// --------------------------------好友申请
+
+// 添加好友申请
+message AddFriendApplication {
+    uint64 add_friend_application_id = 1; // 添加好友申请编号
+    uint64 applicant_id = 2; // 申请者用户编号
+    uint64 friend_id = 3; // 好友编号
+    string application_msg = 4; // 申请消息
+    string friend_reply = 5; // 好友回复
+    // 添加好友申请状态
+    enum Status {
+        STATUS_UNSPECIFIED = 0; // 未知
+        STATUS_WAIT_CONFIRM = 1; // 等待确认
+        STATUS_REJECT = 2; // 拒绝
+        STATUS_ACCEPT = 3; // 接受
+        STATUS_EXPIRE = 4; // 过期
+    }
+    Status status = 6; // 申请状态
+    uint64 application_time = 7; // 申请时间
+}
+
+// 获取添加好友申请请求
+message GetAddFriendApplicationsReq {
+    uint64 user_id = 1; // 用户编号
+    uint64 last_add_friend_application_id = 2; // 最后一个添加好友请求的编号（因为是反过来排序的）
+    uint32 size = 3; // 多少条
+}
+
+// 获取添加好友申请响应
+message GetAddFriendApplicationsResp {
+    repeated AddFriendApplication add_friend_applications = 1; // 添加好友申请
+}
+
+// 添加好友申请请求
+message AddFriendApplicationReq {
+    uint64 applicant_id = 1; // 申请人编号
+    uint64 friend_id = 2; // 好友编号
+    string application_msg = 3; // 申请消息
+}
+
+// 添加好友申请响应
+message AddFriendApplicationResp {
+    uint64 add_friend_application_id = 1; // 添加好友申请编号
+}
+
+// 更新添加好友申请请求
+message UpdateAddFriendApplicationReq {
+    uint64 add_friend_application_id = 1; // 添加好友申请编号
+    oneof action {
+        string application_msg = 2; // 申请消息
+        string friend_reply = 3; // 好友回复
+    }
+}
+
+// 更新添加好友申请响应
+message UpdateAddFriendApplicationResp {}
+
+// 接受添加好友请求
+message AcceptAddFriendApplicationReq {
+    uint64 add_friend_application_id = 1; // 添加好友申请编号
+}
+
+// 接受添加好友响应
+message AcceptAddFriendApplicationResp {}
+
+// 拒绝添加好友请求
+message RejectAddFriendApplicationReq {
+    uint64 add_friend_application_id = 1; // 添加好友申请编号
+}
+
+// 拒绝添加好友响应
+message RejectAddFriendApplicationResp {}
+
+// -----------------------------------------存储模型
+
+// @存储模型
+// 添加好友申请
+// 这里在检索的时候根据ApplicantID和FriendID查询自己的所有申请
+// 根据AddFriendApplicationID逆序排序
+message AddFriendApplicationStore {
+    AddFriendApplication add_friend_application = 1; // 申请
+}
+
+// @存储模型
+// 好友
+message FriendStore {
+    uint64 user_id = 1; // 用户编号
+    uint64 friend_id = 2; // 好友编号
+    string remark = 3; // 备注
+    string description = 4; // 描述
+    bool is_ignore_msg = 5; // 是否忽略对方的消息
+    bool is_blacklist = 6; // 是否黑名单
+    bool is_top = 7; // 是否置顶
+    uint64 created_at = 8; // 建立时间
+    uint64 updated_at = 9; // 修改时间
+}

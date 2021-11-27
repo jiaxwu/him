@@ -6,15 +6,15 @@ option go_package = "github.com/xiaohuashifu/him/api/constant";
 
 // 终端
 enum Terminal {
-    TerminalUnknown = 0; // 未知
-    TerminalApp = 1; // App
-    TerminalPC = 2; // PC
-    TerminalWeb = 3; // Web
+    TERMINAL_UNSPECIFIED = 0; // 未知
+    TERMINAL_APP = 1; // App
+    TERMINAL_PC = 2; // PC
+    TERMINAL_WEB = 3; // Web
 }
 
 // 性别
 enum Gender {
-    GenderUnknown = 0; // 未知
-    GenderMale = 1; // 男性
-    GenderFemale = 2; // 女性
+    GENDER_UNSPECIFIED = 0; // 未知
+    GENDER_MALE = 1; // 男性
+    GENDER_FEMALE = 2; // 女性
 }

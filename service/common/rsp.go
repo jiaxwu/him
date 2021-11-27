@@ -2,46 +2,44 @@ package common
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/xiaohuashifu/him/api/common"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/anypb"
 	"net/http"
 )
 
-// Rsp 响应
-type Rsp struct {
-	Code string      `json:"Code,omitempty"` // 错误码
-	Msg  string      `json:"Msg,omitempty"`  // 消息
-	Data interface{} `json:"Data,omitempty"` // 数据
-}
-
 // SuccessRsp 成功响应
-func SuccessRsp(data interface{}) *Rsp {
-	return rsp(ErrCodeOK, data)
+func SuccessRsp(data proto.Message) *common.Resp {
+	bytesData, _ := proto.Marshal(data)
+	return baseRsp(ErrCodeOK, bytesData)
 }
 
 // FailureRsp 失败响应
-func FailureRsp(errCode ErrCode) *Rsp {
-	return rsp(errCode, nil)
+func FailureRsp(errCode *ErrCode) *common.Rsp {
+	return baseRsp(errCode, nil)
 }
 
 // Success 请求成功
-func Success(c *gin.Context, data interface{}) {
+func Success(c *gin.Context, data proto.Message) {
 	ginRsp(c, SuccessRsp(data))
 }
 
 // Failure 请求失败
-func Failure(c *gin.Context, errCode ErrCode) {
+func Failure(c *gin.Context, errCode *ErrCode) {
 	ginRsp(c, FailureRsp(errCode))
 }
 
 // gin响应
-func ginRsp(c *gin.Context, rsp *Rsp) {
-	c.JSON(http.StatusOK, rsp)
+func ginRsp(c *gin.Context, rsp *common.Rsp) {
+	c.ProtoBuf(http.StatusOK, rsp)
 }
 
 // 响应
-func rsp(errCode ErrCode, data interface{}) *Rsp {
-	return &Rsp{
-		Code: errCode.Code(),
-		Msg:  errCode.Advice(),
-		Data: data,
+func baseRsp(errCode *ErrCode, data proto.Message) *common.Resp {
+	content, _ := anypb.New(data)
+	return &common.Resp{
+		Code:    errCode.Code,
+		Msg:     errCode.Advice,
+		Content: content,
 	}
 }
