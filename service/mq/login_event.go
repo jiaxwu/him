@@ -1,7 +1,7 @@
 package mq
 
 import (
-	"github.com/xiaohuashifu/him/service/service/authnz/authz/model"
+	"github.com/xiaohuashifu/him/api/authnz/authz"
 )
 
 const (
@@ -13,7 +13,7 @@ const (
 
 type LoginEvent struct {
 	UserID    uint64          `json:"user_id"`    // 用户编号
-	LoginType authnz.LoginType `json:"type"`      // 登录类型
+	LoginType authz.LoginType `json:"type"`      // 登录类型
 	LoginTime uint64          `json:"loginTime"` // 登录时间
 }
 

@@ -10,8 +10,15 @@ option go_package = "github.com/xiaohuashifu/him/api/authnz/authz";
 service AuthzService {
     rpc Login(LoginReq) returns (LoginResp);
     rpc SendSmVerCodeForLogin(SendSmVerCodeForLoginReq) returns (SendSmVerCodeForLoginResp);
-    rpc SetPwdLogin(SetPwdLoginReq) returns (SetPwdLoginResp);
+    rpc UpdatePwd(UpdatePwdReq) returns (UpdatePwdResp);
     rpc Logout(LogoutReq) returns (LogoutResp);
+}
+
+// 登录类型
+enum LoginType {
+    LOGIN_TYPE_UNSPECIFIED = 0; // 未知
+    LOGIN_TYPE_SM_VER_CODE = 1; // 短信验证码
+    LOGIN_TYPE_PWD = 2; // 密码
 }
 
 // 登录请求
@@ -36,6 +43,7 @@ message LoginReq {
 // 登录响应
 message LoginResp {
     string token = 1; // 凭证
+    uint64 user_id = 2; // 用户编号
 }
 
 // 发送短信登录验证码请求
@@ -47,15 +55,15 @@ message SendSmVerCodeForLoginReq {
 // 发送短信登录验证码响应
 message SendSmVerCodeForLoginResp {}
 
-// 设置密码登录请求
-message SetPwdLoginReq {
+// 更新密码请求
+message UpdatePwdReq {
     uint64 user_id = 1; // 用户编号
-    string orig_pwd = 2; // 原密码
-    string new_pwd = 3; // 新密码
+    string pwd = 2; // 新密码
+    string sm_ver_code = 3; // 短信验证码
 }
 
-// 设置密码登录响应
-message SetPwdLoginResp {}
+// 更新密码响应
+message UpdatePwdResp {}
 
 // 退出登录请求
 message LogoutReq {
@@ -66,4 +74,3 @@ message LogoutReq {
 message LogoutResp {}
 
 // todo 发送验证码前的图形验证码
-// todo 忘记密码

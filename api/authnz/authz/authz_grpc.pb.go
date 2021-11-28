@@ -20,7 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type AuthzServiceClient interface {
 	Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginResp, error)
 	SendSmVerCodeForLogin(ctx context.Context, in *SendSmVerCodeForLoginReq, opts ...grpc.CallOption) (*SendSmVerCodeForLoginResp, error)
-	SetPwdLogin(ctx context.Context, in *SetPwdLoginReq, opts ...grpc.CallOption) (*SetPwdLoginResp, error)
+	UpdatePwd(ctx context.Context, in *UpdatePwdReq, opts ...grpc.CallOption) (*UpdatePwdResp, error)
 	Logout(ctx context.Context, in *LogoutReq, opts ...grpc.CallOption) (*LogoutResp, error)
 }
 
@@ -50,9 +50,9 @@ func (c *authzServiceClient) SendSmVerCodeForLogin(ctx context.Context, in *Send
 	return out, nil
 }
 
-func (c *authzServiceClient) SetPwdLogin(ctx context.Context, in *SetPwdLoginReq, opts ...grpc.CallOption) (*SetPwdLoginResp, error) {
-	out := new(SetPwdLoginResp)
-	err := c.cc.Invoke(ctx, "/authnz.authz.AuthzService/SetPwdLogin", in, out, opts...)
+func (c *authzServiceClient) UpdatePwd(ctx context.Context, in *UpdatePwdReq, opts ...grpc.CallOption) (*UpdatePwdResp, error) {
+	out := new(UpdatePwdResp)
+	err := c.cc.Invoke(ctx, "/authnz.authz.AuthzService/UpdatePwd", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (c *authzServiceClient) Logout(ctx context.Context, in *LogoutReq, opts ...
 type AuthzServiceServer interface {
 	Login(context.Context, *LoginReq) (*LoginResp, error)
 	SendSmVerCodeForLogin(context.Context, *SendSmVerCodeForLoginReq) (*SendSmVerCodeForLoginResp, error)
-	SetPwdLogin(context.Context, *SetPwdLoginReq) (*SetPwdLoginResp, error)
+	UpdatePwd(context.Context, *UpdatePwdReq) (*UpdatePwdResp, error)
 	Logout(context.Context, *LogoutReq) (*LogoutResp, error)
 	mustEmbedUnimplementedAuthzServiceServer()
 }
@@ -89,8 +89,8 @@ func (UnimplementedAuthzServiceServer) Login(context.Context, *LoginReq) (*Login
 func (UnimplementedAuthzServiceServer) SendSmVerCodeForLogin(context.Context, *SendSmVerCodeForLoginReq) (*SendSmVerCodeForLoginResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendSmVerCodeForLogin not implemented")
 }
-func (UnimplementedAuthzServiceServer) SetPwdLogin(context.Context, *SetPwdLoginReq) (*SetPwdLoginResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetPwdLogin not implemented")
+func (UnimplementedAuthzServiceServer) UpdatePwd(context.Context, *UpdatePwdReq) (*UpdatePwdResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdatePwd not implemented")
 }
 func (UnimplementedAuthzServiceServer) Logout(context.Context, *LogoutReq) (*LogoutResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
@@ -144,20 +144,20 @@ func _AuthzService_SendSmVerCodeForLogin_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthzService_SetPwdLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetPwdLoginReq)
+func _AuthzService_UpdatePwd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePwdReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthzServiceServer).SetPwdLogin(ctx, in)
+		return srv.(AuthzServiceServer).UpdatePwd(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/authnz.authz.AuthzService/SetPwdLogin",
+		FullMethod: "/authnz.authz.AuthzService/UpdatePwd",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthzServiceServer).SetPwdLogin(ctx, req.(*SetPwdLoginReq))
+		return srv.(AuthzServiceServer).UpdatePwd(ctx, req.(*UpdatePwdReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -196,8 +196,8 @@ var AuthzService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuthzService_SendSmVerCodeForLogin_Handler,
 		},
 		{
-			MethodName: "SetPwdLogin",
-			Handler:    _AuthzService_SetPwdLogin_Handler,
+			MethodName: "UpdatePwd",
+			Handler:    _AuthzService_UpdatePwd_Handler,
 		},
 		{
 			MethodName: "Logout",

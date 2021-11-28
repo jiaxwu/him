@@ -6,18 +6,18 @@ import (
 	"github.com/xiaohuashifu/him/common/rdb"
 	"github.com/xiaohuashifu/him/common/validate"
 	"github.com/xiaohuashifu/him/conf"
-	"github.com/xiaohuashifu/him/service/server"
-	loginConf "github.com/xiaohuashifu/him/service/service/authnz/authz/conf"
-	loginHandler "github.com/xiaohuashifu/him/service/service/authnz/authz/handler"
-	loginService "github.com/xiaohuashifu/him/service/service/authnz/authz/service"
-	imGatewayHandler "github.com/xiaohuashifu/him/service/service/im/gateway/handler"
-	imServiceHandler "github.com/xiaohuashifu/him/service/service/im/service/handler"
-	smsService "github.com/xiaohuashifu/him/service/service/sms/service"
-	userProfileConf "github.com/xiaohuashifu/him/service/service/user/profile/conf"
-	userProfileConsumer "github.com/xiaohuashifu/him/service/service/user/profile/consumer"
-	userProfileHandler "github.com/xiaohuashifu/him/service/service/user/profile/handler"
-	userProfileService "github.com/xiaohuashifu/him/service/service/user/profile/service"
-	userProfileTask "github.com/xiaohuashifu/him/service/service/user/profile/task"
+	loginHandler "github.com/xiaohuashifu/him/gateway/authnz/authz"
+	"github.com/xiaohuashifu/him/gateway/server"
+	loginConf "github.com/xiaohuashifu/him/service/authnz/authz/conf"
+	loginService "github.com/xiaohuashifu/him/service/authnz/authz/service"
+	imGatewayHandler "github.com/xiaohuashifu/him/service/im/gateway/handler"
+	imServiceHandler "github.com/xiaohuashifu/him/service/im/service/handler"
+	smsService "github.com/xiaohuashifu/him/service/sm/service"
+	conf2 "github.com/xiaohuashifu/him/service/user/profile/conf"
+	userProfileConsumer "github.com/xiaohuashifu/him/service/user/profile/consumer"
+	userProfileHandler "github.com/xiaohuashifu/him/service/user/profile/handler"
+	userProfileService "github.com/xiaohuashifu/him/service/user/profile/service"
+	userProfileTask "github.com/xiaohuashifu/him/service/user/profile/task"
 	"github.com/xiaohuashifu/him/service/wrap"
 	"go.uber.org/fx"
 )
@@ -37,7 +37,7 @@ func NewApp() *fx.App {
 			server.NewEngine,
 			server.NewServer,
 			wrap.NewWrapper,
-			smsService.NewSMSService,
+			smsService.NewSmService,
 			fx.Annotate(
 				loginConf.NewLoginEventProducer,
 				fx.ResultTags(`name:"LoginEventProducer"`),
@@ -47,11 +47,11 @@ func NewApp() *fx.App {
 				fx.ParamTags(`name:"LoginEventProducer"`),
 			),
 			fx.Annotate(
-				userProfileConf.NewUserAvatarBucketOSSClient,
+				conf2.NewUserAvatarBucketOSSClient,
 				fx.ResultTags(`name:"UserAvatarBucketOSSClient"`),
 			),
 			fx.Annotate(
-				userProfileConf.NewUserProfileEventProducer,
+				conf2.NewUserProfileEventProducer,
 				fx.ResultTags(`name:"UserProfileEventProducer"`),
 			),
 			fx.Annotate(

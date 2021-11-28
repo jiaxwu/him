@@ -1,6 +1,8 @@
 package mq
 
-import "github.com/xiaohuashifu/him/service/service/user/profile/model"
+import (
+	"github.com/xiaohuashifu/him/service/user/profile/model"
+)
 
 const (
 	// UserProfileEventProducerGroupName 用户信息事件生产者群名

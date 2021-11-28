@@ -19,6 +19,7 @@ require (
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.32
 	go.uber.org/fx v1.15.0
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
+	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.27.1
 	gorm.io/driver/mysql v1.1.3
 	gorm.io/gorm v1.22.2
@@ -64,8 +65,10 @@ require (
 	go.uber.org/dig v1.12.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.17.0 // indirect
+	golang.org/x/net v0.0.0-20210503060351-7fd8e65b6420 // indirect
 	golang.org/x/sys v0.0.0-20210903071746-97244b99971b // indirect
 	golang.org/x/text v0.3.6 // indirect
+	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71 // indirect
 	gopkg.in/ini.v1 v1.63.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	stathat.com/c/consistent v1.0.0 // indirect

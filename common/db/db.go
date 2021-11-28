@@ -3,8 +3,8 @@ package db
 import (
 	"github.com/sirupsen/logrus"
 	"github.com/xiaohuashifu/him/conf"
-	db2 "github.com/xiaohuashifu/him/service/service/authnz/authz/db"
-	userProfileDB "github.com/xiaohuashifu/him/service/service/user/profile/db"
+	db3 "github.com/xiaohuashifu/him/service/authnz/authz/db"
+	userProfileDB "github.com/xiaohuashifu/him/service/user/profile/db"
 	model2 "github.com/xiaohuashifu/him/test/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -28,9 +28,9 @@ func NewDB(log *logrus.Logger, config *conf.Config) *gorm.DB {
 	if err != nil {
 		log.Fatal("打开数据库失败", err)
 	}
-	if err := db.AutoMigrate(db2.User{}, userProfileDB.UserProfile{}, model2.Wallet{}, model2.Trade{},
+	if err := db.AutoMigrate(db3.User{}, userProfileDB.UserProfile{}, model2.Wallet{}, model2.Trade{},
 		model2.Friend{}, model2.ChatChannel{}, model2.ChatChannelSubscribe{}, model2.Message{}, model2.UnAckMessage{},
-		db2.PasswordLogin{}, db2.PhoneLogin{}, model2.Announcement{}); err != nil {
+		db3.PwdLogin{}, db3.PhoneLogin{}, model2.Announcement{}); err != nil {
 		log.Fatal("自动迁移数据库失败", err)
 	}
 	return db
