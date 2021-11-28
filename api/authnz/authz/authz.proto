@@ -6,14 +6,13 @@ import "api/constant/constant.proto";
 
 option go_package = "github.com/xiaohuashifu/him/api/authnz/authz";
 
-// 发送短信登录验证码请求
-message SendSmVerCodeForLoginReq {
-    string phone = 1; // 手机号码
-    constant.Terminal terminal = 2; // 终端
+// 授权服务
+service AuthzService {
+    rpc Login(LoginReq) returns (LoginResp);
+    rpc SendSmVerCodeForLogin(SendSmVerCodeForLoginReq) returns (SendSmVerCodeForLoginResp);
+    rpc SetPwdLogin(SetPwdLoginReq) returns (SetPwdLoginResp);
+    rpc Logout(LogoutReq) returns (LogoutResp);
 }
-
-// 发送短信登录验证码响应
-message SendSmVerCodeForLoginResp {}
 
 // 登录请求
 message LoginReq {
@@ -38,6 +37,15 @@ message LoginReq {
 message LoginResp {
     string token = 1; // 凭证
 }
+
+// 发送短信登录验证码请求
+message SendSmVerCodeForLoginReq {
+    string phone = 1; // 手机号码
+    constant.Terminal terminal = 2; // 终端
+}
+
+// 发送短信登录验证码响应
+message SendSmVerCodeForLoginResp {}
 
 // 设置密码登录请求
 message SetPwdLoginReq {

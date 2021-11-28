@@ -15,7 +15,7 @@ func RegisterLoginHandler(engine *gin.Engine, authzService *service.AuthzService
 		NotNeedLogin: true,
 	}))
 
-	engine.POST("authnz/sms/send", wrapper.Wrap(authzService.SendSMSForLogin, &wrap.Config{
+	engine.POST("authnz/sm/send", wrapper.Wrap(authzService.SendSMSForLogin, &wrap.Config{
 		NotNeedLogin: true,
 	}))
 

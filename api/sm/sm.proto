@@ -1,8 +1,14 @@
 syntax = "proto3";
 
-package sms;
+package sm;
 
-option go_package = "github.com/xiaohuashifu/him/api/sms";
+option go_package = "github.com/xiaohuashifu/him/api/sm";
+
+// 短信服务
+service SmService {
+    rpc SendVecCodeForLogin(SendVecCodeForLoginReq) returns (SendVecCodeForLoginResp);
+    rpc Send(SendReq) returns (SendResp);
+}
 
 // 发送验证码短信用于登录请求
 message SendVecCodeForLoginReq {

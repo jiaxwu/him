@@ -6,6 +6,12 @@ import "api/msg/msg.proto";
 
 option go_package = "github.com/xiaohuashifu/him/api/msg/long";
 
+// 长连接消息服务
+service MsgLongService {
+    rpc Login(LoginReq) returns (LoginResp);
+    rpc SendMsg(SendMsgReq) returns (SendMsgResp);
+}
+
 // 登录请求
 message LoginReq {
     string token = 1; // 凭证

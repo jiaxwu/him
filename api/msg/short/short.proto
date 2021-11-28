@@ -6,6 +6,13 @@ import "api/msg/msg.proto";
 
 option go_package = "github.com/xiaohuashifu/him/api/msg/short";
 
+// 短链接消息服务
+service MsgShortService {
+    rpc Upload(UploadReq) returns (UploadResp);
+    rpc GetLastMailBoxMsgId(GetLastMailBoxMsgIdReq) returns (GetLastMailBoxMsgIdResp);
+    rpc GetMsgs(GetMsgsReq) returns (GetMsgsResp);
+}
+
 // --------------------------资源上传
 
 // 上传请求（通过字节流）

@@ -4,6 +4,20 @@ package grp;
 
 option go_package = "github.com/xiaohuashifu/him/api/grp";
 
+// 群服务
+service GroupService {
+    rpc UpdateGroupInfo(UpdateGroupInfoReq) returns (UpdateGroupInfoResp);
+    rpc GetGroupInfos(GetGroupInfosReq) returns (GetGroupInfosResp);
+    rpc CreateGroup(CreateGroupReq) returns (CreateGroupResp);
+    rpc KickGroupMember(KickGroupMemberReq) returns (KickGroupMemberResp);
+    rpc TransferGroupLeader(TransferGroupLeaderReq) returns (TransferGroupLeaderResp);
+    rpc QuitGroup(QuitGroupReq) returns (QuitGroupResp);
+    rpc GetGroupMemberInfos(GetGroupMemberInfosReq) returns (GetGroupMemberInfosResp);
+    rpc CreateJoinGroupEvent(CreateJoinGroupEventReq) returns (CreateJoinGroupEventResp);
+    rpc GetJoinGroupEvents(GetJoinGroupEventsReq) returns (GetJoinGroupEventsResp);
+    rpc UpdateJoinGroupEvent(UpdateJoinGroupEventReq) returns (UpdateJoinGroupEventResp);
+}
+
 // -----------------------------群管理
 
 // 群信息
@@ -30,13 +44,16 @@ message UpdateGroupInfoReq {
 message UpdateGroupInfoResp {}
 
 // 获取群信息请求
-message GetGroupInfoReq {
-    uint64 group_id = 1; // 群编号
+message GetGroupInfosReq {
+    oneof condition {
+        uint64 group_id = 1; // 群编号
+        bool all = 2; // 全部
+    }
 }
 
 // 获取群信息响应
-message GetGroupInfoResp {
-    GroupInfo group_info = 1; // 群信息
+message GetGroupInfosResp {
+    repeated GroupInfo group_info = 1; // 群信息
 }
 
 // 创建群请求
@@ -120,15 +137,27 @@ message GetGroupMemberInfosResp {
 
 // -------------------------------入群申请
 
-// 入群申请请求（用于扫码入群）
-message JoinGroupApplicationReq {
+// 创建入群事件请求
+message CreateJoinGroupEventReq {
     uint64 group_id = 1; // 群编号
-    uint64 join_group_user_id = 2; // 入群用户编号
-    string join_group_user_msg = 3; // 入群用户消息
+    // 申请（用于扫码入群）
+    message Application {
+        uint64 join_group_user_id = 1; // 入群用户编号
+        string join_group_user_msg = 2; // 入群用户消息
+    }
+    // 邀请
+    message Invite {
+        uint64 inviter_id = 1; // 邀请者编号
+        repeated uint64 invitee_ids = 2; // 被邀请人编号列表
+    }
+    oneof action {
+        Application application = 2;
+        Invite invite = 3;
+    }
 }
 
-// 入群申请响应
-message JoinGroupApplicationResp {
+// 创建入群事件响应
+message CreateJoinGroupEventResp {
     uint64 join_group_event_id = 1; // 入群事件编号
 }
 
@@ -172,23 +201,23 @@ message JoinGroupEvent {
     }
 }
 
-// 更新入群事件请求
-message UpdateJoinGroupEventReq {
-    uint64 join_group_event_id = 1; // 入群事件编号
-    oneof action {
-        string join_group_user_msg = 2; // 入群用户消息
-        string manager_msg = 3; // 管理员消息
-    }
-}
-
-// 更新入群事件响应
-message UpdateJoinGroupEventResp {}
-
 // 获取入群事件请求
 message GetJoinGroupEventsReq {
-    uint64 group_id = 1; // 群编号
-    uint64 last_join_group_event_id = 2; // 最后一个入群事件编号，分页
-    uint32 size = 3; // 获取多少个
+    message JoinGroupUserCondition {
+        uint64 join_group_user_id = 1; // 入群用户编号
+        uint64 last_join_group_event_id = 2; // 最后一个入群事件编号，分页
+        uint32 size = 3; // 获取多少个
+    }
+    message GroupCondition {
+        uint64 group_id = 1; // 群编号
+        uint64 last_join_group_event_id = 2; // 最后一个入群事件编号，分页
+        uint32 size = 3; // 获取多少个
+    }
+    oneof condition {
+        uint64 join_group_event_id = 1; // 入群事件编号
+        JoinGroupUserCondition join_group_user_condition = 2; // 入群用户条件
+        GroupCondition group_condition = 3;  // 群条件
+    }
 }
 
 // 获取入群事件响应
@@ -196,31 +225,20 @@ message GetJoinGroupEventsResp {
     repeated JoinGroupEvent join_group_events = 1; // 入群事件列表
 }
 
-// 邀请入群请求
-message InviteJoinGroupReq {
-    uint64 group_id = 1; // 群编号
-    uint64 inviter_id = 2; // 邀请者编号
-    repeated uint64 invitee_ids = 3; // 被邀请人编号列表
-}
-
-// 邀请入群响应
-message InviteJoinGroupResp {}
-
-// 接受入群申请请求
-message AcceptJoinGroupApplicationReq {
+// 更新入群事件请求
+message UpdateJoinGroupEventReq {
     uint64 join_group_event_id = 1; // 入群事件编号
+    uint64 operator_id = 2; // 操作者
+    oneof action {
+        string join_group_user_msg = 3; // 入群用户消息
+        string manager_msg = 4; // 管理员消息
+        bool accept = 5; // 接受
+        bool reject = 6; // 拒绝
+    }
 }
 
-// 接受入群申请响应
-message AcceptJoinGroupApplicationResp {}
-
-// 拒绝入群申请请求
-message RejectJoinGroupApplicationReq {
-    uint64 join_group_event_id = 1; // 入群事件编号
-}
-
-// 拒绝入群申请响应
-message RejectJoinGroupApplicationResp {}
+// 更新入群事件响应
+message UpdateJoinGroupEventResp {}
 
 // ------------------------- 存储模型
 

@@ -8,7 +8,7 @@ option go_package = "github.com/xiaohuashifu/him/api/authnz/authn";
 
 // 认证服务
 service AuthnService {
-    rpc Authn(AuthnReq) returns (AuthnResp) {}
+    rpc Authn(AuthnReq) returns (AuthnResp);
 }
 
 // 认证请求

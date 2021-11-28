@@ -1,7 +1,7 @@
 package model
 
 const (
-	SendSMSTencentCloudURL                     = "sms.tencentcloudapi.com" // 腾讯云短信url
+	SendSMSTencentCloudURL                     = "sm.tencentcloudapi.com" // 腾讯云短信url
 	SendLoginSMSAuthCodeTencentCloudTemplateID = "1179214"                 // 腾讯云短信模板-发送登录短信验证码
 )
 

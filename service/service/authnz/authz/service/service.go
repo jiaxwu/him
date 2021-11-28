@@ -432,7 +432,7 @@ func (s *AuthzService) GetSession(req *model.GetSessionReq) (*model.GetSessionRs
 
 // smsAuthCodeRedisKeyForLogin 登录短信验证码 Redis Key
 func (s *AuthzService) smsAuthCodeRedisKeyForLogin(phone string) string {
-	return fmt.Sprintf("authnz:sms:authCode:%s", phone)
+	return fmt.Sprintf("authnz:sm:authCode:%s", phone)
 }
 
 // tokenRedisKey Token Redis Key

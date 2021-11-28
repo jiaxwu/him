@@ -6,6 +6,16 @@ import "api/constant/constant.proto";
 
 option go_package = "github.com/xiaohuashifu/him/api/friend";
 
+// 好友服务
+service FriendService {
+    rpc GetFriendInfos(GetFriendInfosReq) returns (GetFriendInfosResp);
+    rpc UpdateFriendInfo(UpdateFriendInfoReq) returns (UpdateFriendInfoResp);
+    rpc DeleteFriend(DeleteFriendReq) returns (DeleteFriendResp);
+    rpc GetAddFriendApplications(GetAddFriendApplicationsReq) returns (GetAddFriendApplicationsResp);
+    rpc AddFriendApplication(AddFriendApplicationReq) returns (AddFriendApplicationResp);
+    rpc UpdateAddFriendApplication(UpdateAddFriendApplicationReq) returns (UpdateAddFriendApplicationResp);
+}
+
 // ---------------------------好友管理
 
 // 好友信息
@@ -25,6 +35,11 @@ message FriendInfo {
 // 获取好友信息请求
 message GetFriendInfosReq {
     uint64 user_id = 1; // 用户编号
+    oneof condition {
+        string username = 2; // 好友用户名
+        uint64 friend_id = 3; // 好友编号
+        bool all = 4; // 全部
+    }
 }
 
 // 获取好友信息响应
@@ -32,37 +47,18 @@ message GetFriendInfosResp {
     repeated FriendInfo friend_infos = 1; // 好友信息列表
 }
 
-// 获取好友信息请求
-message GetFriendInfoReq {
+// 更新好友信息请求
+message UpdateFriendInfoReq {
     uint64 user_id = 1; // 用户编号
-    oneof condition {
-        string username = 2; // 好友用户名
-        uint64 friend_id = 3; // 好友编号
+    uint64 friend_id = 2; // 好友编号
+    oneof action {
+        bool is_disturb = 3; // 是否免打扰
+        bool is_blacklist = 4; // 是否黑名单
     }
 }
 
-// 获取好友信息响应
-message GetFriendInfoResp {
-    FriendInfo friend_info = 1; // 好友信息
-}
-
-// 设置好友免打扰请求
-message SetFriendDisturbReq {
-    uint64 friend_id = 1; // 好友编号
-    bool is_disturb = 2; // 是否免打扰
-}
-
-// 设置好友免打扰响应
-message SetFriendDisturbResp {}
-
-// 设置好友黑名单请求
-message SetFriendBlacklistReq {
-    uint64 friend_id = 1; // 好友编号
-    bool is_blacklist = 2; // 是否黑名单
-}
-
-// 设置好友黑名单响应
-message SetFriendBlacklistResp {}
+// 更新好友信息响应
+message UpdateFriendInfoResp {}
 
 // 删除好友请求
 message DeleteFriendReq {
@@ -72,16 +68,6 @@ message DeleteFriendReq {
 
 // 删除好友响应
 message DeleteFriendResp {}
-
-// 获取所有好友请求
-message GetAllFriendsReq {
-    uint64 user_id = 1; // 用户编号
-}
-
-// 获取所有好友响应
-message GetAllFriendsResp {
-    repeated FriendInfo friend_infos = 1; // 好友信息列表
-}
 
 // --------------------------------好友申请
 
@@ -134,27 +120,13 @@ message UpdateAddFriendApplicationReq {
     oneof action {
         string application_msg = 2; // 申请消息
         string friend_reply = 3; // 好友回复
+        bool accept = 4; // 接受
+        bool reject = 5; // 拒绝
     }
 }
 
 // 更新添加好友申请响应
 message UpdateAddFriendApplicationResp {}
-
-// 接受添加好友请求
-message AcceptAddFriendApplicationReq {
-    uint64 add_friend_application_id = 1; // 添加好友申请编号
-}
-
-// 接受添加好友响应
-message AcceptAddFriendApplicationResp {}
-
-// 拒绝添加好友请求
-message RejectAddFriendApplicationReq {
-    uint64 add_friend_application_id = 1; // 添加好友申请编号
-}
-
-// 拒绝添加好友响应
-message RejectAddFriendApplicationResp {}
 
 // -----------------------------------------存储模型
 

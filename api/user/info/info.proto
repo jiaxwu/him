@@ -6,6 +6,13 @@ import "api/constant/constant.proto";
 
 option go_package = "github.com/xiaohuashifu/him/api/user/info";
 
+// 用户信息服务
+service UserInfoService {
+    rpc GetUserInfo(GetUserInfoReq) returns (GetUserInfoResp);
+    rpc UpdateUserInfo(UpdateUserInfoReq) returns (UpdateUserInfoResp);
+    rpc UploadAvatar(UploadAvatarReq) returns (UploadAvatarResp);
+}
+
 // 用户信息
 message UserInfo {
     uint64 user_id = 1; // 用户编号
@@ -41,8 +48,7 @@ message UpdateUserInfoReq {
 message UpdateUserInfoResp {}
 
 // 上传头像请求
-message UploadAvatarReq {
-}
+message UploadAvatarReq {}
 
 // 上传头像响应
 message UploadAvatarResp {
