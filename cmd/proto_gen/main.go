@@ -13,7 +13,12 @@ var protoFilePaths []string
 
 func main() {
 	processDir("api")
-	args := []string{"--go_out=paths=source_relative:."}
+	gen("--go_out=paths=source_relative:.")
+	gen("--go-grpc_out=paths=source_relative:.")
+}
+
+func gen(baseCmd string) {
+	args := []string{baseCmd}
 	args = append(args, protoFilePaths...)
 	protocCommand := exec.Command("protoc", args...)
 	protocCommand.Stdout = os.Stdout

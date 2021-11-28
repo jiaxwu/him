@@ -6,6 +6,11 @@ import "api/authnz/authnz.proto";
 
 option go_package = "github.com/xiaohuashifu/him/api/authnz/authn";
 
+// 认证服务
+service AuthnService {
+    rpc Authn(AuthnReq) returns (AuthnResp) {}
+}
+
 // 认证请求
 message AuthnReq {
     string token = 1; // 凭证

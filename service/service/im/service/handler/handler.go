@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/xiaohuashifu/him/api/msg/content"
 	"github.com/xiaohuashifu/him/service/common"
 	"github.com/xiaohuashifu/him/service/wrap"
 )
