@@ -2,6 +2,6 @@ package suffix
 
 const (
 	PNG  = "png"
-	JPG  = "jpg"
+	GIF  = "gif"
 	JPEG = "jpeg"
 )

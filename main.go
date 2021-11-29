@@ -1,25 +1,19 @@
 package main
 
 import (
-	"github.com/xiaohuashifu/him/common/db"
-	logger2 "github.com/xiaohuashifu/him/common/logger"
-	"github.com/xiaohuashifu/him/common/rdb"
-	"github.com/xiaohuashifu/him/common/validate"
-	"github.com/xiaohuashifu/him/conf"
-	loginHandler "github.com/xiaohuashifu/him/gateway/authnz/authz"
-	"github.com/xiaohuashifu/him/gateway/server"
-	loginConf "github.com/xiaohuashifu/him/service/authnz/authz/conf"
-	loginService "github.com/xiaohuashifu/him/service/authnz/authz/service"
-	imGatewayHandler "github.com/xiaohuashifu/him/service/im/gateway/handler"
-	imServiceHandler "github.com/xiaohuashifu/him/service/im/service/handler"
-	smsService "github.com/xiaohuashifu/him/service/sm/service"
-	conf2 "github.com/xiaohuashifu/him/service/user/profile/conf"
-	userProfileConsumer "github.com/xiaohuashifu/him/service/user/profile/consumer"
-	userProfileHandler "github.com/xiaohuashifu/him/service/user/profile/handler"
-	userProfileService "github.com/xiaohuashifu/him/service/user/profile/service"
-	userProfileTask "github.com/xiaohuashifu/him/service/user/profile/task"
-	"github.com/xiaohuashifu/him/service/wrap"
 	"go.uber.org/fx"
+	"him/conf"
+	"him/conf/db"
+	"him/conf/logger"
+	"him/conf/rdb"
+	"him/conf/validate"
+	"him/service/server"
+	"him/service/service/auth"
+	authHandler "him/service/service/auth/handler"
+	"him/service/service/msg/gateway"
+	"him/service/service/sm"
+	"him/service/service/user/profile"
+	"him/service/wrap"
 )
 
 func main() {
@@ -29,7 +23,7 @@ func main() {
 func NewApp() *fx.App {
 	return fx.New(
 		fx.Provide(
-			logger2.NewLogger,
+			logger.NewLogger,
 			validate.NewValidate,
 			conf.NewConf,
 			db.NewDB,
@@ -37,40 +31,39 @@ func NewApp() *fx.App {
 			server.NewEngine,
 			server.NewServer,
 			wrap.NewWrapper,
-			smsService.NewSmService,
+			sm.NewService,
 			fx.Annotate(
-				loginConf.NewLoginEventProducer,
-				fx.ResultTags(`name:"LoginEventProducer"`),
+				auth.NewAuthEventProducer,
+				fx.ResultTags(`name:"AuthEventProducer"`),
 			),
 			fx.Annotate(
-				loginService.NewAuthzService,
-				fx.ParamTags(`name:"LoginEventProducer"`),
+				auth.NewService,
+				fx.ParamTags(`name:"AuthEventProducer"`),
 			),
 			fx.Annotate(
-				conf2.NewUserAvatarBucketOSSClient,
+				profile.NewUserAvatarBucketOSSClient,
 				fx.ResultTags(`name:"UserAvatarBucketOSSClient"`),
 			),
 			fx.Annotate(
-				conf2.NewUserProfileEventProducer,
+				profile.NewUserProfileEventProducer,
 				fx.ResultTags(`name:"UserProfileEventProducer"`),
 			),
 			fx.Annotate(
-				userProfileService.NewUserProfileService,
+				profile.NewService,
 				fx.ParamTags(`name:"UserAvatarBucketOSSClient"`, `name:"UserProfileEventProducer"`),
 			),
 		),
 		fx.Invoke(
-			loginHandler.RegisterLoginHandler,
-			userProfileHandler.RegisterUserProfileHandler,
-			imServiceHandler.RegisterIMServiceHandler,
-			imGatewayHandler.NewGatewayHandler,
-			userProfileConsumer.NewLoginEventConsumer,
+			authHandler.RegisterHandler,
+			profile.RegisterUserProfileHandler,
+			gateway.NewGatewayHandler,
+			profile.NewAuthEventConsumer,
 			fx.Annotate(
-				userProfileTask.NewUserAvatarClearTask,
+				profile.NewUserAvatarClearTask,
 				fx.ParamTags(`name:"UserAvatarBucketOSSClient"`),
 			),
 			server.Start,
 		),
-		fx.WithLogger(logger2.NewFxEventLogger),
+		fx.WithLogger(logger.NewFxEventLogger),
 	)
 }

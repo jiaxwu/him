@@ -1,6 +1,6 @@
 package key
 
 const (
-	ContentType = "Content-type"
+	ContentType = "Content-Type"
 	Token       = "Token"
 )
