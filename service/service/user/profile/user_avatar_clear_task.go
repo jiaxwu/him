@@ -56,6 +56,9 @@ func (t *UserAvatarClearTask) clear() {
 		}
 		t.clearUnLinkAvatar(result.Contents, filter)
 		marker = result.NextMarker
+		if marker == "" {
+			break
+		}
 	}
 }
 
