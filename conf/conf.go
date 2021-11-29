@@ -1,8 +1,8 @@
 package conf
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"log"
 )
 
 type Config struct {
@@ -12,19 +12,20 @@ type Config struct {
 	Server   *Server
 	SMS      *SMS
 	RocketMQ *RocketMQ
+	Logger   *Logger
 }
 
 // NewConf 初始化配置
-func NewConf(logger *logrus.Logger) *Config {
+func NewConf() *Config {
 	var config Config
 	viper.SetConfigName("conf")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("./conf/")
 	if err := viper.ReadInConfig(); err != nil {
-		logger.Fatal("初始化配置失败", err)
+		log.Fatal("初始化配置失败", err)
 	}
 	if err := viper.Unmarshal(&config); err != nil {
-		logger.Fatal("初始化配置失败", err)
+		log.Fatal("初始化配置失败", err)
 	}
 	return &config
 }
@@ -59,4 +60,8 @@ type SMS struct {
 type RocketMQ struct {
 	Topic        string   // 主题
 	NameSrvAddrs []string // 名字服务器地址
+}
+
+type Logger struct {
+	Level string // 日志等级
 }

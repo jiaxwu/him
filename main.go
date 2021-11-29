@@ -23,9 +23,9 @@ func main() {
 func NewApp() *fx.App {
 	return fx.New(
 		fx.Provide(
-			logger.NewLogger,
-			validate.NewValidate,
 			conf.NewConf,
+			validate.NewValidate,
+			logger.NewLogger,
 			db.NewDB,
 			rdb.NewRDB,
 			server.NewEngine,

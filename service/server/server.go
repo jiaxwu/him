@@ -7,9 +7,9 @@ import (
 )
 
 // NewEngine 新建一个Gin Engine
-func NewEngine() *gin.Engine {
+func NewEngine(logger *logrus.Logger) *gin.Engine {
 	r := gin.New()
-	r.Use(gin.Logger(), ExceptionHandler(), Recovery())
+	r.Use(NewLogger(logger), ExceptionHandler(), Recovery(logger))
 	return r
 }
 

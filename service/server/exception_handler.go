@@ -8,7 +8,7 @@ import (
 
 // ExceptionHandler 处理异常情况
 // 让异常情况也返回统一的响应格式
-func ExceptionHandler() func(c *gin.Context) {
+func ExceptionHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 		switch c.Writer.Status() {

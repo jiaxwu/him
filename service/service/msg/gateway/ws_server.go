@@ -35,13 +35,19 @@ func NewGatewayHandler(engine *gin.Engine, wrapper *wrap.Wrapper, logger *logrus
 		},
 	}
 	engine.GET("/msg", wrapper.Wrap(func(w http.ResponseWriter, r *http.Request) {
+		// 建立连接
 		conn, err := server.upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			return
 		}
 
-		fmt.Println(conn)
-		//conn.WriteJSON("xxxxxx")
+		// 进行登录
+		if err := server.login(conn); err != nil {
+			return
+		}
+
+		// 保持长连接
+
 	}, &wrap.Config{
 		NotNeedLogin:    true,
 		NotNeedResponse: true,
@@ -55,9 +61,12 @@ func (s *Handler) handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(r.URL.Query())
 }
 
-// 身份认证
-// 验证token是否正确
-//
-func (s *Handler) auth(w http.ResponseWriter, r *http.Request) bool {
-	return false
+// 登录
+func (s *Handler) login(conn *websocket.Conn) error {
+	var loginReq LoginReq
+	if err := conn.ReadJSON(&loginReq); err != nil {
+		return err
+	}
+	fmt.Printf("%+v\n", loginReq)
+	return nil
 }

@@ -18,3 +18,5 @@ RocketMQ:
   Topic: Him
   NameSrvAddrs:
     - 119.91.127.64:9876
+Logger:
+  Level: warn

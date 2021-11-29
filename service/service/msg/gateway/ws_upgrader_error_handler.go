@@ -14,7 +14,7 @@ func newWSUpgradeErrorHandler(logger *logrus.Logger) func(w http.ResponseWriter,
 	reason error) {
 	return func(w http.ResponseWriter, r *http.Request, status int, err error) {
 		logger.WithField("err", err).Warn("can not upgrade connection")
-		rsp := common.FailureRsp(WebsocketUpgradeException)
+		rsp := common.FailureRsp(ErrCodeWebsocketUpgradeException)
 		rspBytes, _ := json.Marshal(rsp)
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set(httpHeaderKey.ContentType, httpHeaderValue.ApplicationTypeCharsetUTF8)
