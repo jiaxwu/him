@@ -10,6 +10,7 @@ type Friend struct {
 	IsDisturb   bool   `gorm:"not null; type:tinyint(1) unsigned"`         // 是否免打扰
 	IsBlacklist bool   `gorm:"not null; type:tinyint(1) unsigned"`         // 是否黑名单
 	IsTop       bool   `gorm:"not null; type:tinyint(1) unsigned"`         // 是否置顶
+	IsFriend    bool   `gorm:"not null; type:tinyint(1) unsigned"`         // 是否是朋友(如果被删将不是朋友,陌生人也不是,这个字段是双向的)
 	CreatedAt   uint64 `gorm:"not null; index"`
 	UpdatedAt   uint64 `gorm:"not null; index"`
 }

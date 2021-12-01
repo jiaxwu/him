@@ -46,7 +46,6 @@ func NewService(authEventProducer rocketmq.Producer, db *gorm.DB, rdb *redis.Cli
 
 // Login 登录
 func (s *Service) Login(req *LoginReq) (rsp *LoginRsp, err error) {
-	fmt.Printf("%+v\n", req)
 	// 检查终端是否正确
 	if !TerminalSet[req.Terminal] {
 		return nil, common.ErrCodeInvalidParameter

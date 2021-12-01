@@ -17,8 +17,8 @@ type Msg struct {
 	// （避免消息重复，比如消息发送成功，但是用户没有收到响应（断网），
 	// 再回来的时候同步消息，通过CorrelationID就可以把发送失败的消息设置为发送成功）
 	// 唯一标识可以是 UUID
-	CorrelationID string      `json:"CorrelationID"`
-	Content       *MsgContent `json:"Content"` // 消息内容
+	CorrelationID string   `json:"CorrelationID"`
+	Content       *Content `json:"Content"` // 消息内容
 }
 
 // SenderType 发送者类型
@@ -50,8 +50,8 @@ type Receiver struct {
 	ReceiverID uint64       `json:"ReceiverID"` // 接收者编号
 }
 
-// MsgContent 消息内容
-type MsgContent struct {
+// Content 消息内容
+type Content struct {
 	TextMsg *TextMsg `json:"TextMsg,omitempty"`
 }
 
