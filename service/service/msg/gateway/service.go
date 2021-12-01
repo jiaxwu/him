@@ -94,16 +94,18 @@ func (s *Service) sendToGroup(req *SendMsgReq) (*SendMsgRsp, error) {
 
 // 发送消息到消息队列
 func (s *Service) sendMsgToMQ(msgs []*msg.Msg) error {
-	producerMsgs := make([]*sarama.ProducerMessage, len(msgs))
 	for i := 0; i < len(msgs); i++ {
 		msgBytes, _ := json.Marshal(msgs[i])
-		producerMsgs[i] = &sarama.ProducerMessage{
+		producerMsg := sarama.ProducerMessage{
 			Topic: msg.SendMsgTopic,
 			Key:   sarama.ByteEncoder(s.uint64ToBytes(msgs[i].UserID)),
 			Value: sarama.ByteEncoder(msgBytes),
 		}
+		if _, _, err := s.sendMsgProducer.SendMessage(&producerMsg); err != nil {
+			return err
+		}
 	}
-	return s.sendMsgProducer.SendMessages(producerMsgs)
+	return nil
 }
 
 // uint64转bytes

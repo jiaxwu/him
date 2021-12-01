@@ -9,3 +9,8 @@ import (
 func SessionID(userID uint64, terminal auth.Terminal) string {
 	return fmt.Sprintf("msg:%d:%s", userID, terminal)
 }
+
+// SeqKey 序列号的key
+func SeqKey(userID uint64) string {
+	return fmt.Sprintf("msg:seq:%d", userID)
+}

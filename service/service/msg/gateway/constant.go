@@ -14,6 +14,5 @@ const (
 )
 
 const (
-	// MsgIDRedisKey 消息编号Redis Key
-	MsgIDRedisKey = "msg:id"
+	MQPushMsgConsumerGroupID = "PushMsg" // 推送消息消费者GroupID
 )

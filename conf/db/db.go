@@ -28,7 +28,7 @@ func NewDB(log *logrus.Logger, config *conf.Config) *gorm.DB {
 	}
 	if err := db.AutoMigrate(model.User{}, model.UserProfile{}, model.Wallet{}, model.Trade{}, model.Friend{},
 		model.ChatChannel{}, model.ChatChannelSubscribe{}, model.Message{}, model.UnAckMessage{},
-		model.PasswordLogin{}, model.PhoneLogin{}, model.Announcement{}); err != nil {
+		model.PasswordLogin{}, model.PhoneLogin{}, model.Announcement{}, model.OfflineMsg{}); err != nil {
 		log.Fatal("自动迁移数据库失败", err)
 	}
 	return db

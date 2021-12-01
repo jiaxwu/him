@@ -11,6 +11,7 @@ import (
 	"him/service/service/auth"
 	authHandler "him/service/service/auth/handler"
 	msgGateway "him/service/service/msg/gateway"
+	msgTransfer "him/service/service/msg/transfer"
 	"him/service/service/sm"
 	"him/service/service/user/profile"
 	"him/service/wrap"
@@ -52,6 +53,7 @@ func NewApp() *fx.App {
 				profile.NewService,
 				fx.ParamTags(`name:"UserAvatarBucketOSSClient"`, `name:"UserProfileEventProducer"`),
 			),
+			msgGateway.NewGatewayServer,
 			fx.Annotate(
 				msgGateway.NewSendMsgProducer,
 				fx.ResultTags(`name:"SendMsgProducer"`),
@@ -60,12 +62,20 @@ func NewApp() *fx.App {
 				msgGateway.NewService,
 				fx.ParamTags(`name:"SendMsgProducer"`),
 			),
+			fx.Annotate(
+				msgTransfer.NewPushMsgProducer,
+				fx.ResultTags(`name:"PushMsgProducer"`),
+			),
 		),
 		fx.Invoke(
 			authHandler.RegisterHandler,
 			profile.RegisterUserProfileHandler,
-			msgGateway.NewGatewayServer,
 			profile.NewAuthEventConsumer,
+			fx.Annotate(
+				msgTransfer.NewSendMsgConsumer,
+				fx.ParamTags(`name:"PushMsgProducer"`),
+			),
+			msgGateway.NewPushMsgConsumer,
 			fx.Annotate(
 				profile.NewUserAvatarClearTask,
 				fx.ParamTags(`name:"UserAvatarBucketOSSClient"`),
