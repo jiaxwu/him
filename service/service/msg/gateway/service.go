@@ -46,6 +46,9 @@ func (s *Service) SendMsg(req *SendMsgReq) (*SendMsgRsp, error) {
 
 // 发送给用户
 func (s *Service) sendToUser(req *SendMsgReq) (*SendMsgRsp, error) {
+	// 对接收者进行检查
+	// todo 接收者必须存在,且和sender存在某种关系
+
 	// 获取消息编号
 	msgID := s.genMsgID()
 

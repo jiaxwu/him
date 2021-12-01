@@ -10,17 +10,6 @@ const (
 	RelationshipLover   Relationship = 4 // 情侣
 )
 
-// Friend 好友
-type Friend struct {
-	ID                 uint64
-	UserID             uint64       `gorm:"not null; uniqueIndex:uk_user_id_friend_id"` // 用户编号
-	FriendID           uint64       `gorm:"not null; uniqueIndex:uk_user_id_friend_id"` // 朋友的编号
-	Relationship       Relationship `gorm:"not null"`                                   // 关系
-	IsIgnoreMessage    bool         `gorm:"not null; type:tinyint(1) unsigned"`         // 是否忽略对方的消息
-	IsSpecialAttention bool         `gorm:"not null; type:tinyint(1) unsigned"`         // 是否特殊关注
-	CreatedAt          uint64       `gorm:"not null; index"`
-	UpdatedAt          uint64       `gorm:"not null; index"`
-}
 
 // ChatChannelType 聊天频道类型
 type ChatChannelType uint8

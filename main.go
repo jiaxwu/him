@@ -11,6 +11,7 @@ import (
 	"him/service/service/auth"
 	authHandler "him/service/service/auth/handler"
 	msgGateway "him/service/service/msg/gateway"
+	msgShort "him/service/service/msg/short"
 	msgTransfer "him/service/service/msg/transfer"
 	"him/service/service/sm"
 	"him/service/service/user/profile"
@@ -66,10 +67,12 @@ func NewApp() *fx.App {
 				msgTransfer.NewPushMsgProducer,
 				fx.ResultTags(`name:"PushMsgProducer"`),
 			),
+			msgShort.NewService,
 		),
 		fx.Invoke(
 			authHandler.RegisterHandler,
 			profile.RegisterUserProfileHandler,
+			msgShort.RegisterHandler,
 			profile.NewAuthEventConsumer,
 			fx.Annotate(
 				msgTransfer.NewSendMsgConsumer,
