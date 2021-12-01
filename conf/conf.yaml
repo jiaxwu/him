@@ -20,3 +20,6 @@ RocketMQ:
     - 119.91.127.64:9876
 Logger:
   Level: warn
+Kafka:
+  Addrs:
+    - 49.233.30.197:9092

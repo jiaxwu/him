@@ -1,10 +1,20 @@
 package gateway
 
-import "him/service/service/auth"
+import (
+	"him/service/service/msg"
+)
 
-type LoginReq struct {
-	Terminal auth.Terminal `json:"Terminal"` // 终端
-	Token    string        `json:"Token"`    // 凭证
+// SendMsgReq 发送消息请求
+type SendMsgReq struct {
+	Sender        *msg.Sender     `json:"Sender"`        // 发送者
+	Receiver      *msg.Receiver   `json:"Receiver"`      // 接收者
+	SendTime      uint64          `json:"SendTime"`      // 发送时间
+	CorrelationID string          `json:"CorrelationID"` // 消息请求唯一标识
+	Content       *msg.MsgContent `json:"Content"`       // 消息内容
 }
 
-type LoginRsp struct{}
+// SendMsgRsp 发送消息响应
+type SendMsgRsp struct {
+	CorrelationID string `json:"CorrelationID"` // 消息请求唯一标识
+	MsgID         string `json:"MsgID"`         // 消息编号
+}

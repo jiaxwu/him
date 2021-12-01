@@ -13,6 +13,7 @@ type Config struct {
 	SMS      *SMS
 	RocketMQ *RocketMQ
 	Logger   *Logger
+	Kafka    *Kafka
 }
 
 // NewConf 初始化配置
@@ -64,4 +65,8 @@ type RocketMQ struct {
 
 type Logger struct {
 	Level string // 日志等级
+}
+
+type Kafka struct {
+	Addrs []string // 地址
 }
