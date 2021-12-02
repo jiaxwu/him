@@ -16,4 +16,14 @@ func RegisterHandler(engine *gin.Engine, service *Service, wrapper *wrap.Wrapper
 			auth.UserTypeUser,
 		},
 	}))
+
+	engine.POST("msg/short/msgs/get", wrapper.Wrap(func(req *GetMsgsReq, session *auth.Session) (
+		*GetMsgsRsp, error) {
+		req.UserID = session.UserID
+		return service.GetMsgs(req)
+	}, &wrap.Config{
+		UserTypes: []auth.UserType{
+			auth.UserTypeUser,
+		},
+	}))
 }
