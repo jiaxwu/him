@@ -3,6 +3,7 @@ module him
 go 1.17
 
 require (
+	github.com/Shopify/sarama v1.30.0
 	github.com/apache/rocketmq-client-go/v2 v2.1.0
 	github.com/bits-and-blooms/bloom/v3 v3.1.0
 	github.com/brianvoe/gofakeit/v6 v6.9.0
@@ -16,6 +17,7 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.282
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.282
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.32
+	go.mongodb.org/mongo-driver v1.8.0
 	go.uber.org/fx v1.15.0
 	golang.org/x/crypto v0.0.0-20210920023735-84f357641f63
 	gorm.io/driver/mysql v1.1.3
@@ -23,7 +25,6 @@ require (
 )
 
 require (
-	github.com/Shopify/sarama v1.30.0 // indirect
 	github.com/bits-and-blooms/bitset v1.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -37,6 +38,7 @@ require (
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
+	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
@@ -71,13 +73,18 @@ require (
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/tidwall/gjson v1.2.1 // indirect
 	github.com/tidwall/match v1.0.1 // indirect
-	github.com/tidwall/pretty v0.0.0-20190325153808-1166b9ac2b65 // indirect
+	github.com/tidwall/pretty v1.0.0 // indirect
 	github.com/ugorji/go/codec v1.2.6 // indirect
+	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
+	github.com/xdg-go/scram v1.0.2 // indirect
+	github.com/xdg-go/stringprep v1.0.2 // indirect
+	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/dig v1.12.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.17.0 // indirect
 	golang.org/x/net v0.0.0-20210917221730-978cfadd31cf // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20210903071746-97244b99971b // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect

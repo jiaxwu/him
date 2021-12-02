@@ -6,23 +6,22 @@ import (
 	"github.com/Shopify/sarama"
 	"github.com/go-redis/redis/v8"
 	"github.com/sirupsen/logrus"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/mongo"
 	"him/conf"
-	"him/model"
 	"him/service/service/msg"
 )
 
 // SendMsgConsumer 发送消息消费者
 type SendMsgConsumer struct {
-	rdb             *redis.Client
-	logger          *logrus.Logger
-	db              *gorm.DB
-	pushMsgProducer sarama.AsyncProducer
+	rdb                       *redis.Client
+	logger                    *logrus.Logger
+	pushMsgProducer           sarama.AsyncProducer
+	mongoOfflineMsgCollection *mongo.Collection
 }
 
 // NewSendMsgConsumer 创建发送消息消费者
-func NewSendMsgConsumer(pushMsgProducer sarama.AsyncProducer, config *conf.Config, logger *logrus.Logger,
-	rdb *redis.Client, db *gorm.DB) *SendMsgConsumer {
+func NewSendMsgConsumer(pushMsgProducer sarama.AsyncProducer, mongoOfflineMsgCollection *mongo.Collection,
+	config *conf.Config, logger *logrus.Logger, rdb *redis.Client) *SendMsgConsumer {
 	consumerConfig := sarama.NewConfig()
 	consumerConfig.Consumer.Return.Errors = false
 	consumerConfig.Consumer.Offsets.Initial = sarama.OffsetNewest
@@ -32,10 +31,10 @@ func NewSendMsgConsumer(pushMsgProducer sarama.AsyncProducer, config *conf.Confi
 	}
 
 	consumer := SendMsgConsumer{
-		rdb:             rdb,
-		logger:          logger,
-		db:              db,
-		pushMsgProducer: pushMsgProducer,
+		rdb:                       rdb,
+		logger:                    logger,
+		pushMsgProducer:           pushMsgProducer,
+		mongoOfflineMsgCollection: mongoOfflineMsgCollection,
 	}
 	go func() {
 		var err error
@@ -67,17 +66,13 @@ func (c *SendMsgConsumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 
 		// 把消息插入数据库
 		protoMsg.Seq = seq
-		protoMsgBytes, _ := json.Marshal(&protoMsg)
-		offlineMsg := model.OfflineMsg{
-			UserID: protoMsg.UserID,
-			Seq:    seq,
-			Msg:    protoMsgBytes,
-		}
-		if err := c.db.Create(&offlineMsg).Error; err != nil {
-			c.logger.WithField("err", err).Fatal("insert msg into db exception")
+		if _, err := c.mongoOfflineMsgCollection.InsertOne(context.Background(), &protoMsg); err != nil &&
+			!mongo.IsDuplicateKeyError(err) {
+			c.logger.WithField("err", err).Fatal("insert msg into mongodb exception")
 		}
 
 		// 把消息发送到mq
+		protoMsgBytes, _ := json.Marshal(&protoMsg)
 		c.pushMsgProducer.Input() <- &sarama.ProducerMessage{
 			Topic: msg.PushMsgTopic,
 			Key:   sarama.ByteEncoder(message.Key),

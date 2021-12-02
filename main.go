@@ -5,11 +5,13 @@ import (
 	"him/conf"
 	"him/conf/db"
 	"him/conf/logger"
+	"him/conf/mongo"
 	"him/conf/rdb"
 	"him/conf/validate"
 	"him/service/server"
 	"him/service/service/auth"
 	authHandler "him/service/service/auth/handler"
+	"him/service/service/msg"
 	msgGateway "him/service/service/msg/gateway"
 	msgShort "him/service/service/msg/short"
 	msgTransfer "him/service/service/msg/transfer"
@@ -29,10 +31,15 @@ func NewApp() *fx.App {
 			validate.NewValidate,
 			logger.NewLogger,
 			db.NewDB,
+			mongo.NewMongoDB,
 			rdb.NewRDB,
 			server.NewEngine,
 			server.NewServer,
 			wrap.NewWrapper,
+			fx.Annotate(
+				msg.NewMongoOfflineMsgCollection,
+				fx.ResultTags(`name:MongoOfflineMsgCollection`),
+			),
 			sm.NewService,
 			fx.Annotate(
 				auth.NewAuthEventProducer,
@@ -57,7 +64,7 @@ func NewApp() *fx.App {
 			msgGateway.NewGatewayServer,
 			fx.Annotate(
 				msgGateway.NewSendMsgProducer,
-				fx.ResultTags(`name:"SendMsgProducer"`),
+				fx.ResultTags(`name:"SendMsgProducer"`, `name:"MongoOfflineMsgCollection"`),
 			),
 			fx.Annotate(
 				msgGateway.NewService,

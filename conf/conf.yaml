@@ -23,3 +23,5 @@ Logger:
 Kafka:
   Addrs:
     - 49.233.30.197:9092
+MongoDB:
+  URI: mongodb://localhost:27017

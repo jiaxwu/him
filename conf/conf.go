@@ -14,6 +14,7 @@ type Config struct {
 	RocketMQ *RocketMQ
 	Logger   *Logger
 	Kafka    *Kafka
+	MongoDB  *MongoDB
 }
 
 // NewConf 初始化配置
@@ -69,4 +70,8 @@ type Logger struct {
 
 type Kafka struct {
 	Addrs []string // 地址
+}
+
+type MongoDB struct {
+	URI string // 地址
 }
