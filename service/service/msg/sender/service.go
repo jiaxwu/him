@@ -17,7 +17,8 @@ func NewService(sendMsgProducer sarama.SyncProducer) *Service {
 }
 
 // SendMsgs 发送消息到消息队列
-func (s *Service) SendMsgs(msgs []*msg.Msg) error {
+func (s *Service) SendMsgs(req *SendMsgsReq) (*SendMsgsRsp, error) {
+	msgs := req.Msgs
 	for i := 0; i < len(msgs); i++ {
 		msgBytes, _ := json.Marshal(msgs[i])
 		producerMsg := sarama.ProducerMessage{
@@ -26,10 +27,10 @@ func (s *Service) SendMsgs(msgs []*msg.Msg) error {
 			Value: sarama.ByteEncoder(msgBytes),
 		}
 		if _, _, err := s.sendMsgProducer.SendMessage(&producerMsg); err != nil {
-			return err
+			return nil, err
 		}
 	}
-	return nil
+	return &SendMsgsRsp{}, nil
 }
 
 // uint64转bytes

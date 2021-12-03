@@ -93,7 +93,7 @@ func (s *Service) sendToUser(req *SendMsgReq) (*SendMsgRsp, error) {
 	})
 
 	// 发送到mq
-	if err := s.senderService.SendMsgs(msgs); err != nil {
+	if _, err := s.senderService.SendMsgs(&sender.SendMsgsReq{Msgs: msgs}); err != nil {
 		return nil, err
 	}
 

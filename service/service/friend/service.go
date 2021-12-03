@@ -243,5 +243,6 @@ func (s *Service) sendNewAddFriendApplicationEventMsg(applicantID, friendID, add
 		Content:     content,
 	}
 
-	return s.senderService.SendMsgs(msgs)
+	_, err := s.senderService.SendMsgs(&sender.SendMsgsReq{Msgs: msgs})
+	return err
 }
