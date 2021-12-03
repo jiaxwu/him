@@ -1,4 +1,4 @@
-package gateway
+package sender
 
 import (
 	"encoding/binary"

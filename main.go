@@ -14,6 +14,7 @@ import (
 	"him/service/service/friend"
 	"him/service/service/msg"
 	msgGateway "him/service/service/msg/gateway"
+	msgSender "him/service/service/msg/sender"
 	msgShort "him/service/service/msg/short"
 	msgTransfer "him/service/service/msg/transfer"
 	"him/service/service/sm"
@@ -64,11 +65,11 @@ func NewApp() *fx.App {
 			),
 			msgGateway.NewGatewayServer,
 			fx.Annotate(
-				msg.NewSendMsgProducer,
+				msgSender.NewSendMsgProducer,
 				fx.ResultTags(`name:"SendMsgProducer"`),
 			),
 			fx.Annotate(
-				msgGateway.NewService,
+				msgSender.NewService,
 				fx.ParamTags(`name:"SendMsgProducer"`),
 			),
 			fx.Annotate(

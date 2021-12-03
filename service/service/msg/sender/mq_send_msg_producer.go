@@ -1,4 +1,4 @@
-package msg
+package sender
 
 import (
 	"github.com/Shopify/sarama"

@@ -9,7 +9,7 @@ import (
 	"him/model"
 	"him/service/common"
 	"him/service/service/msg"
-	"him/service/service/msg/gateway"
+	"him/service/service/msg/sender"
 	"him/service/service/user/profile"
 	"time"
 )
@@ -20,18 +20,18 @@ type Service struct {
 	logger         *logrus.Logger
 	config         *conf.Config
 	profileService *profile.Service
-	gatewayService *gateway.Service
+	senderService  *sender.Service
 }
 
 func NewService(db *gorm.DB, validate *validator.Validate, logger *logrus.Logger, config *conf.Config,
-	profileService *profile.Service, gatewayService *gateway.Service) *Service {
+	profileService *profile.Service, senderService *sender.Service) *Service {
 	return &Service{
 		db:             db,
 		validate:       validate,
 		logger:         logger,
 		config:         config,
 		profileService: profileService,
-		gatewayService: gatewayService,
+		senderService:  senderService,
 	}
 }
 
@@ -189,7 +189,7 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 		}
 
 		// 通知对方和自己的其他端有新的好友申请
-		sendMsgReq := gateway.SendMsgReq{
+		sendMsgReq := sender.SendMsgReq{
 			Sender: &msg.Sender{
 				Type: msg.SenderTypeSys,
 			},
@@ -202,11 +202,11 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 				// todo NewAddFriendApplication 事件消息
 			},
 		}
-		if _, err := s.gatewayService.SendMsg(&sendMsgReq); err != nil {
+		if _, err := s.senderService.SendMsg(&sendMsgReq); err != nil {
 			return err
 		}
 		sendMsgReq.Receiver.ReceiverID = req.ApplicantID
-		if _, err := s.gatewayService.SendMsg(&sendMsgReq); err != nil {
+		if _, err := s.senderService.SendMsg(&sendMsgReq); err != nil {
 			return err
 		}
 		return nil
