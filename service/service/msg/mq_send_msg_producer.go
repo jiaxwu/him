@@ -1,4 +1,4 @@
-package gateway
+package msg
 
 import (
 	"github.com/Shopify/sarama"

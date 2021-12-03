@@ -11,6 +11,7 @@ import (
 	"him/service/server"
 	"him/service/service/auth"
 	authHandler "him/service/service/auth/handler"
+	"him/service/service/friend"
 	"him/service/service/msg"
 	msgGateway "him/service/service/msg/gateway"
 	msgShort "him/service/service/msg/short"
@@ -38,7 +39,7 @@ func NewApp() *fx.App {
 			wrap.NewWrapper,
 			fx.Annotate(
 				msg.NewMongoOfflineMsgCollection,
-				fx.ResultTags(`name:MongoOfflineMsgCollection`),
+				fx.ResultTags(`name:"MongoOfflineMsgCollection"`),
 			),
 			sm.NewService,
 			fx.Annotate(
@@ -63,8 +64,8 @@ func NewApp() *fx.App {
 			),
 			msgGateway.NewGatewayServer,
 			fx.Annotate(
-				msgGateway.NewSendMsgProducer,
-				fx.ResultTags(`name:"SendMsgProducer"`, `name:"MongoOfflineMsgCollection"`),
+				msg.NewSendMsgProducer,
+				fx.ResultTags(`name:"SendMsgProducer"`),
 			),
 			fx.Annotate(
 				msgGateway.NewService,
@@ -74,16 +75,21 @@ func NewApp() *fx.App {
 				msgTransfer.NewPushMsgProducer,
 				fx.ResultTags(`name:"PushMsgProducer"`),
 			),
-			msgShort.NewService,
+			fx.Annotate(
+				msgShort.NewService,
+				fx.ParamTags(`name:"MongoOfflineMsgCollection"`),
+			),
+			friend.NewService,
 		),
 		fx.Invoke(
 			authHandler.RegisterHandler,
 			profile.RegisterUserProfileHandler,
 			msgShort.RegisterHandler,
+			friend.RegisterHandler,
 			profile.NewAuthEventConsumer,
 			fx.Annotate(
 				msgTransfer.NewSendMsgConsumer,
-				fx.ParamTags(`name:"PushMsgProducer"`),
+				fx.ParamTags(`name:"PushMsgProducer"`, `name:"MongoOfflineMsgCollection"`),
 			),
 			msgGateway.NewPushMsgConsumer,
 			fx.Annotate(

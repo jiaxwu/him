@@ -82,8 +82,8 @@ func (h *Server) handle(conn *Conn) {
 			break
 		}
 
-		// Step 2 如果是 ping 不管
-		if msgType == websocket.PingMessage {
+		// Step 2 如果是 ping 不管（不带数据的请求也当成ping）
+		if msgType == websocket.PingMessage || len(reqBytes) == 0 {
 			continue
 		}
 

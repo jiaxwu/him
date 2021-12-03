@@ -80,7 +80,7 @@ func (s *Service) sendToUser(req *SendMsgReq) (*SendMsgRsp, error) {
 	})
 
 	// 发送到mq
-	if err := s.sendMsgToMQ(msgs); err != nil {
+	if err := s.sendMsgsToMQ(msgs); err != nil {
 		return nil, err
 	}
 
@@ -96,7 +96,7 @@ func (s *Service) sendToGroup(req *SendMsgReq) (*SendMsgRsp, error) {
 }
 
 // 发送消息到消息队列
-func (s *Service) sendMsgToMQ(msgs []*msg.Msg) error {
+func (s *Service) sendMsgsToMQ(msgs []*msg.Msg) error {
 	for i := 0; i < len(msgs); i++ {
 		msgBytes, _ := json.Marshal(msgs[i])
 		producerMsg := sarama.ProducerMessage{
