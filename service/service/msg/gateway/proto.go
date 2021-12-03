@@ -1,4 +1,4 @@
-package sender
+package gateway
 
 import (
 	"him/service/service/msg"

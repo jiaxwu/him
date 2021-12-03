@@ -21,10 +21,11 @@ type Service struct {
 	config         *conf.Config
 	profileService *profile.Service
 	senderService  *sender.Service
+	idGenerator    *msg.IDGenerator
 }
 
 func NewService(db *gorm.DB, validate *validator.Validate, logger *logrus.Logger, config *conf.Config,
-	profileService *profile.Service, senderService *sender.Service) *Service {
+	profileService *profile.Service, senderService *sender.Service, idGenerator *msg.IDGenerator) *Service {
 	return &Service{
 		db:             db,
 		validate:       validate,
@@ -32,6 +33,7 @@ func NewService(db *gorm.DB, validate *validator.Validate, logger *logrus.Logger
 		config:         config,
 		profileService: profileService,
 		senderService:  senderService,
+		idGenerator:    idGenerator,
 	}
 }
 
@@ -188,28 +190,7 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 			return err
 		}
 
-		// 通知对方和自己的其他端有新的好友申请
-		sendMsgReq := sender.SendMsgReq{
-			Sender: &msg.Sender{
-				Type: msg.SenderTypeSys,
-			},
-			Receiver: &msg.Receiver{
-				Type:       msg.ReceiverTypeUser,
-				ReceiverID: req.FriendID,
-			},
-			SendTime: uint64(time.Now().Unix()),
-			Content:  &msg.Content{
-				// todo NewAddFriendApplication 事件消息
-			},
-		}
-		if _, err := s.senderService.SendMsg(&sendMsgReq); err != nil {
-			return err
-		}
-		sendMsgReq.Receiver.ReceiverID = req.ApplicantID
-		if _, err := s.senderService.SendMsg(&sendMsgReq); err != nil {
-			return err
-		}
-		return nil
+		return s.sendNewAddFriendApplicationEventMsg(req.ApplicantID, req.FriendID, addFriendApplication.ID)
 	}); err != nil {
 		return nil, err
 	}
@@ -223,4 +204,44 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 		Status:                 AddFriendApplicationStatus(addFriendApplication.Status),
 		ApplicationTime:        addFriendApplication.ApplicationTime,
 	}}, nil
+}
+
+// 通知对方和自己的其他端有新的好友申请，发送新添加好友申请事件消息
+func (s *Service) sendNewAddFriendApplicationEventMsg(applicantID, friendID, addFriendApplicationID uint64) error {
+	msgs := make([]*msg.Msg, 2)
+	now := uint64(time.Now().Unix())
+	msgID := s.idGenerator.GenMsgID()
+	sysSender := &msg.Sender{
+		Type: msg.SenderTypeSys,
+	}
+	// todo NewAddFriendApplication 事件消息
+	content := &msg.Content{}
+	// 发给申请者
+	msgs[0] = &msg.Msg{
+		UserID: applicantID,
+		MsgID:  msgID,
+		Sender: sysSender,
+		Receiver: &msg.Receiver{
+			Type:       msg.ReceiverTypeUser,
+			ReceiverID: applicantID,
+		},
+		SendTime:    now,
+		ArrivalTime: now,
+		Content:     content,
+	}
+	// 发给好友
+	msgs[1] = &msg.Msg{
+		UserID: friendID,
+		MsgID:  msgID,
+		Sender: sysSender,
+		Receiver: &msg.Receiver{
+			Type:       msg.ReceiverTypeUser,
+			ReceiverID: friendID,
+		},
+		SendTime:    now,
+		ArrivalTime: now,
+		Content:     content,
+	}
+
+	return s.senderService.SendMsgs(msgs)
 }

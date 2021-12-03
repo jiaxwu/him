@@ -63,15 +63,16 @@ func NewApp() *fx.App {
 				profile.NewService,
 				fx.ParamTags(`name:"UserAvatarBucketOSSClient"`, `name:"UserProfileEventProducer"`),
 			),
-			msgGateway.NewGatewayServer,
+			msg.NewIDGenerator,
 			fx.Annotate(
 				msgSender.NewSendMsgProducer,
 				fx.ResultTags(`name:"SendMsgProducer"`),
 			),
-			fx.Annotate(
-				msgSender.NewService,
+			fx.Annotate(msgSender.NewService,
 				fx.ParamTags(`name:"SendMsgProducer"`),
 			),
+			msgGateway.NewGatewayServer,
+			msgGateway.NewService,
 			fx.Annotate(
 				msgTransfer.NewPushMsgProducer,
 				fx.ResultTags(`name:"PushMsgProducer"`),
