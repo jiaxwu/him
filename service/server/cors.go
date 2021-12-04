@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// Cors 跨域配置
 func Cors() gin.HandlerFunc {
 	return cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
