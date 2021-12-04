@@ -11,7 +11,7 @@ var (
 		"the username or password is not validate", "账号或密码错误")
 	ErrCodeInvalidParameterLoginPasswordNotMeetRequirements = common.NewErrCode(
 		"InvalidParameter.Login.PasswordNotMeetRequirements", "the password not meet requirements",
-		"密码长度必须8-20个字符且包含数字、小写字母、大写字母和符号!@#~$%^&*()+|_中的三种")
+		"密码长度必须8-20个字符且由数字、小写字母、大写字母和符号!@#~$%^&*()+|_中的三种组成")
 	ErrCodeInvalidParameterPhoneNotRegister = common.NewErrCode("InvalidParameter.Phone.NotRegister",
 		"the phone has not been register", "手机号码还没有注册，请先进行注册")
 	ErrCodeUnauthorizedInvalidToken = common.NewErrCode("Unauthorized.InvalidToken",

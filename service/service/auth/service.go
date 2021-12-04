@@ -17,6 +17,7 @@ import (
 	"him/model"
 	"him/service/common"
 	"him/service/service/sm"
+	"regexp"
 	"strconv"
 	"time"
 )
@@ -306,7 +307,7 @@ func (s *Service) ChangePassword(req *ChangePasswordReq) (*ChangePasswordRsp, er
 
 	// 根据手机号获取用户编号
 	phoneLogin := model.PhoneLogin{
-		Phone:     req.Phone,
+		Phone: req.Phone,
 	}
 	err := s.db.Where(&phoneLogin).Take(&phoneLogin).Error
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -354,19 +355,27 @@ func (s *Service) ChangePassword(req *ChangePasswordReq) (*ChangePasswordRsp, er
 
 // checkPasswordLevel 检查密码强度
 func (s *Service) checkPasswordLevel(password string) error {
+	// 强度检查
 	if len(password) < 8 || len(password) > 20 {
 		return ErrCodeInvalidParameterLoginPasswordNotMeetRequirements
 	}
 
 	var count uint
-	for _, regexp := range PasswordCharRegexpSet {
-		if regexp.MatchString(password) {
+	for _, passwordCharSetRegexp := range PasswordCharSetRegexps {
+		if passwordCharSetRegexp.MatchString(password) {
 			count++
 		}
 	}
 	if count < 3 {
 		return ErrCodeInvalidParameterLoginPasswordNotMeetRequirements
 	}
+
+	// 字符集检查
+	passwordCharSetRegexp := fmt.Sprintf(`[%s]{%d}`, PasswordCharSet, len(password))
+	if match, _ := regexp.MatchString(passwordCharSetRegexp, password); !match {
+		return ErrCodeInvalidParameterLoginPasswordNotMeetRequirements
+	}
+
 	return nil
 }
 

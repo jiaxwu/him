@@ -80,7 +80,7 @@ func (s *Service) getFriendInfosIfIsFriend(userID uint64) (*GetFriendInfosRsp, e
 		return nil, err
 	}
 	// 获取好友信息
-	friendIDS := make([]uint64, len(friends))
+	friendIDS := make([]uint64, 0, len(friends))
 	for _, friend := range friends {
 		friendIDS = append(friendIDS, friend.FriendID)
 	}
@@ -93,7 +93,7 @@ func (s *Service) getFriendInfosIfIsFriend(userID uint64) (*GetFriendInfosRsp, e
 	for _, userProfile := range profiles {
 		userIDToProfileMap[userProfile.UserID] = userProfile
 	}
-	friendInfos := make([]*FriendInfo, len(friends))
+	friendInfos := make([]*FriendInfo, 0, len(friends))
 	for _, friend := range friends {
 		userProfile := userIDToProfileMap[friend.FriendID]
 		friendInfos = append(friendInfos, &FriendInfo{

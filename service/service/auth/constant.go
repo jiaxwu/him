@@ -1,7 +1,9 @@
 package auth
 
 import (
+	"fmt"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -30,7 +32,19 @@ const (
 )
 
 var (
-	// PasswordCharRegexpSet 密码字符正则表达式集合
-	PasswordCharRegexpSet = []*regexp.Regexp{regexp.MustCompile(`[0-9]`), regexp.MustCompile(`[a-z]`),
-		regexp.MustCompile(`[A-Z]`), regexp.MustCompile(`[!@#~$%^&*()+|_]`)}
+	// PasswordCharSets 密码字符集
+	PasswordCharSets = []string{`0-9`, `a-z`, `A-Z`, `!@#~$%^&*()+|_`}
+	// PasswordCharSet 密码字符集
+	PasswordCharSet = strings.Join(PasswordCharSets, "")
+	// PasswordCharSetRegexps 密码字符集正则列表
+	PasswordCharSetRegexps = buildPasswordCharSetRegexps()
 )
+
+// 构造密码字符集正则列表
+func buildPasswordCharSetRegexps() []*regexp.Regexp {
+	regexps := make([]*regexp.Regexp, 0, len(PasswordCharSets))
+	for _, passwordCharSet := range PasswordCharSets {
+		regexps = append(regexps, regexp.MustCompile(fmt.Sprintf(`[%s]`, passwordCharSet)))
+	}
+	return regexps
+}
