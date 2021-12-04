@@ -16,6 +16,7 @@ import (
 	"him/conf"
 	"him/model"
 	"him/service/common"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -124,7 +125,7 @@ func (s *Service) UpdateProfile(req *UpdateProfileReq) (*UpdateProfileRsp, error
 	// 参数校验
 	var (
 		column string
-		value interface{}
+		value  interface{}
 	)
 	if req.Action.Avatar != "" {
 		if len(req.Action.Avatar) > 200 {
@@ -133,8 +134,8 @@ func (s *Service) UpdateProfile(req *UpdateProfileReq) (*UpdateProfileRsp, error
 		column = "avatar"
 		value = req.Action.Avatar
 	} else if req.Action.Username != "" {
-		if len(req.Action.Username) < 4 || len(req.Action.Username) > 30 {
-			return nil, ErrCodeInvalidParameterUsernameLength
+		if err := s.checkUsername(req.Action.Username); err != nil {
+			return nil, err
 		}
 		var count int64
 		if err := s.db.Model(&model.UserProfile{}).Where("username = ?", req.Action.Username).
@@ -177,6 +178,22 @@ func (s *Service) UpdateProfile(req *UpdateProfileReq) (*UpdateProfileRsp, error
 		UpdateTime: uint64(time.Now().Unix()),
 	})
 	return &UpdateProfileRsp{}, nil
+}
+
+// 检查用户名
+func (s *Service) checkUsername(username string) error {
+	// 用户名必须由组成 [0-9a-zA-Z_] 字符集组成
+	if !UsernameCharSetRegexp.MatchString(username) {
+		return ErrCodeInvalidParameterUsername
+	}
+
+	// 不能为纯数字
+	isPureDigitRegexp := fmt.Sprintf(`\d{%d}`, len(username))
+	if match, _ := regexp.MatchString(isPureDigitRegexp, username); match {
+		return ErrCodeInvalidParameterUsername
+	}
+
+	return nil
 }
 
 // UploadAvatar 上传头像

@@ -3,6 +3,7 @@ package profile
 import (
 	httpHeaderValue "him/common/constant/http/header/value"
 	imageSuffix "him/common/constant/image/suffix"
+	"regexp"
 	"time"
 )
 
@@ -13,6 +14,9 @@ const (
 	// MaxUserAvatarSize 用户头像最大长度 5MB
 	MaxUserAvatarSize = 1048576
 )
+
+// UsernameCharSetRegexp 用户名字符集正则表达式
+var UsernameCharSetRegexp = regexp.MustCompile(`\w{5,30}`)
 
 // UserAvatarContentTypeToFileTypeMap 用户头像的 ContentType 到 FileType 的转换
 var UserAvatarContentTypeToFileTypeMap = map[string]string{

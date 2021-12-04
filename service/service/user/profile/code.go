@@ -5,8 +5,8 @@ import "him/service/common"
 var (
 	ErrCodeInvalidParameterAvatarLength = common.NewErrCode("InvalidParameter.Avatar.Length",
 		"the length of avatar must not be greater than 200", "头像长度必须在200之间")
-	ErrCodeInvalidParameterUsernameLength = common.NewErrCode("InvalidParameter.Username.Length",
-		"the length of username must be between 5 and 30", "用户名长度必须在5-30之间")
+	ErrCodeInvalidParameterUsername = common.NewErrCode("InvalidParameter.Username",
+		"the username is invalid", "用户名长度必须在5-30之间，且只由数字、小写字母、大写字母和_组成，并且不能为纯数字")
 	ErrCodeInvalidParameterNickNameLength = common.NewErrCode("InvalidParameter.NickName.Length",
 		"the length of nick name must be between 2 and 10", "昵称长度必须在2-10之间")
 	ErrCodeInvalidParameterGender = common.NewErrCode("InvalidParameter.Gender",
