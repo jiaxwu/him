@@ -88,7 +88,6 @@ func (s *Service) sendToUser(req *SendMsgReq) (*SendMsgRsp, error) {
 		Receiver:      req.Receiver,
 		SendTime:      req.SendTime,
 		ArrivalTime:   uint64(now),
-		CorrelationID: req.CorrelationID,
 		Content:       req.Content,
 	})
 
