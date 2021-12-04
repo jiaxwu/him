@@ -177,6 +177,16 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 		return nil, ErrCodeInvalidParameterInBlacklist
 	}
 
+	// 判断目前是否有一个申请等待确认
+	var count int64
+	if err := s.db.Model(model.AddFriendApplication{}).Where("applicant_id = ? and friend_id = ? and status = ?",
+		req.ApplicantID, req.FriendID, AddFriendApplicationStatusWaitConfirm).Count(&count).Error; err != nil {
+		return nil, err
+	}
+	if count != 0 {
+		return nil, ErrCodeInvalidParameterApplicationIsPending
+	}
+
 	// 发起请求
 	addFriendApplication := model.AddFriendApplication{
 		ApplicantID:     req.ApplicantID,
