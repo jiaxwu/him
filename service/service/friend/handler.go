@@ -2,7 +2,6 @@ package friend
 
 import (
 	"github.com/gin-gonic/gin"
-	"him/service/common"
 	"him/service/service/auth"
 	"him/service/wrap"
 )
@@ -19,7 +18,7 @@ func RegisterHandler(engine *gin.Engine, service *Service, wrapper *wrap.Wrapper
 	}))
 
 	engine.POST("friend/add-friend-application/create", wrapper.Wrap(func(req *CreateAddFriendApplicationReq,
-		header *common.Header, session *auth.Session) (*CreateAddFriendApplicationRsp, error) {
+		session *auth.Session) (*CreateAddFriendApplicationRsp, error) {
 		req.ApplicantID = session.UserID
 		return service.CreateAddFriendApplication(req)
 	}, &wrap.Config{

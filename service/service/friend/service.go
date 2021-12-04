@@ -150,7 +150,7 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 	*CreateAddFriendApplicationRsp, error) {
 	// 检查好友是否是自己
 	if req.ApplicantID == req.FriendID {
-		return nil, common.ErrCodeInvalidParameter
+		return nil, ErrCodeInvalidParameterCanNotAddYourself
 	}
 
 	// 判断好友是否存在
@@ -214,8 +214,13 @@ func (s *Service) sendNewAddFriendApplicationEventMsg(applicantID, friendID, add
 	sysSender := &msg.Sender{
 		Type: msg.SenderTypeSys,
 	}
-	// todo NewAddFriendApplication 事件消息
-	content := &msg.Content{}
+	content := msg.Content{
+		EventMsg: &msg.EventMsg{
+			NewAddFriendApplication: &msg.NewAddFriendApplicationEventMsg{
+				AddFriendApplicationID: addFriendApplicationID,
+			},
+		},
+	}
 	// 发给申请者
 	msgs[0] = &msg.Msg{
 		UserID: applicantID,
@@ -227,7 +232,7 @@ func (s *Service) sendNewAddFriendApplicationEventMsg(applicantID, friendID, add
 		},
 		SendTime:    now,
 		ArrivalTime: now,
-		Content:     content,
+		Content:     &content,
 	}
 	// 发给好友
 	msgs[1] = &msg.Msg{
@@ -240,7 +245,7 @@ func (s *Service) sendNewAddFriendApplicationEventMsg(applicantID, friendID, add
 		},
 		SendTime:    now,
 		ArrivalTime: now,
-		Content:     content,
+		Content:     &content,
 	}
 
 	_, err := s.senderService.SendMsgs(&sender.SendMsgsReq{Msgs: msgs})

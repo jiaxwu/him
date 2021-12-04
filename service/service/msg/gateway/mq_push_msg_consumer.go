@@ -34,7 +34,7 @@ func NewPushMsgConsumer(config *conf.Config, logger *logrus.Logger, server *Serv
 	go func() {
 		var err error
 		for {
-			if err = client.Consume(context.Background(), []string{msg.SendMsgTopic}, &consumer); err != nil {
+			if err = client.Consume(context.Background(), []string{msg.PushMsgTopic}, &consumer); err != nil {
 				break
 			}
 		}

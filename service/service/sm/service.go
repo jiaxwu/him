@@ -7,7 +7,9 @@ import (
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
 	sms "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms/v20210111"
+	"him/common/jsons"
 	"him/conf"
+	"him/service/common"
 )
 
 type Service struct {
@@ -47,17 +49,11 @@ func (s *Service) SendSm(req *SendSmReq) (*SendSmRsp, error) {
 	// 发送请求
 	rsp, err := s.smsClient.SendSms(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
-		s.logger.WithFields(logrus.Fields{
-			"req": req,
-			"err": err,
-		}).Error("tencent cloud sdk error")
+		s.logger.WithError(err).WithField("req", jsons.Marshal(req)).Error("tencent cloud sdk error")
 		return nil, err
 	}
 	if err != nil {
-		s.logger.WithFields(logrus.Fields{
-			"req": req,
-			"err": err,
-		}).Error("unknown exception catch")
+		s.logger.WithError(err).WithField("req", jsons.Marshal(req)).Error("unknown exception catch")
 		return nil, err
 	}
 
@@ -70,10 +66,10 @@ func (s *Service) SendSm(req *SendSmReq) (*SendSmRsp, error) {
 	// 结果处理
 	if *rsp.Response.SendStatusSet[0].Code != string(TencentCloudStatusCodeOK) {
 		s.logger.WithFields(logrus.Fields{
-			"req": req,
-			"rsp": rsp,
+			"req": jsons.Marshal(req),
+			"rsp": jsons.Marshal(rsp),
 		}).Error("received a code that is not 'Ok'")
-		return nil, err
+		return nil, common.ErrCodeInternalError
 	}
 	return &SendSmRsp{}, nil
 }

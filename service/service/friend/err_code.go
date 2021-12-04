@@ -3,6 +3,8 @@ package friend
 import "him/service/common"
 
 var (
+	ErrCodeInvalidParameterCanNotAddYourself = common.NewErrCode("InvalidParameter.CanNotAddYourself",
+		"can not add self to be friend", "不能添加自己为好友")
 	ErrCodeInvalidParameterIsAlreadyFriend = common.NewErrCode("InvalidParameter.IsAlreadyFriend",
 		"is already friend", "已经是好友")
 	ErrCodeInvalidParameterInBlacklist = common.NewErrCode("InvalidParameter.InBlacklist",

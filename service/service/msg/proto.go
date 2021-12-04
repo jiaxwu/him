@@ -52,7 +52,8 @@ type Receiver struct {
 
 // Content 消息内容
 type Content struct {
-	TextMsg *TextMsg `json:"TextMsg,omitempty" bson:"TextMsg,omitempty"`
+	TextMsg  *TextMsg  `json:"TextMsg,omitempty" bson:"TextMsg,omitempty"`
+	EventMsg *EventMsg `json:"EventMsg,omitempty" bson:"EventMsg,omitempty"`
 }
 
 // TextMsg 文本消息
@@ -62,4 +63,38 @@ type TextMsg struct {
 	IsNotice    bool     `json:"IsNotice" bson:"IsNotice"`       // 是否群公告
 	AtUserIDS   []uint64 `json:"AtUserIDS" bson:"AtUserIDS"`     // 被@的用户
 	QuotedMsgID uint64   `json:"QuotedMsgID" bson:"QuotedMsgID"` // 被引用消息编号
+}
+
+// EventMsg 事件消息
+type EventMsg struct {
+	NewFriend                  *NewFriendEventMsg                  `json:"NewFriend,omitempty" bson:"NewFriend,omitempty"`
+	FriendInfoChange           *FriendInfoChangeEventMsg           `json:"FriendInfoChange,omitempty" bson:"FriendInfoChange,omitempty"`
+	DeleteFriend               *DeleteFriendEventMsg               `json:"DeleteFriend,omitempty" bson:"DeleteFriend,omitempty"`
+	NewAddFriendApplication    *NewAddFriendApplicationEventMsg    `json:"NewAddFriendApplication,omitempty" bson:"NewAddFriendApplication,omitempty"`
+	AddFriendApplicationChange *AddFriendApplicationChangeEventMsg `json:"AddFriendApplicationChange,omitempty" bson:"AddFriendApplicationChange,omitempty"`
+}
+
+// NewFriendEventMsg 新的好友事件消息
+type NewFriendEventMsg struct {
+	FriendID uint64 `json:"FriendID" bson:"FriendID"` // 用户编号
+}
+
+// FriendInfoChangeEventMsg 好友信息改变事件消息
+type FriendInfoChangeEventMsg struct {
+	FriendID uint64 `json:"FriendID" bson:"FriendID"` // 用户编号
+}
+
+// DeleteFriendEventMsg 删除好友事件消息
+type DeleteFriendEventMsg struct {
+	FriendID uint64 `json:"FriendID" bson:"FriendID"` // 用户编号
+}
+
+// NewAddFriendApplicationEventMsg 新的添加好友申请事件消息
+type NewAddFriendApplicationEventMsg struct {
+	AddFriendApplicationID uint64 `json:"AddFriendApplicationID" bson:"AddFriendApplicationID"` // 好友申请编号
+}
+
+// AddFriendApplicationChangeEventMsg 添加好友申请状态改变事件消息
+type AddFriendApplicationChangeEventMsg struct {
+	AddFriendApplicationID uint64 `json:"AddFriendApplicationID" bson:"AddFriendApplicationID"` // 状态改变的添加好友申请编号
 }
