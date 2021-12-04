@@ -1,7 +1,6 @@
 package server
 
 import (
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"him/conf"
@@ -10,7 +9,7 @@ import (
 // NewEngine 新建一个Gin Engine
 func NewEngine(logger *logrus.Logger) *gin.Engine {
 	r := gin.New()
-	r.Use(NewLogger(logger), cors.Default(), ExceptionHandler(), Recovery(logger))
+	r.Use(NewLogger(logger), Cors(), ExceptionHandler(), Recovery(logger))
 	return r
 }
 
