@@ -1,6 +1,66 @@
 package msg
 
-import "him/service/service/auth"
+import (
+	"him/service/service/auth"
+)
+
+// ------------------------- 基础资源
+
+// Image 图片
+type Image struct {
+	URL    string `json:"URL" bson:"URL"`       // 地址
+	Width  int    `json:"Width" bson:"Width"`   // 宽
+	Height int    `json:"Height" bson:"Height"` // 高
+	Format string `json:"Format" bson:"Format"` // 图片类型
+	Size   int64  `json:"Size" bson:"Size"`     // 大小，单位B
+}
+
+// Voice 语音
+type Voice struct {
+	URL      string      `json:"URL" bson:"URL"`           // 地址
+	Duration uint32      `json:"Duration" bson:"Duration"` // 时长，单位秒
+	Format   VoiceFormat `json:"Format" bson:"Format"`     // 语音类型
+	Size     int64       `json:"Size" bson:"Size"`         // 大小，单位B
+}
+
+// VoiceFormat 语音类型
+type VoiceFormat string
+
+const (
+	VoiceFormatMP3 = "MP3" // MP3格式
+)
+
+// Video 视频
+type Video struct {
+	URL      string      `json:"URL" bson:"URL"`           // 地址
+	Duration uint32      `json:"Duration" bson:"Duration"` // 时长，单位秒
+	Format   VideoFormat `json:"Format" bson:"Format"`     // 视频类型
+	Size     int64       `json:"Size" bson:"Size"`         // 大小，单位B
+}
+
+// VideoFormat 视频类型
+type VideoFormat string
+
+const (
+	VideoFormatMP4 = "MP4" // MP4格式
+)
+
+// File 文件
+type File struct {
+	URL    string     `json:"URL" bson:"URL"`       // 地址
+	Name   string     `json:"Name" bson:"Name"`     // 文件名
+	Format FileFormat `json:"Format" bson:"Format"` // 文件类型
+	Size   int64      `json:"Size" bson:"Size"`     // 大小，单位B
+}
+
+// FileFormat 文件类型
+type FileFormat string
+
+const (
+	FileFormatPDF = "PDF" // PDF格式
+)
+
+// ----------------------------- 消息，这些是会被存储的
 
 // Msg 消息会持久化存储
 // 通过客户端信箱编号同步机制，保证消息可靠性，同时客户端需要保证消息被成功处理

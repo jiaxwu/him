@@ -1,6 +1,25 @@
 package short
 
-import "him/service/service/msg"
+import (
+	"him/service/service/msg"
+	"mime/multipart"
+)
+
+// UploadReq 上传请求（通过字节流）
+type UploadReq struct {
+	Image *multipart.FileHeader `form:"Image"` // 图片
+	Voice *multipart.FileHeader `form:"Voice"` // 语音
+	Video *multipart.FileHeader `form:"Video"` // 视频
+	File  *multipart.FileHeader `form:"File"`  // 文件
+}
+
+// UploadRsp 上传响应
+type UploadRsp struct {
+	Image *msg.Image `json:"Image"` // 图片
+	Voice *msg.Voice `json:"Voice"` // 语音
+	Video *msg.Video `json:"Video"` // 视频
+	File  *msg.File  `json:"File"`  // 文件
+}
 
 // GetSeqReq 获取用户序列号请求
 type GetSeqReq struct {

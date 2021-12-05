@@ -1,4 +1,4 @@
-package suffix
+package format
 
 const (
 	PNG  = "png"

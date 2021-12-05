@@ -2,7 +2,7 @@ package profile
 
 import (
 	httpHeaderValue "him/common/constant/http/header/value"
-	imageSuffix "him/common/constant/image/suffix"
+	imageFormat "him/common/constant/image/format"
 	"regexp"
 	"time"
 )
@@ -18,11 +18,11 @@ const (
 // UsernameCharSetRegexp 用户名字符集正则表达式
 var UsernameCharSetRegexp = regexp.MustCompile(`\w{5,30}`)
 
-// UserAvatarContentTypeToFileTypeMap 用户头像的 ContentType 到 FileType 的转换
-var UserAvatarContentTypeToFileTypeMap = map[string]string{
-	httpHeaderValue.ImagePNG:  imageSuffix.PNG,
-	httpHeaderValue.ImageGIF:  imageSuffix.GIF,
-	httpHeaderValue.ImageJPEG: imageSuffix.JPEG,
+// UserAvatarContentTypeToImageFormatMap 用户头像的 ContentType 到 FileType 的转换
+var UserAvatarContentTypeToImageFormatMap = map[string]string{
+	httpHeaderValue.ImagePNG:  imageFormat.PNG,
+	httpHeaderValue.ImageGIF:  imageFormat.GIF,
+	httpHeaderValue.ImageJPEG: imageFormat.JPEG,
 }
 
 const (

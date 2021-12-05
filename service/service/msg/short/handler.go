@@ -7,6 +7,12 @@ import (
 )
 
 func RegisterHandler(engine *gin.Engine, service *Service, wrapper *wrap.Wrapper) {
+	engine.POST("msg/short/upload", wrapper.Wrap(service.Upload, &wrap.Config{
+		UserTypes: []auth.UserType{
+			auth.UserTypeUser,
+		},
+	}))
+
 	engine.POST("msg/short/seq/get", wrapper.Wrap(func(req *GetSeqReq, session *auth.Session) (
 		*GetSeqRsp, error) {
 		req.UserID = session.UserID

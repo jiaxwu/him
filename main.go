@@ -78,8 +78,12 @@ func NewApp() *fx.App {
 				fx.ResultTags(`name:"PushMsgProducer"`),
 			),
 			fx.Annotate(
+				msgShort.NewMsgBucketOSSClient,
+				fx.ResultTags(`name:"MsgBucketOSSClient"`),
+			),
+			fx.Annotate(
 				msgShort.NewService,
-				fx.ParamTags(`name:"MongoOfflineMsgCollection"`),
+				fx.ParamTags(`name:"MongoOfflineMsgCollection"`, `name:"MsgBucketOSSClient"`),
 			),
 			friend.NewService,
 		),

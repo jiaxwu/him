@@ -210,7 +210,7 @@ func (s *Service) UploadAvatar(req *UploadAvatarReq) (*UploadAvatarRsp, error) {
 
 	// 检查头像类型
 	contentType := req.Avatar.Header.Get(httpHeaderKey.ContentType)
-	if UserAvatarContentTypeToFileTypeMap[contentType] == "" {
+	if UserAvatarContentTypeToImageFormatMap[contentType] == "" {
 		return nil, ErrCodeInvalidParameterAvatarContentType
 	}
 
