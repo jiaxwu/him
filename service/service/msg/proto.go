@@ -113,6 +113,7 @@ type Receiver struct {
 // Content 消息内容
 type Content struct {
 	TextMsg  *TextMsg  `json:"TextMsg,omitempty" bson:"TextMsg,omitempty"`
+	ImageMsg *ImageMsg `json:"ImageMsg,omitempty" bson:"ImageMsg,omitempty"`
 	EventMsg *EventMsg `json:"EventMsg,omitempty" bson:"EventMsg,omitempty"`
 }
 
@@ -123,6 +124,12 @@ type TextMsg struct {
 	IsNotice    bool     `json:"IsNotice" bson:"IsNotice"`       // 是否群公告
 	AtUserIDS   []uint64 `json:"AtUserIDS" bson:"AtUserIDS"`     // 被@的用户
 	QuotedMsgID uint64   `json:"QuotedMsgID" bson:"QuotedMsgID"` // 被引用消息编号
+}
+
+// ImageMsg 图片消息
+type ImageMsg struct {
+	Thumbnail     *Image `json:"Thumbnail" bson:"Thumbnail"`         // 缩略图
+	OriginalImage *Image `json:"OriginalImage" bson:"OriginalImage"` // 原图
 }
 
 // EventMsg 事件消息

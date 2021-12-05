@@ -33,7 +33,15 @@ func NewService(senderService *sender.Service, rdb *redis.Client, logger *logrus
 // SendMsg 发送消息
 func (s *Service) SendMsg(req *SendMsgReq) (*SendMsgRsp, error) {
 	// 参数校验
-	if req.Receiver == nil {
+	if req.Receiver == nil || req.Content == nil || req.SendTime == 0 || req.CorrelationID == "" ||
+		(req.Content.TextMsg == nil && req.Content.ImageMsg == nil) {
+		return nil, common.ErrCodeInvalidParameter
+	}
+	if req.Content.TextMsg != nil && req.Content.TextMsg.Content == "" {
+		return nil, common.ErrCodeInvalidParameter
+	}
+	if req.Content.ImageMsg != nil &&
+		(req.Content.ImageMsg.Thumbnail == nil || req.Content.ImageMsg.OriginalImage == nil) {
 		return nil, common.ErrCodeInvalidParameter
 	}
 
@@ -82,13 +90,13 @@ func (s *Service) sendToUser(req *SendMsgReq) (*SendMsgRsp, error) {
 		})
 	}
 	msgs = append(msgs, &msg.Msg{
-		UserID:        req.Receiver.ReceiverID,
-		MsgID:         msgID,
-		Sender:        req.Sender,
-		Receiver:      req.Receiver,
-		SendTime:      req.SendTime,
-		ArrivalTime:   uint64(now),
-		Content:       req.Content,
+		UserID:      req.Receiver.ReceiverID,
+		MsgID:       msgID,
+		Sender:      req.Sender,
+		Receiver:    req.Receiver,
+		SendTime:    req.SendTime,
+		ArrivalTime: uint64(now),
+		Content:     req.Content,
 	})
 
 	// 发送到mq
