@@ -35,6 +35,27 @@ type GetFriendInfosRsp struct {
 	FriendInfos []*FriendInfo // 好友信息列表
 }
 
+// UpdateFriendInfoReq 更新好友信息请求
+type UpdateFriendInfoReq struct {
+	UserId   uint64                     // 用户编号
+	FriendId uint64                     // 好友编号
+	Action   *UpdateFriendInfoReqAction // 更新好友信息请求的行为
+}
+
+// UpdateFriendInfoReqAction 更新好友信息请求的行为
+type UpdateFriendInfoReqAction struct {
+	isDisturb   bool   // 是否免打扰
+	isBlacklist bool   // 是否黑名单
+	IsTop       bool   // 是否置顶
+	Remark      string // 备注
+	Description string // 描述
+}
+
+// UpdateFriendInfoRsp 更新好友信息响应
+type UpdateFriendInfoRsp struct {
+	FriendInfo *FriendInfo // 好友信息
+}
+
 // AddFriendApplicationStatus 添加好友申请状态
 type AddFriendApplicationStatus uint8
 

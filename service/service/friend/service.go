@@ -145,6 +145,18 @@ func (s *Service) getFriendInfoByFriendID(userID, friendID uint64) (*FriendInfo,
 	}, nil
 }
 
+// UpdateFriendInfo 更新好友信息
+func (s *Service) UpdateFriendInfo(req *UpdateFriendInfoReq) (*UpdateFriendInfoRsp, error) {
+	// 获取当前好友信息
+
+	// 修改
+
+	// 响应
+
+	// 通知用户的多个端
+	panic("")
+}
+
 // CreateAddFriendApplication 创建添加好友申请
 func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq) (
 	*CreateAddFriendApplicationRsp, error) {
