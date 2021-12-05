@@ -5,6 +5,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"him/conf"
 	"him/model"
 	"him/service/common"
@@ -187,6 +188,7 @@ func (s *Service) UpdateFriendInfo(req *UpdateFriendInfoReq) (*UpdateFriendInfoR
 		// 修改好友信息
 		if err := s.db.Model(model.Friend{}).Where("user_id = ? and friend_id = ?", req.UserID, req.FriendID).
 			Update(column, value).Error; err != nil {
+			s.logger.WithError(err).Error("db exception")
 			return err
 		}
 
@@ -204,6 +206,31 @@ func (s *Service) UpdateFriendInfo(req *UpdateFriendInfoReq) (*UpdateFriendInfoR
 	return &UpdateFriendInfoRsp{FriendInfo: friendInfo}, nil
 }
 
+// GetAddFriendApplications 获取添加好友申请
+func (s *Service) GetAddFriendApplications(req *GetAddFriendApplicationsReq) (*GetAddFriendApplicationsRsp, error) {
+	var modelAddFriendApplications []*model.AddFriendApplication
+	if err := s.db.Where("id > ? and (applicant_id = ? or friend_id = ?)",
+		req.LastAddFriendApplicationId, req.UserID, req.UserID).Limit(req.Size).
+		Find(&modelAddFriendApplications).Error; err != nil {
+		s.logger.WithError(err).Error("db exception")
+		return nil, err
+	}
+
+	addFriendApplications := make([]*AddFriendApplication, 0, len(modelAddFriendApplications))
+	for _, modelAddFriendApplication := range modelAddFriendApplications {
+		addFriendApplications = append(addFriendApplications, &AddFriendApplication{
+			AddFriendApplicationID: modelAddFriendApplication.ID,
+			ApplicantID:            modelAddFriendApplication.ApplicantID,
+			FriendID:               modelAddFriendApplication.FriendID,
+			ApplicationMsg:         modelAddFriendApplication.ApplicationMsg,
+			FriendReply:            modelAddFriendApplication.FriendReply,
+			Status:                 AddFriendApplicationStatus(modelAddFriendApplication.Status),
+			ApplicationTime:        modelAddFriendApplication.ApplicationTime,
+		})
+	}
+	return &GetAddFriendApplicationsRsp{AddFriendApplications: addFriendApplications}, nil
+}
+
 // CreateAddFriendApplication 创建添加好友申请
 func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq) (
 	*CreateAddFriendApplicationRsp, error) {
@@ -216,6 +243,7 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 	var user model.User
 	err := s.db.Take(&user, req.FriendID).Error
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		s.logger.WithError(err).Error("db exception")
 		return nil, err
 	}
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -240,6 +268,7 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 	var count int64
 	if err := s.db.Model(model.AddFriendApplication{}).Where("applicant_id = ? and friend_id = ? and status = ?",
 		req.ApplicantID, req.FriendID, AddFriendApplicationStatusWaitConfirm).Count(&count).Error; err != nil {
+		s.logger.WithError(err).Error("db exception")
 		return nil, err
 	}
 	if count != 0 {
@@ -256,6 +285,7 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 	}
 	if err := s.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&addFriendApplication).Error; err != nil {
+			s.logger.WithError(err).Error("db exception")
 			return err
 		}
 
@@ -280,9 +310,89 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 	}}, nil
 }
 
+// UpdateAddFriendApplication 更新添加好友申请
+func (s *Service) UpdateAddFriendApplication(req *UpdateAddFriendApplicationReq) (
+	*UpdateAddFriendApplicationRsp, error) {
+	// 查询申请
+	var addFriendApplication model.AddFriendApplication
+	err := s.db.Clauses(clause.Locking{
+		Strength: "UPDATE",
+	}).Take(&addFriendApplication, req.AddFriendApplicationID).Error
+	if err != nil &&
+		!errors.Is(err, gorm.ErrRecordNotFound) {
+		s.logger.WithError(err).Error("db exception")
+		return nil, err
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, common.ErrCodeInvalidParameter
+	}
+
+	// 请求检查
+	column, value, err := s.updateAddFriendApplicationReqCheck(&addFriendApplication, req)
+	if err != nil {
+		return nil, err
+	}
+
+	// 更新数据库
+	if err := s.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(model.AddFriendApplication{}).
+			Where("id = ?", req.AddFriendApplicationID).Update(column, value).Error; err != nil {
+			s.logger.WithError(err).Error("db exception")
+			return err
+		}
+
+		// 如果是接受好友申请的请求，则特殊处理
+		if req.Action.Accept {
+			if _, err := s.getFriendInfoByFriendID(addFriendApplication.ApplicantID, addFriendApplication.FriendID); err != nil {
+				return err
+			}
+			if _, err := s.getFriendInfoByFriendID(addFriendApplication.FriendID, addFriendApplication.ApplicantID); err != nil {
+				return err
+			}
+			if err := tx.Model(model.Friend{}).Where("user_id = ? and friend_id = ?",
+				addFriendApplication.ApplicantID, addFriendApplication.FriendID).
+				Update("is_friend", true).Error; err != nil {
+				s.logger.WithError(err).Error("db exception")
+				return err
+			}
+			if err := tx.Model(model.Friend{}).Where("user_id = ? and friend_id = ?",
+				addFriendApplication.FriendID, addFriendApplication.ApplicantID).
+				Update("is_friend", true).Error; err != nil {
+				s.logger.WithError(err).Error("db exception")
+				return err
+			}
+			if err := s.sendTextMsg(addFriendApplication.FriendID, addFriendApplication.ApplicantID,
+				AddFriendSuccessTextMsgContent); err != nil {
+				return err
+			}
+		}
+
+		// 通知对方和自己的其他端有好友申请改变
+		return s.sendEventMsg([]uint64{addFriendApplication.FriendID, addFriendApplication.ApplicantID}, &msg.EventMsg{
+			AddFriendApplicationChange: &msg.AddFriendApplicationChangeEventMsg{
+				AddFriendApplicationID: addFriendApplication.ID,
+			},
+		})
+	}); err != nil {
+		s.logger.WithError(err).Error("transaction exception")
+		return nil, err
+	}
+
+	// 响应
+	return &UpdateAddFriendApplicationRsp{AddFriendApplication: &AddFriendApplication{
+		AddFriendApplicationID: addFriendApplication.ID,
+		ApplicantID:            addFriendApplication.ApplicantID,
+		FriendID:               addFriendApplication.FriendID,
+		ApplicationMsg:         addFriendApplication.ApplicationMsg,
+		FriendReply:            addFriendApplication.FriendReply,
+		Status:                 AddFriendApplicationStatus(addFriendApplication.Status),
+		ApplicationTime:        addFriendApplication.ApplicationTime,
+	}}, nil
+}
+
 // 发送事件消息
-func (s *Service) sendEventMsg(receiverIDS []uint64, eventMsg *msg.EventMsg) error {
-	msgs := make([]*msg.Msg, 0, len(receiverIDS))
+func (s *Service) sendEventMsg(userIDS []uint64, eventMsg *msg.EventMsg) error {
+	msgs := make([]*msg.Msg, 0, len(userIDS))
 	now := uint64(time.Now().Unix())
 	msgID := s.idGenerator.GenMsgID()
 	sysSender := &msg.Sender{
@@ -293,14 +403,14 @@ func (s *Service) sendEventMsg(receiverIDS []uint64, eventMsg *msg.EventMsg) err
 	}
 
 	// 发送
-	for _, receiverID := range receiverIDS {
+	for _, userID := range userIDS {
 		msgs = append(msgs, &msg.Msg{
-			UserID: receiverID,
+			UserID: userID,
 			MsgID:  msgID,
 			Sender: sysSender,
 			Receiver: &msg.Receiver{
 				Type:       msg.ReceiverTypeUser,
-				ReceiverID: receiverID,
+				ReceiverID: userID,
 			},
 			SendTime:    now,
 			ArrivalTime: now,
@@ -309,4 +419,104 @@ func (s *Service) sendEventMsg(receiverIDS []uint64, eventMsg *msg.EventMsg) err
 	}
 	_, err := s.senderService.SendMsgs(&sender.SendMsgsReq{Msgs: msgs})
 	return err
+}
+
+// 发送文本消息，给senderID和receiverID各发一条
+func (s *Service) sendTextMsg(senderID, receiverID uint64, textMsgContent string) error {
+	msgs := make([]*msg.Msg, 2)
+	now := uint64(time.Now().Unix())
+	msgID := s.idGenerator.GenMsgID()
+	msgSender := msg.Sender{
+		Type:     msg.ReceiverTypeUser,
+		SenderID: senderID,
+	}
+	msgReceiver := msg.Receiver{
+		Type:       msg.ReceiverTypeUser,
+		ReceiverID: receiverID,
+	}
+	content := msg.Content{
+		TextMsg: &msg.TextMsg{
+			Content: textMsgContent,
+		},
+	}
+
+	msgs[0] = &msg.Msg{
+		UserID:      senderID,
+		MsgID:       msgID,
+		Sender:      &msgSender,
+		Receiver:    &msgReceiver,
+		SendTime:    now,
+		ArrivalTime: now,
+		Content:     &content,
+	}
+	msgs[1] = &msg.Msg{
+		UserID:      receiverID,
+		MsgID:       msgID,
+		Sender:      &msgSender,
+		Receiver:    &msgReceiver,
+		SendTime:    now,
+		ArrivalTime: now,
+		Content:     &content,
+	}
+
+	// 发送
+	_, err := s.senderService.SendMsgs(&sender.SendMsgsReq{Msgs: msgs})
+	return err
+}
+
+// 更新添加好友申请请求检查，会有副作用，会修改addFriendApplication参数的值
+func (s *Service) updateAddFriendApplicationReqCheck(addFriendApplication *model.AddFriendApplication,
+	req *UpdateAddFriendApplicationReq) (column string, value interface{}, err error) {
+	// 是不是申请的拥有者
+	if addFriendApplication.FriendID != req.UserID && addFriendApplication.ApplicantID != req.UserID {
+		return "", nil, common.ErrCodeForbidden
+	}
+
+	// 判断申请状态是否可以修改
+	if addFriendApplication.Status != uint8(AddFriendApplicationStatusWaitConfirm) {
+		return "", nil, ErrCodeInvalidParameterApplicationIsEnd
+	}
+
+	// 修改申请状态
+	if req.Action.ApplicationMsg != "" {
+		// 必须是申请者
+		if req.UserID != addFriendApplication.ApplicantID {
+			return "", nil, common.ErrCodeForbidden
+		}
+
+		column = "application_msg"
+		value = req.Action.ApplicationMsg
+		addFriendApplication.ApplicationMsg = req.Action.ApplicationMsg
+	} else if req.Action.FriendReply != "" {
+		// 必须是好友
+		if req.UserID != addFriendApplication.FriendID {
+			return "", nil, common.ErrCodeForbidden
+		}
+
+		column = "friend_reply"
+		value = req.Action.FriendReply
+		addFriendApplication.FriendReply = req.Action.FriendReply
+	} else if req.Action.Accept {
+		// 必须是好友
+		if req.UserID != addFriendApplication.FriendID {
+			return "", nil, common.ErrCodeForbidden
+		}
+
+		column = "status"
+		value = AddFriendApplicationStatusAccept
+		addFriendApplication.Status = uint8(AddFriendApplicationStatusAccept)
+	} else if req.Action.Reject {
+		// 必须是好友
+		if req.UserID != addFriendApplication.FriendID {
+			return "", nil, common.ErrCodeForbidden
+		}
+
+		column = "status"
+		value = AddFriendApplicationStatusReject
+		addFriendApplication.Status = uint8(AddFriendApplicationStatusReject)
+	} else {
+		return "", nil, common.ErrCodeInvalidParameter
+	}
+
+	return column, value, nil
 }

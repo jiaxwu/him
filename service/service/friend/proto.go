@@ -56,6 +56,18 @@ type UpdateFriendInfoRsp struct {
 	FriendInfo *FriendInfo `json:"FriendInfo"` // 好友信息
 }
 
+// GetAddFriendApplicationsReq 获取添加好友申请请求
+type GetAddFriendApplicationsReq struct {
+	UserID                     uint64 `json:"UserID"`                     // 用户编号
+	LastAddFriendApplicationId uint64 `json:"LastAddFriendApplicationID"` // 最后一个添加好友请求的编号（因为是反过来排序的）
+	Size                       int    `json:"Size"`                       // 多少条
+}
+
+// GetAddFriendApplicationsRsp 获取添加好友申请响应
+type GetAddFriendApplicationsRsp struct {
+	AddFriendApplications []*AddFriendApplication `json:"AddFriendApplications"` // 添加好友申请
+}
+
 // AddFriendApplicationStatus 添加好友申请状态
 type AddFriendApplicationStatus uint8
 
@@ -86,5 +98,25 @@ type CreateAddFriendApplicationReq struct {
 
 // CreateAddFriendApplicationRsp 创建添加好友申请响应
 type CreateAddFriendApplicationRsp struct {
+	AddFriendApplication *AddFriendApplication `json:"AddFriendApplication"` // 添加好友申请
+}
+
+// UpdateAddFriendApplicationReq 更新添加好友申请请求
+type UpdateAddFriendApplicationReq struct {
+	UserID                 uint64                               `json:"UserID"`                 // 用户编号
+	AddFriendApplicationID uint64                               `json:"AddFriendApplicationID"` // 添加好友申请编号
+	Action                 *UpdateAddFriendApplicationReqAction `json:"Action"`                 // 更新添加好友申请请求的行为
+}
+
+// UpdateAddFriendApplicationReqAction 更新添加好友申请请求的行为
+type UpdateAddFriendApplicationReqAction struct {
+	ApplicationMsg string `json:"ApplicationMsg"` // 申请消息
+	FriendReply    string `json:"FriendReply"`    // 好友回复
+	Accept         bool  `json:"Accept"`         // 接受
+	Reject         bool  `json:"Reject"`         // 拒绝
+}
+
+// UpdateAddFriendApplicationRsp 更新添加好友申请响应
+type UpdateAddFriendApplicationRsp struct {
 	AddFriendApplication *AddFriendApplication `json:"AddFriendApplication"` // 添加好友申请
 }
