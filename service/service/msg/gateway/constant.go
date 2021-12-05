@@ -8,9 +8,9 @@ const (
 	// WSReadBufferSize 读缓冲大小
 	WSReadBufferSize = 4096
 	// WSReadExpireTime 读过期时间
-	WSReadExpireTime = 70 * time.Second
+	WSReadExpireTime = 60 * time.Second
 	// WSHeartbeatTimeInterval 心跳时间间隔
-	WSHeartbeatTimeInterval = 60 * time.Second
+	WSHeartbeatTimeInterval = 50 * time.Second
 )
 
 const (
