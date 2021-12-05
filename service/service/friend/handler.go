@@ -17,6 +17,16 @@ func RegisterHandler(engine *gin.Engine, service *Service, wrapper *wrap.Wrapper
 		},
 	}))
 
+	engine.POST("friend/info/update", wrapper.Wrap(func(req *UpdateFriendInfoReq,
+		session *auth.Session) (*UpdateFriendInfoRsp, error) {
+		req.UserID = session.UserID
+		return service.UpdateFriendInfo(req)
+	}, &wrap.Config{
+		UserTypes: []auth.UserType{
+			auth.UserTypeUser,
+		},
+	}))
+
 	engine.POST("friend/add-friend-application/create", wrapper.Wrap(func(req *CreateAddFriendApplicationReq,
 		session *auth.Session) (*CreateAddFriendApplicationRsp, error) {
 		req.ApplicantID = session.UserID

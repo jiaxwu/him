@@ -116,18 +116,20 @@ func (s *Service) getFriendInfosIfIsFriend(userID uint64) (*GetFriendInfosRsp, e
 
 // 通过好友编号获取好友
 func (s *Service) getFriendInfoByFriendID(userID, friendID uint64) (*FriendInfo, error) {
-	friend := model.Friend{
-		UserID:   userID,
-		FriendID: friendID,
-	}
-	if err := s.db.FirstOrCreate(&friend, &friend).Error; err != nil {
-		return nil, err
-	}
 	// 获取好友个人信息
 	getUserProfileRsp, err := s.profileService.GetUserProfile(&profile.GetUserProfileReq{
 		UserID: friendID,
 	})
 	if err != nil {
+		return nil, err
+	}
+
+	// 获取好友信息
+	friend := model.Friend{
+		UserID:   userID,
+		FriendID: friendID,
+	}
+	if err := s.db.FirstOrCreate(&friend, &friend).Error; err != nil {
 		return nil, err
 	}
 	return &FriendInfo{
@@ -148,13 +150,58 @@ func (s *Service) getFriendInfoByFriendID(userID, friendID uint64) (*FriendInfo,
 // UpdateFriendInfo 更新好友信息
 func (s *Service) UpdateFriendInfo(req *UpdateFriendInfoReq) (*UpdateFriendInfoRsp, error) {
 	// 获取当前好友信息
+	friendInfo, err := s.getFriendInfoByFriendID(req.UserID, req.FriendID)
+	if err != nil {
+		return nil, err
+	}
 
 	// 修改
+	var (
+		column string
+		value  interface{}
+	)
+	if req.Action.IsDisturb != nil {
+		column = "is_disturb"
+		value = *req.Action.IsDisturb
+		friendInfo.IsDisturb = *req.Action.IsDisturb
+	} else if req.Action.IsBlacklist != nil {
+		column = "is_blacklist"
+		value = *req.Action.IsBlacklist
+		friendInfo.IsBlacklist = *req.Action.IsBlacklist
+	} else if req.Action.IsTop != nil {
+		column = "is_top"
+		value = *req.Action.IsTop
+		friendInfo.IsTop = *req.Action.IsTop
+	} else if req.Action.Remark != "" {
+		column = "remark"
+		value = req.Action.Remark
+		friendInfo.Remark = req.Action.Remark
+	} else if req.Action.Description != "" {
+		column = "description"
+		value = req.Action.Description
+		friendInfo.Description = req.Action.Description
+	} else {
+		return nil, common.ErrCodeInvalidParameter
+	}
+	if err := s.db.Transaction(func(tx *gorm.DB) error {
+		// 修改好友信息
+		if err := s.db.Model(model.Friend{}).Where("user_id = ? and friend_id = ?", req.UserID, req.FriendID).
+			Update(column, value).Error; err != nil {
+			return err
+		}
+
+		// 通知用户的多个端
+		return s.sendEventMsg([]uint64{req.UserID}, &msg.EventMsg{
+			FriendInfoChange: &msg.FriendInfoChangeEventMsg{
+				FriendID: req.FriendID,
+			},
+		})
+	}); err != nil {
+		return nil, err
+	}
 
 	// 响应
-
-	// 通知用户的多个端
-	panic("")
+	return &UpdateFriendInfoRsp{FriendInfo: friendInfo}, nil
 }
 
 // CreateAddFriendApplication 创建添加好友申请
@@ -270,6 +317,37 @@ func (s *Service) sendNewAddFriendApplicationEventMsg(applicantID, friendID, add
 		Content:     &content,
 	}
 
+	_, err := s.senderService.SendMsgs(&sender.SendMsgsReq{Msgs: msgs})
+	return err
+}
+
+// 发送事件消息
+func (s *Service) sendEventMsg(receiverIDS []uint64, eventMsg *msg.EventMsg) error {
+	msgs := make([]*msg.Msg, 0, len(receiverIDS))
+	now := uint64(time.Now().Unix())
+	msgID := s.idGenerator.GenMsgID()
+	sysSender := &msg.Sender{
+		Type: msg.SenderTypeSys,
+	}
+	content := msg.Content{
+		EventMsg: eventMsg,
+	}
+
+	// 发送
+	for _, receiverID := range receiverIDS {
+		msgs = append(msgs, &msg.Msg{
+			UserID: receiverID,
+			MsgID:  msgID,
+			Sender: sysSender,
+			Receiver: &msg.Receiver{
+				Type:       msg.ReceiverTypeUser,
+				ReceiverID: receiverID,
+			},
+			SendTime:    now,
+			ArrivalTime: now,
+			Content:     &content,
+		})
+	}
 	_, err := s.senderService.SendMsgs(&sender.SendMsgsReq{Msgs: msgs})
 	return err
 }
