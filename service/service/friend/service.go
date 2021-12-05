@@ -259,7 +259,12 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 			return err
 		}
 
-		return s.sendNewAddFriendApplicationEventMsg(req.ApplicantID, req.FriendID, addFriendApplication.ID)
+		// 通知对方和自己的其他端有新的好友申请，发送新添加好友申请事件消息
+		return s.sendEventMsg([]uint64{req.ApplicantID, req.FriendID}, &msg.EventMsg{
+			NewAddFriendApplication: &msg.NewAddFriendApplicationEventMsg{
+				AddFriendApplicationID: addFriendApplication.ID,
+			},
+		})
 	}); err != nil {
 		return nil, err
 	}
@@ -273,52 +278,6 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 		Status:                 AddFriendApplicationStatus(addFriendApplication.Status),
 		ApplicationTime:        addFriendApplication.ApplicationTime,
 	}}, nil
-}
-
-// 通知对方和自己的其他端有新的好友申请，发送新添加好友申请事件消息
-func (s *Service) sendNewAddFriendApplicationEventMsg(applicantID, friendID, addFriendApplicationID uint64) error {
-	msgs := make([]*msg.Msg, 2)
-	now := uint64(time.Now().Unix())
-	msgID := s.idGenerator.GenMsgID()
-	sysSender := &msg.Sender{
-		Type: msg.SenderTypeSys,
-	}
-	content := msg.Content{
-		EventMsg: &msg.EventMsg{
-			NewAddFriendApplication: &msg.NewAddFriendApplicationEventMsg{
-				AddFriendApplicationID: addFriendApplicationID,
-			},
-		},
-	}
-	// 发给申请者
-	msgs[0] = &msg.Msg{
-		UserID: applicantID,
-		MsgID:  msgID,
-		Sender: sysSender,
-		Receiver: &msg.Receiver{
-			Type:       msg.ReceiverTypeUser,
-			ReceiverID: applicantID,
-		},
-		SendTime:    now,
-		ArrivalTime: now,
-		Content:     &content,
-	}
-	// 发给好友
-	msgs[1] = &msg.Msg{
-		UserID: friendID,
-		MsgID:  msgID,
-		Sender: sysSender,
-		Receiver: &msg.Receiver{
-			Type:       msg.ReceiverTypeUser,
-			ReceiverID: friendID,
-		},
-		SendTime:    now,
-		ArrivalTime: now,
-		Content:     &content,
-	}
-
-	_, err := s.senderService.SendMsgs(&sender.SendMsgsReq{Msgs: msgs})
-	return err
 }
 
 // 发送事件消息
