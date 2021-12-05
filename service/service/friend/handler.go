@@ -7,8 +7,8 @@ import (
 )
 
 func RegisterHandler(engine *gin.Engine, service *Service, wrapper *wrap.Wrapper) {
-	engine.POST("friend/infos/get", wrapper.Wrap(func(req *GetFriendInfosReq,
-		session *auth.Session) (*GetFriendInfosRsp, error) {
+	engine.POST("friend/infos/get", wrapper.Wrap(func(req *GetFriendInfosReq, session *auth.Session) (
+		*GetFriendInfosRsp, error) {
 		req.UserID = session.UserID
 		return service.GetFriendInfos(req)
 	}, &wrap.Config{
@@ -17,10 +17,20 @@ func RegisterHandler(engine *gin.Engine, service *Service, wrapper *wrap.Wrapper
 		},
 	}))
 
-	engine.POST("friend/info/update", wrapper.Wrap(func(req *UpdateFriendInfoReq,
-		session *auth.Session) (*UpdateFriendInfoRsp, error) {
+	engine.POST("friend/info/update", wrapper.Wrap(func(req *UpdateFriendInfoReq, session *auth.Session) (
+		*UpdateFriendInfoRsp, error) {
 		req.UserID = session.UserID
 		return service.UpdateFriendInfo(req)
+	}, &wrap.Config{
+		UserTypes: []auth.UserType{
+			auth.UserTypeUser,
+		},
+	}))
+
+	engine.POST("friend/delete", wrapper.Wrap(func(req *DeleteFriendReq, session *auth.Session) (
+		*DeleteFriendRsp, error) {
+		req.UserID = session.UserID
+		return service.DeleteFriend(req)
 	}, &wrap.Config{
 		UserTypes: []auth.UserType{
 			auth.UserTypeUser,

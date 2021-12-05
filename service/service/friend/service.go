@@ -206,6 +206,28 @@ func (s *Service) UpdateFriendInfo(req *UpdateFriendInfoReq) (*UpdateFriendInfoR
 	return &UpdateFriendInfoRsp{FriendInfo: friendInfo}, nil
 }
 
+// DeleteFriend 删除好友
+func (s *Service) DeleteFriend(req *DeleteFriendReq) (*DeleteFriendRsp, error) {
+	if err := s.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(model.Friend{}).Where("user_id = ? and friend_id = ?",
+			req.UserID, req.FriendID).
+			Update("is_friend", false).Error; err != nil {
+			s.logger.WithError(err).Error("db exception")
+			return err
+		}
+		if err := tx.Model(model.Friend{}).Where("user_id = ? and friend_id = ?",
+			req.FriendID, req.UserID).
+			Update("is_friend", false).Error; err != nil {
+			s.logger.WithError(err).Error("db exception")
+			return err
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	return &DeleteFriendRsp{}, nil
+}
+
 // GetAddFriendApplications 获取添加好友申请
 func (s *Service) GetAddFriendApplications(req *GetAddFriendApplicationsReq) (*GetAddFriendApplicationsRsp, error) {
 	var modelAddFriendApplications []*model.AddFriendApplication

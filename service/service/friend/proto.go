@@ -56,6 +56,15 @@ type UpdateFriendInfoRsp struct {
 	FriendInfo *FriendInfo `json:"FriendInfo"` // 好友信息
 }
 
+// DeleteFriendReq 删除好友请求
+type DeleteFriendReq struct {
+	UserID   uint64 // 用户编号
+	FriendID uint64 // 好友编号
+}
+
+// DeleteFriendRsp 删除好友响应
+type DeleteFriendRsp struct{}
+
 // GetAddFriendApplicationsReq 获取添加好友申请请求
 type GetAddFriendApplicationsReq struct {
 	UserID                     uint64 `json:"UserID"`                     // 用户编号
@@ -112,8 +121,8 @@ type UpdateAddFriendApplicationReq struct {
 type UpdateAddFriendApplicationReqAction struct {
 	ApplicationMsg string `json:"ApplicationMsg"` // 申请消息
 	FriendReply    string `json:"FriendReply"`    // 好友回复
-	Accept         bool  `json:"Accept"`         // 接受
-	Reject         bool  `json:"Reject"`         // 拒绝
+	Accept         bool   `json:"Accept"`         // 接受
+	Reject         bool   `json:"Reject"`         // 拒绝
 }
 
 // UpdateAddFriendApplicationRsp 更新添加好友申请响应
