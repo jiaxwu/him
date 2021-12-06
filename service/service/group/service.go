@@ -37,28 +37,22 @@ func NewService(db *gorm.DB, logger *logrus.Logger, config *conf.Config, senderS
 
 // GetGroupInfos 获取群信息
 func (s *Service) GetGroupInfos(req *GetGroupInfosReq) (*GetGroupInfosRsp, error) {
-	// 获取群成员信息
-	var query *gorm.DB
+	// 获取群编号
+	query := s.db.Model(&model.GroupMember{})
 	if req.Condition.GroupID != 0 {
-		query = s.db.Where("member_id = ? and group_id = ?", req.UserID, req.Condition.GroupID)
+		query = query.Where("member_id = ? and group_id = ?", req.UserID, req.Condition.GroupID)
 	} else if req.Condition.All {
-		query = s.db.Where("member_id = ?", req.UserID)
+		query = query.Where("member_id = ?", req.UserID)
 	} else {
 		return nil, common.ErrCodeInvalidParameter
 	}
-	var groupMembers []*model.GroupMember
-	if err := query.Find(&groupMembers).Error; err != nil {
+	var groupIDS []uint64
+	if err := query.Select("group_id").Find(&groupIDS).Error; err != nil {
 		s.logger.WithError(err).Error("db exception")
 		return nil, err
 	}
 
 	// 获取群信息
-	groupIDS := make([]uint64, 0, len(groupMembers))
-	groupIDToGroupMemberMap := make(map[uint64]*model.GroupMember, len(groupMembers))
-	for _, groupMember := range groupMembers {
-		groupIDS = append(groupIDS, groupMember.GroupID)
-		groupIDToGroupMemberMap[groupMember.GroupID] = groupMember
-	}
 	var groups []*model.Group
 	if err := s.db.Where("id in ?", groupIDS).Find(&groups).Error; err != nil {
 		return nil, err
@@ -67,7 +61,6 @@ func (s *Service) GetGroupInfos(req *GetGroupInfosReq) (*GetGroupInfosRsp, error
 	// 装配
 	groupInfos := make([]*GroupInfo, 0, len(groups))
 	for _, group := range groups {
-		groupMember := groupIDToGroupMemberMap[group.ID]
 		groupInfos = append(groupInfos, &GroupInfo{
 			GroupID:                      group.ID,
 			Name:                         group.Name,
@@ -76,9 +69,6 @@ func (s *Service) GetGroupInfos(req *GetGroupInfosReq) (*GetGroupInfosRsp, error
 			Notice:                       group.Notice,
 			IsJoinApplication:            group.IsJoinApplication,
 			IsInviteJoinGroupNeedConfirm: group.IsInviteJoinGroupNeedConfirm,
-			IsDisturb:                    groupMember.IsDisturb,
-			IsTop:                        groupMember.IsTop,
-			IsShowNickName:               groupMember.IsShowNickName,
 		})
 	}
 	return &GetGroupInfosRsp{

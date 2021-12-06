@@ -30,9 +30,6 @@ type GroupInfo struct {
 	Notice                       string `json:"Notice"`                       // 群公告
 	IsJoinApplication            bool   `json:"IsJoinApplication"`            // 是否接受入群申请（默认不需要申请直接入群）
 	IsInviteJoinGroupNeedConfirm bool   `json:"IsInviteJoinGroupNeedConfirm"` // 是否邀请入群需要管理员或群主确认（默认不需要确认直接入群）
-	IsDisturb                    bool   `json:"IsDisturb"`                    // 是否免打扰
-	IsTop                        bool   `json:"IsTop"`                        // 是否置顶
-	IsShowNickName               bool   `json:"IsShowNickName"`               // 是显示群成员昵称
 }
 
 // GetGroupInfosReq 获取群信息请求
