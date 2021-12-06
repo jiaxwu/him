@@ -200,49 +200,6 @@ func (s *Service) CreateGroup(req *CreateGroupReq) (*CreateGroupRsp, error) {
 	return &CreateGroupRsp{GroupInfo: getGroupInfosRsp.GroupInfos[0]}, nil
 }
 
-// 发送文本消息，给senderID和receiverID各发一条
-func (s *Service) sendTextMsg(senderID, receiverID uint64, textMsgContent string) error {
-	msgs := make([]*msg.Msg, 2)
-	now := uint64(time.Now().Unix())
-	msgID := s.idGenerator.GenMsgID()
-	msgSender := msg.Sender{
-		Type:     msg.ReceiverTypeUser,
-		SenderID: senderID,
-	}
-	msgReceiver := msg.Receiver{
-		Type:       msg.ReceiverTypeUser,
-		ReceiverID: receiverID,
-	}
-	content := msg.Content{
-		TextMsg: &msg.TextMsg{
-			Content: textMsgContent,
-		},
-	}
-
-	msgs[0] = &msg.Msg{
-		UserID:      senderID,
-		MsgID:       msgID,
-		Sender:      &msgSender,
-		Receiver:    &msgReceiver,
-		SendTime:    now,
-		ArrivalTime: now,
-		Content:     &content,
-	}
-	msgs[1] = &msg.Msg{
-		UserID:      receiverID,
-		MsgID:       msgID,
-		Sender:      &msgSender,
-		Receiver:    &msgReceiver,
-		SendTime:    now,
-		ArrivalTime: now,
-		Content:     &content,
-	}
-
-	// 发送
-	_, err := s.senderService.SendMsgs(&sender.SendMsgsReq{Msgs: msgs})
-	return err
-}
-
 // 装配创建群的tip
 func (s *Service) assembleCreateGroupNickNameTextTip(userID uint64, memberIDS []uint64) (*msg.NickNameTextTip, error) {
 	// 获取成员昵称
