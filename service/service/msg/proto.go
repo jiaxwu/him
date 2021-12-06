@@ -114,6 +114,7 @@ type Receiver struct {
 type Content struct {
 	TextMsg  *TextMsg  `json:"TextMsg,omitempty" bson:"TextMsg,omitempty"`
 	ImageMsg *ImageMsg `json:"ImageMsg,omitempty" bson:"ImageMsg,omitempty"`
+	TipMsg   *TipMsg   `json:"TipMsg,omitempty" bson:"TipMsg,omitempty"`
 	EventMsg *EventMsg `json:"EventMsg,omitempty" bson:"EventMsg,omitempty"`
 }
 
@@ -132,6 +133,28 @@ type ImageMsg struct {
 	OriginalImage *Image `json:"OriginalImage" bson:"OriginalImage"` // 原图
 }
 
+// TipMsg 提示消息
+type TipMsg struct {
+	TextTip         *TextTip         `json:"TextTip,omitempty" bson:"TextTip,omitempty"`
+	NickNameTextTip *NickNameTextTip `json:"NickNameTextTip,omitempty" bson:"NickNameTextTip,omitempty"`
+}
+
+// TextTip 文本提示
+type TextTip struct {
+	Content string `json:"Content,omitempty" bson:"Content,omitempty"` // 提示内容
+}
+
+// NickNameTextTip 昵称文本提示
+type NickNameTextTip struct {
+	ClickableTexts []*ClickableText `json:"ClickableTexts,omitempty" bson:"ClickableTexts,omitempty"`
+}
+
+// ClickableText 可点击文本
+type ClickableText struct {
+	Link string `json:"Link,omitempty" bson:"Link,omitempty"` // 点击的目标
+	Text string `json:"Text,omitempty" bson:"Text,omitempty"` // 文本
+}
+
 // EventMsg 事件消息
 type EventMsg struct {
 	NewFriend                  *NewFriendEventMsg                  `json:"NewFriend,omitempty" bson:"NewFriend,omitempty"`
@@ -139,6 +162,12 @@ type EventMsg struct {
 	DeleteFriend               *DeleteFriendEventMsg               `json:"DeleteFriend,omitempty" bson:"DeleteFriend,omitempty"`
 	NewAddFriendApplication    *NewAddFriendApplicationEventMsg    `json:"NewAddFriendApplication,omitempty" bson:"NewAddFriendApplication,omitempty"`
 	AddFriendApplicationChange *AddFriendApplicationChangeEventMsg `json:"AddFriendApplicationChange,omitempty" bson:"AddFriendApplicationChange,omitempty"`
+
+	NewGroup              *NewGroupEventMsg              `json:"NewGroup,omitempty" bson:"NewGroup,omitempty"`
+	GroupInfoChange       *GroupInfoChangeEventMsg       `json:"GroupInfoChange,omitempty" bson:"GroupInfoChange,omitempty"`
+	GroupMemberInfoChange *GroupMemberInfoChangeEventMsg `json:"GroupMemberInfoChange,omitempty" bson:"GroupMemberInfoChange,omitempty"`
+	NewJoinGroupEvent     *NewJoinGroupEventEventMsg     `json:"NewJoinGroupEvent,omitempty" bson:"NewJoinGroupEvent,omitempty"`
+	JoinGroupEventChange  *JoinGroupEventChangeEventMsg  `json:"JoinGroupEventChange,omitempty" bson:"JoinGroupEventChange,omitempty"`
 }
 
 // NewFriendEventMsg 新的好友事件消息
@@ -164,4 +193,33 @@ type NewAddFriendApplicationEventMsg struct {
 // AddFriendApplicationChangeEventMsg 添加好友申请状态改变事件消息
 type AddFriendApplicationChangeEventMsg struct {
 	AddFriendApplicationID uint64 `json:"AddFriendApplicationID" bson:"AddFriendApplicationID"` // 状态改变的添加好友申请编号
+}
+
+//NewGroupEventMsg 新的群事件消息（xx邀请xx，xxx，xxx等加入了群聊tip，你通过扫描xx分享的二维码加入群聊tip，xx邀请你加入了群聊tip）
+type NewGroupEventMsg struct {
+	GroupID uint64 `json:"GroupID" bson:"GroupID"` // 群编号
+}
+
+// GroupInfoChangeEventMsg 群信息改变事件消息（头像、群名、群公告，xx修改群名为xx tip）
+type GroupInfoChangeEventMsg struct {
+	GroupID uint64 `json:"GroupID" bson:"GroupID"` // 群编号
+}
+
+// GroupMemberInfoChangeEventMsg
+// 群成员信息改变事件消息（直接拉群群成员信息列表和本地比较进行同步）
+// 群成员信息更改（换群主，管理员变动，xx成为了新的群主tip，xx成为了新的管理员）
+// 群成员加入（加入，邀请加入，xx通过扫描xx分析的二维码进群tip，xx邀请xx，xx，xx加入了群聊tip）
+// 群成员退出（退出，被踢，xx退出了群聊tip，xx被踢出群聊tip）
+type GroupMemberInfoChangeEventMsg struct {
+	GroupID uint64 `json:"GroupID" bson:"GroupID"` // 群编号
+}
+
+// NewJoinGroupEventEventMsg 新的入群事件事件消息
+type NewJoinGroupEventEventMsg struct {
+	JoinGroupEventID uint64 `json:"JoinGroupEventID" bson:"JoinGroupEventID"` // 入群事件编号
+}
+
+// JoinGroupEventChangeEventMsg 入群事件改变事件消息
+type JoinGroupEventChangeEventMsg struct {
+	JoinGroupEventID uint64 `json:"JoinGroupEventID" bson:"JoinGroupEventID"` // 入群事件编号
 }

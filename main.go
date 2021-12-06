@@ -12,6 +12,7 @@ import (
 	"him/service/service/auth"
 	authHandler "him/service/service/auth/handler"
 	"him/service/service/friend"
+	"him/service/service/group"
 	"him/service/service/msg"
 	msgGateway "him/service/service/msg/gateway"
 	msgSender "him/service/service/msg/sender"
@@ -86,12 +87,14 @@ func NewApp() *fx.App {
 				fx.ParamTags(`name:"MongoOfflineMsgCollection"`, `name:"MsgBucketOSSClient"`),
 			),
 			friend.NewService,
+			group.NewService,
 		),
 		fx.Invoke(
 			authHandler.RegisterHandler,
 			profile.RegisterUserProfileHandler,
 			msgShort.RegisterHandler,
 			friend.RegisterHandler,
+			group.RegisterHandler,
 			profile.NewAuthEventConsumer,
 			fx.Annotate(
 				msgTransfer.NewSendMsgConsumer,
