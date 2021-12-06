@@ -21,7 +21,7 @@ type GroupMemberInfo struct {
 	JoinTime       uint64          `json:"JoinTime"`       // 入群时间
 }
 
-// GroupInfo 群信息
+// GroupInfo 群信息（这里会带上当前用户相关的信息）
 type GroupInfo struct {
 	GroupID                      uint64 `json:"GroupID"`                      // 群编号
 	Name                         string `json:"Name"`                         // 群名
@@ -30,6 +30,26 @@ type GroupInfo struct {
 	Notice                       string `json:"Notice"`                       // 群公告
 	IsJoinApplication            bool   `json:"IsJoinApplication"`            // 是否接受入群申请（默认不需要申请直接入群）
 	IsInviteJoinGroupNeedConfirm bool   `json:"IsInviteJoinGroupNeedConfirm"` // 是否邀请入群需要管理员或群主确认（默认不需要确认直接入群）
+	IsDisturb                    bool   `json:"IsDisturb"`                    // 是否免打扰
+	IsTop                        bool   `json:"IsTop"`                        // 是否置顶
+	IsShowNickName               bool   `json:"IsShowNickName"`               // 是显示群成员昵称
+}
+
+// GetGroupInfosReq 获取群信息请求
+type GetGroupInfosReq struct {
+	UserID    uint64                     `json:"UserID"`    // 用户编号
+	Condition *GetGroupInfosReqCondition `json:"Condition"` // 条件
+}
+
+// GetGroupInfosReqCondition 获取群信息请求条件
+type GetGroupInfosReqCondition struct {
+	GroupID uint64 `json:"GroupID,omitempty"` // 群编号
+	All     bool   `json:"All,omitempty"`     // 全部
+}
+
+// GetGroupInfosRsp 获取群信息响应
+type GetGroupInfosRsp struct {
+	GroupInfos []*GroupInfo `json:"GroupInfos"` // 群信息
 }
 
 // CreateGroupReq 创建群请求

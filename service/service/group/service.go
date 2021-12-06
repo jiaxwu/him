@@ -15,24 +15,75 @@ import (
 )
 
 type Service struct {
-	db             *gorm.DB
-	logger         *logrus.Logger
-	config         *conf.Config
-	senderService  *sender.Service
-	idGenerator    *msg.IDGenerator
-	friendService  *friend.Service
+	db            *gorm.DB
+	logger        *logrus.Logger
+	config        *conf.Config
+	senderService *sender.Service
+	idGenerator   *msg.IDGenerator
+	friendService *friend.Service
 }
 
 func NewService(db *gorm.DB, logger *logrus.Logger, config *conf.Config, senderService *sender.Service,
 	idGenerator *msg.IDGenerator, friendService *friend.Service) *Service {
 	return &Service{
-		db:             db,
-		logger:         logger,
-		config:         config,
-		senderService:  senderService,
-		idGenerator:    idGenerator,
-		friendService:  friendService,
+		db:            db,
+		logger:        logger,
+		config:        config,
+		senderService: senderService,
+		idGenerator:   idGenerator,
+		friendService: friendService,
 	}
+}
+
+// GetGroupInfos 获取群信息
+func (s *Service) GetGroupInfos(req *GetGroupInfosReq) (*GetGroupInfosRsp, error) {
+	// 获取群成员信息
+	var query *gorm.DB
+	if req.Condition.GroupID != 0 {
+		query = s.db.Where("member_id = ? and group_id = ?", req.UserID, req.Condition.GroupID)
+	} else if req.Condition.All {
+		query = s.db.Where("member_id = ?", req.UserID)
+	} else {
+		return nil, common.ErrCodeInvalidParameter
+	}
+	var groupMembers []*model.GroupMember
+	if err := query.Find(&groupMembers).Error; err != nil {
+		s.logger.WithError(err).Error("db exception")
+		return nil, err
+	}
+
+	// 获取群信息
+	groupIDS := make([]uint64, 0, len(groupMembers))
+	groupIDToGroupMemberMap := make(map[uint64]*model.GroupMember, len(groupMembers))
+	for _, groupMember := range groupMembers {
+		groupIDS = append(groupIDS, groupMember.GroupID)
+		groupIDToGroupMemberMap[groupMember.GroupID] = groupMember
+	}
+	var groups []*model.Group
+	if err := s.db.Where("id in ?", groupIDS).Find(&groups).Error; err != nil {
+		return nil, err
+	}
+
+	// 装配
+	groupInfos := make([]*GroupInfo, 0, len(groups))
+	for _, group := range groups {
+		groupMember := groupIDToGroupMemberMap[group.ID]
+		groupInfos = append(groupInfos, &GroupInfo{
+			GroupID:                      group.ID,
+			Name:                         group.Name,
+			Icon:                         group.Icon,
+			Members:                      group.Members,
+			Notice:                       group.Notice,
+			IsJoinApplication:            group.IsJoinApplication,
+			IsInviteJoinGroupNeedConfirm: group.IsInviteJoinGroupNeedConfirm,
+			IsDisturb:                    groupMember.IsDisturb,
+			IsTop:                        groupMember.IsTop,
+			IsShowNickName:               groupMember.IsShowNickName,
+		})
+	}
+	return &GetGroupInfosRsp{
+		GroupInfos: groupInfos,
+	}, nil
 }
 
 // CreateGroup 创建群
@@ -137,15 +188,16 @@ func (s *Service) CreateGroup(req *CreateGroupReq) (*CreateGroupRsp, error) {
 	}
 
 	// 响应
-	return &CreateGroupRsp{GroupInfo: &GroupInfo{
-		GroupID:                      group.ID,
-		Name:                         group.Name,
-		Icon:                         group.Icon,
-		Members:                      group.Members,
-		Notice:                       group.Notice,
-		IsJoinApplication:            group.IsJoinApplication,
-		IsInviteJoinGroupNeedConfirm: group.IsInviteJoinGroupNeedConfirm,
-	}}, nil
+	getGroupInfosRsp, err := s.GetGroupInfos(&GetGroupInfosReq{
+		UserID: req.UserID,
+		Condition: &GetGroupInfosReqCondition{
+			GroupID: group.ID,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &CreateGroupRsp{GroupInfo: getGroupInfosRsp.GroupInfos[0]}, nil
 }
 
 // 发送文本消息，给senderID和receiverID各发一条
