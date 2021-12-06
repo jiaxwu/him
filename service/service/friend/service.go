@@ -148,6 +148,20 @@ func (s *Service) getFriendInfoByFriendID(userID, friendID uint64) (*FriendInfo,
 	}, nil
 }
 
+// IsFriend 是否是朋友
+func (s Service) IsFriend(req *IsFriendReq) (*IsFriendRsp, error) {
+	var count int64
+	if err := s.db.Model(model.Friend{}).Where("user_id = ? and friend_id = ? and is_friend = ?",
+		req.UserID, req.FriendID, true).Limit(1).Count(&count).Error; err != nil {
+		return nil, err
+	}
+	var rsp IsFriendRsp
+	if count != 0 {
+		rsp.IsFriend = true
+	}
+	return &rsp, nil
+}
+
 // UpdateFriendInfo 更新好友信息
 func (s *Service) UpdateFriendInfo(req *UpdateFriendInfoReq) (*UpdateFriendInfoRsp, error) {
 	// 获取当前好友信息
@@ -186,18 +200,22 @@ func (s *Service) UpdateFriendInfo(req *UpdateFriendInfoReq) (*UpdateFriendInfoR
 	}
 	if err := s.db.Transaction(func(tx *gorm.DB) error {
 		// 修改好友信息
-		if err := s.db.Model(model.Friend{}).Where("user_id = ? and friend_id = ?", req.UserID, req.FriendID).
+		if err := tx.Model(model.Friend{}).Where("user_id = ? and friend_id = ?", req.UserID, req.FriendID).
 			Update(column, value).Error; err != nil {
 			s.logger.WithError(err).Error("db exception")
 			return err
 		}
 
 		// 通知用户的多个端
-		return s.sendEventMsg([]uint64{req.UserID}, &msg.EventMsg{
-			FriendInfoChange: &msg.FriendInfoChangeEventMsg{
-				FriendID: req.FriendID,
+		_, err := s.senderService.SendEventMsg(&sender.SendEventMsgReq{
+			UserIDS: []uint64{req.UserID},
+			EventMsg: &msg.EventMsg{
+				FriendInfoChange: &msg.FriendInfoChangeEventMsg{
+					FriendID: req.FriendID,
+				},
 			},
 		})
+		return err
 	}); err != nil {
 		return nil, err
 	}
@@ -312,11 +330,15 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 		}
 
 		// 通知对方和自己的其他端有新的好友申请，发送新添加好友申请事件消息
-		return s.sendEventMsg([]uint64{req.ApplicantID, req.FriendID}, &msg.EventMsg{
-			NewAddFriendApplication: &msg.NewAddFriendApplicationEventMsg{
-				AddFriendApplicationID: addFriendApplication.ID,
+		_, err := s.senderService.SendEventMsg(&sender.SendEventMsgReq{
+			UserIDS: []uint64{req.ApplicantID, req.FriendID},
+			EventMsg: &msg.EventMsg{
+				NewAddFriendApplication: &msg.NewAddFriendApplicationEventMsg{
+					AddFriendApplicationID: addFriendApplication.ID,
+				},
 			},
 		})
+		return err
 	}); err != nil {
 		return nil, err
 	}
@@ -390,11 +412,15 @@ func (s *Service) UpdateAddFriendApplication(req *UpdateAddFriendApplicationReq)
 		}
 
 		// 通知对方和自己的其他端有好友申请改变
-		return s.sendEventMsg([]uint64{addFriendApplication.FriendID, addFriendApplication.ApplicantID}, &msg.EventMsg{
-			AddFriendApplicationChange: &msg.AddFriendApplicationChangeEventMsg{
-				AddFriendApplicationID: addFriendApplication.ID,
+		_, err := s.senderService.SendEventMsg(&sender.SendEventMsgReq{
+			UserIDS: []uint64{addFriendApplication.FriendID, addFriendApplication.ApplicantID},
+			EventMsg: &msg.EventMsg{
+				AddFriendApplicationChange: &msg.AddFriendApplicationChangeEventMsg{
+					AddFriendApplicationID: addFriendApplication.ID,
+				},
 			},
 		})
+		return err
 	}); err != nil {
 		s.logger.WithError(err).Error("transaction exception")
 		return nil, err
@@ -410,37 +436,6 @@ func (s *Service) UpdateAddFriendApplication(req *UpdateAddFriendApplicationReq)
 		Status:                 AddFriendApplicationStatus(addFriendApplication.Status),
 		ApplicationTime:        addFriendApplication.ApplicationTime,
 	}}, nil
-}
-
-// 发送事件消息
-func (s *Service) sendEventMsg(userIDS []uint64, eventMsg *msg.EventMsg) error {
-	msgs := make([]*msg.Msg, 0, len(userIDS))
-	now := uint64(time.Now().Unix())
-	msgID := s.idGenerator.GenMsgID()
-	sysSender := &msg.Sender{
-		Type: msg.SenderTypeSys,
-	}
-	content := msg.Content{
-		EventMsg: eventMsg,
-	}
-
-	// 发送
-	for _, userID := range userIDS {
-		msgs = append(msgs, &msg.Msg{
-			UserID: userID,
-			MsgID:  msgID,
-			Sender: sysSender,
-			Receiver: &msg.Receiver{
-				Type:       msg.ReceiverTypeUser,
-				ReceiverID: userID,
-			},
-			SendTime:    now,
-			ArrivalTime: now,
-			Content:     &content,
-		})
-	}
-	_, err := s.senderService.SendMsgs(&sender.SendMsgsReq{Msgs: msgs})
-	return err
 }
 
 // 发送文本消息，给senderID和receiverID各发一条

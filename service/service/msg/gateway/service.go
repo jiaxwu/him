@@ -4,8 +4,8 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"him/model"
 	"him/service/common"
+	"him/service/service/friend"
 	"him/service/service/msg"
 	"him/service/service/msg/sender"
 	"time"
@@ -17,16 +17,18 @@ type Service struct {
 	logger        *logrus.Logger
 	senderService *sender.Service
 	idGenerator   *msg.IDGenerator
+	friendService *friend.Service
 }
 
 func NewService(senderService *sender.Service, rdb *redis.Client, logger *logrus.Logger,
-	idGenerator *msg.IDGenerator, db *gorm.DB) *Service {
+	idGenerator *msg.IDGenerator, db *gorm.DB, friendService *friend.Service) *Service {
 	return &Service{
 		rdb:           rdb,
 		logger:        logger,
 		senderService: senderService,
 		idGenerator:   idGenerator,
 		db:            db,
+		friendService: friendService,
 	}
 }
 
@@ -60,12 +62,14 @@ func (s *Service) SendMsg(req *SendMsgReq) (*SendMsgRsp, error) {
 func (s *Service) sendToUser(req *SendMsgReq) (*SendMsgRsp, error) {
 	// 接收者和发送者必须是好友
 	if req.Sender.Type == msg.SenderTypeUser {
-		var count int64
-		if err := s.db.Model(model.Friend{}).Where("user_id = ? and friend_id = ? and is_friend = ?",
-			req.Sender.SenderID, req.Receiver.ReceiverID, true).Limit(1).Count(&count).Error; err != nil {
+		rsp, err := s.friendService.IsFriend(&friend.IsFriendReq{
+			UserID:   req.Sender.SenderID,
+			FriendID: req.Receiver.ReceiverID,
+		})
+		if err != nil {
 			return nil, err
 		}
-		if count == 0 {
+		if !rsp.IsFriend {
 			return nil, ErrCodeInvalidParameterNotIsFriend
 		}
 	}

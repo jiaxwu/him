@@ -35,6 +35,17 @@ type GetFriendInfosRsp struct {
 	FriendInfos []*FriendInfo `json:"FriendInfos"` // 好友信息列表
 }
 
+// IsFriendReq 是否是朋友请求
+type IsFriendReq struct {
+	UserID   uint64 `json:"UserID"`   // 用户编号
+	FriendID uint64 `json:"FriendID"` // 好友编号
+}
+
+// IsFriendRsp 是否是朋友响应
+type IsFriendRsp struct {
+	IsFriend bool `json:"IsFriend"` // 是否是好友
+}
+
 // UpdateFriendInfoReq 更新好友信息请求
 type UpdateFriendInfoReq struct {
 	UserID   uint64                     `json:"UserID"`   // 用户编号

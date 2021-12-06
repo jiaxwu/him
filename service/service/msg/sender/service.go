@@ -5,15 +5,20 @@ import (
 	"encoding/json"
 	"github.com/Shopify/sarama"
 	"him/service/service/msg"
+	"time"
 )
 
 // Service 消息发送者
 type Service struct {
 	sendMsgProducer sarama.SyncProducer
+	idGenerator     *msg.IDGenerator
 }
 
-func NewService(sendMsgProducer sarama.SyncProducer) *Service {
-	return &Service{sendMsgProducer: sendMsgProducer}
+func NewService(sendMsgProducer sarama.SyncProducer, idGenerator *msg.IDGenerator) *Service {
+	return &Service{
+		sendMsgProducer: sendMsgProducer,
+		idGenerator:     idGenerator,
+	}
 }
 
 // SendMsgs 发送消息到消息队列
@@ -31,6 +36,39 @@ func (s *Service) SendMsgs(req *SendMsgsReq) (*SendMsgsRsp, error) {
 		}
 	}
 	return &SendMsgsRsp{}, nil
+}
+
+// SendEventMsg 发送事件消息
+func (s *Service) SendEventMsg(req *SendEventMsgReq) (*SendEventMsgRsp, error) {
+	msgs := make([]*msg.Msg, 0, len(req.UserIDS))
+	now := uint64(time.Now().Unix())
+	msgID := s.idGenerator.GenMsgID()
+	sysSender := &msg.Sender{
+		Type: msg.SenderTypeSys,
+	}
+	content := msg.Content{
+		EventMsg: req.EventMsg,
+	}
+
+	// 发送
+	for _, userID := range req.UserIDS {
+		msgs = append(msgs, &msg.Msg{
+			UserID: userID,
+			MsgID:  msgID,
+			Sender: sysSender,
+			Receiver: &msg.Receiver{
+				Type:       msg.ReceiverTypeUser,
+				ReceiverID: userID,
+			},
+			SendTime:    now,
+			ArrivalTime: now,
+			Content:     &content,
+		})
+	}
+	if _, err := s.SendMsgs(&SendMsgsReq{Msgs: msgs}); err != nil {
+		return nil, err
+	}
+	return &SendEventMsgRsp{}, nil
 }
 
 // uint64转bytes
