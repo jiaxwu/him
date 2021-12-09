@@ -15,10 +15,10 @@ type UploadReq struct {
 
 // UploadRsp 上传响应
 type UploadRsp struct {
-	Image *msg.Image `json:"Image"` // 图片
-	Voice *msg.Voice `json:"Voice"` // 语音
-	Video *msg.Video `json:"Video"` // 视频
-	File  *msg.File  `json:"File"`  // 文件
+	Image *msg.Image `json:"Image,omitempty"` // 图片
+	Voice *msg.Voice `json:"Voice,omitempty"` // 语音
+	Video *msg.Video `json:"Video,omitempty"` // 视频
+	File  *msg.File  `json:"File,omitempty"`  // 文件
 }
 
 // GetSeqReq 获取用户序列号请求

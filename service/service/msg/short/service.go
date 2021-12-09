@@ -16,6 +16,7 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+	"mime"
 	"mime/multipart"
 )
 
@@ -92,16 +93,13 @@ func (s *Service) checkImageInfo(imageFile *multipart.FileHeader) (msgImage *msg
 	if err != nil {
 		return nil, "", err
 	}
-	if contentType = ImageFormatToContentTypeMap[imageFormat]; contentType == "" {
-		return nil, "", ErrCodeInvalidParameterImageFormat
-	}
 	return &msg.Image{
 		URL:    "",
 		Width:  config.Bounds().Dx(),
 		Height: config.Bounds().Dy(),
 		Format: imageFormat,
 		Size:   imageFile.Size,
-	}, contentType, nil
+	}, mime.TypeByExtension("." + imageFormat), nil
 }
 
 // GetSeq 获取序列
