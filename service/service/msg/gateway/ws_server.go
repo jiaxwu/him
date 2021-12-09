@@ -34,12 +34,12 @@ type Server struct {
 	rdb             *redis.Client
 	logger          *logrus.Logger
 	mutex           sync.Mutex
-	senderService   *Service
+	service         *Service
 }
 
 // NewGatewayServer 创建一个长连接入口
 func NewGatewayServer(engine *gin.Engine, wrapper *wrap.Wrapper, logger *logrus.Logger,
-	authService *auth.Service, rdb *redis.Client, senderService *Service) *Server {
+	authService *auth.Service, rdb *redis.Client, service *Service) *Server {
 	server := Server{
 		upgrader: &websocket.Upgrader{
 			HandshakeTimeout: WSHandshakeTimeout,
@@ -52,7 +52,7 @@ func NewGatewayServer(engine *gin.Engine, wrapper *wrap.Wrapper, logger *logrus.
 		authService:     authService,
 		rdb:             rdb,
 		logger:          logger,
-		senderService:   senderService,
+		service:         service,
 	}
 	engine.GET("/msg", wrapper.Wrap(func(w http.ResponseWriter, r *http.Request) {
 		// 建立连接
@@ -108,7 +108,7 @@ func (h *Server) sendMsg(session *auth.Session, reqBytes []byte) *common.Rsp {
 		SenderID: session.UserID,
 		Terminal: session.Terminal,
 	}
-	sendMsgRsp, err := h.senderService.SendMsg(&req)
+	sendMsgRsp, err := h.service.SendMsg(&req)
 	if err != nil {
 		return common.FailureRsp(err)
 	}
