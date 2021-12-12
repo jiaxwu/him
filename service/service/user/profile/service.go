@@ -11,9 +11,9 @@ import (
 	httpHeaderKey "github.com/jiaxwu/him/common/constant/http/header/key"
 	"github.com/jiaxwu/him/common/jsons"
 	"github.com/jiaxwu/him/conf"
-	"github.com/jiaxwu/him/model"
 	"github.com/jiaxwu/him/service/common"
-	"github.com/jiaxwu/him/service/service/auth"
+	auth2 "github.com/jiaxwu/him/service/service/user/auth"
+	"github.com/jiaxwu/him/service/service/user/profile/model"
 	"github.com/sirupsen/logrus"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"gorm.io/gorm"
@@ -29,12 +29,12 @@ type Service struct {
 	config                         *conf.Config
 	userAvatarBucketOSSClient      *cos.Client
 	userProfileUpdateEventProducer sarama.AsyncProducer
-	authService                    *auth.Service
+	authService                    *auth2.Service
 }
 
 func NewService(userAvatarBucketOSSClient *cos.Client, userProfileUpdateEventProducer sarama.AsyncProducer,
 	db *gorm.DB, validate *validator.Validate, logger *logrus.Logger, config *conf.Config,
-	authService *auth.Service) *Service {
+	authService *auth2.Service) *Service {
 	return &Service{
 		db:                             db,
 		validate:                       validate,
@@ -81,7 +81,7 @@ func (s *Service) GetUserProfile(req *GetUserProfileReq) (*GetUserProfileRsp, er
 // initUserProfile 初始化用户信息
 func (s *Service) initUserProfile(userID uint64) (*UserProfile, error) {
 	// 判断用户是否存在
-	if _, err := s.authService.GetUser(&auth.GetUserReq{UserID: userID}); err != nil {
+	if _, err := s.authService.GetUser(&auth2.GetUserReq{UserID: userID}); err != nil {
 		return nil, err
 	}
 

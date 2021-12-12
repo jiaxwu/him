@@ -7,12 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/websocket"
-	"github.com/sirupsen/logrus"
 	httpQueryKey "github.com/jiaxwu/him/common/constant/http/query/key"
 	"github.com/jiaxwu/him/service/common"
-	"github.com/jiaxwu/him/service/service/auth"
 	"github.com/jiaxwu/him/service/service/msg"
+	auth2 "github.com/jiaxwu/him/service/service/user/auth"
 	"github.com/jiaxwu/him/service/wrap"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"sync"
 	"time"
@@ -21,7 +21,7 @@ import (
 // Conn 一个连接
 type Conn struct {
 	conn    *websocket.Conn
-	session *auth.Session
+	session *auth2.Session
 	mutex   sync.Mutex
 }
 
@@ -30,7 +30,7 @@ type Server struct {
 	upgrader        *websocket.Upgrader
 	sessionIDToConn map[string]*Conn
 	connToSessionID map[*Conn]string
-	authService     *auth.Service
+	authService     *auth2.Service
 	rdb             *redis.Client
 	logger          *logrus.Logger
 	mutex           sync.Mutex
@@ -39,7 +39,7 @@ type Server struct {
 
 // NewGatewayServer 创建一个长连接入口
 func NewGatewayServer(engine *gin.Engine, wrapper *wrap.Wrapper, logger *logrus.Logger,
-	authService *auth.Service, rdb *redis.Client, service *Service) *Server {
+	authService *auth2.Service, rdb *redis.Client, service *Service) *Server {
 	server := Server{
 		upgrader: &websocket.Upgrader{
 			HandshakeTimeout: WSHandshakeTimeout,
@@ -98,7 +98,7 @@ func (h *Server) handle(conn *Conn) {
 }
 
 // 发送消息
-func (h *Server) sendMsg(session *auth.Session, reqBytes []byte) *common.Rsp {
+func (h *Server) sendMsg(session *auth2.Session, reqBytes []byte) *common.Rsp {
 	var req SendMsgReq
 	if err := json.Unmarshal(reqBytes, &req); err != nil {
 		return common.FailureRsp(common.ErrCodeInvalidParameter)
@@ -129,7 +129,7 @@ func (h *Server) buildConn(w http.ResponseWriter, r *http.Request) (*Conn, error
 	if token == "" {
 		return nil, errors.New("token is empty")
 	}
-	rsp, err := h.authService.GetSession(&auth.GetSessionReq{
+	rsp, err := h.authService.GetSession(&auth2.GetSessionReq{
 		Token: token,
 	})
 	if err != nil {

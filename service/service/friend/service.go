@@ -4,12 +4,13 @@ import (
 	"errors"
 	"github.com/go-playground/validator/v10"
 	"github.com/jiaxwu/him/conf"
-	"github.com/jiaxwu/him/model"
 	"github.com/jiaxwu/him/service/common"
-	"github.com/jiaxwu/him/service/service/auth"
+	"github.com/jiaxwu/him/service/service/friend/model"
 	"github.com/jiaxwu/him/service/service/msg"
 	"github.com/jiaxwu/him/service/service/msg/sender"
+	auth2 "github.com/jiaxwu/him/service/service/user/auth"
 	"github.com/jiaxwu/him/service/service/user/profile"
+	model2 "github.com/jiaxwu/him/service/service/user/profile/model"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -23,11 +24,13 @@ type Service struct {
 	config         *conf.Config
 	profileService *profile.Service
 	senderService  *sender.Service
+	authService    *auth2.Service
 	idGenerator    *msg.IDGenerator
 }
 
 func NewService(db *gorm.DB, validate *validator.Validate, logger *logrus.Logger, config *conf.Config,
-	profileService *profile.Service, senderService *sender.Service, idGenerator *msg.IDGenerator) *Service {
+	profileService *profile.Service, senderService *sender.Service, authService *auth2.Service,
+	idGenerator *msg.IDGenerator) *Service {
 	return &Service{
 		db:             db,
 		validate:       validate,
@@ -35,6 +38,7 @@ func NewService(db *gorm.DB, validate *validator.Validate, logger *logrus.Logger
 		config:         config,
 		profileService: profileService,
 		senderService:  senderService,
+		authService:    authService,
 		idGenerator:    idGenerator,
 	}
 }
@@ -43,8 +47,8 @@ func NewService(db *gorm.DB, validate *validator.Validate, logger *logrus.Logger
 func (s *Service) GetFriendInfos(req *GetFriendInfosReq) (*GetFriendInfosRsp, error) {
 	// 如果用户名不为空，通过用户名查询好友编号
 	if req.Condition.Username != "" {
-		var userProfile model.UserProfile
-		err := s.db.Model(model.UserProfile{}).Where("username = ?", req.Condition.Username).
+		var userProfile model2.UserProfile
+		err := s.db.Model(model2.UserProfile{}).Where("username = ?", req.Condition.Username).
 			Take(&userProfile).Error
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, err
@@ -86,12 +90,12 @@ func (s *Service) getFriendInfosIfIsFriend(userID uint64) (*GetFriendInfosRsp, e
 	for _, friend := range friends {
 		friendIDS = append(friendIDS, friend.FriendID)
 	}
-	var profiles []*model.UserProfile
+	var profiles []*model2.UserProfile
 	if err := s.db.Where("user_id in ?", friendIDS).Find(&profiles).Error; err != nil {
 		return nil, err
 	}
 	// 关联
-	userIDToProfileMap := make(map[uint64]*model.UserProfile, len(profiles))
+	userIDToProfileMap := make(map[uint64]*model2.UserProfile, len(profiles))
 	for _, userProfile := range profiles {
 		userIDToProfileMap[userProfile.UserID] = userProfile
 	}
@@ -281,14 +285,8 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 	}
 
 	// 判断好友是否存在
-	var user auth.User
-	err := s.db.Take(&user, req.FriendID).Error
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		s.logger.WithError(err).Error("db exception")
+	if _, err := s.authService.GetUser(&auth2.GetUserReq{UserID: req.FriendID}); err != nil {
 		return nil, err
-	}
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, common.ErrCodeInvalidParameter
 	}
 
 	// 检查好友是否已经是好友

@@ -2,7 +2,7 @@ package friend
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jiaxwu/him/service/service/auth"
+	"github.com/jiaxwu/him/service/service/user/auth"
 	"github.com/jiaxwu/him/service/wrap"
 )
 

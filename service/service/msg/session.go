@@ -2,7 +2,7 @@ package msg
 
 import (
 	"fmt"
-	"github.com/jiaxwu/him/service/service/auth"
+	"github.com/jiaxwu/him/service/service/user/auth"
 )
 
 // SessionID 会话编号

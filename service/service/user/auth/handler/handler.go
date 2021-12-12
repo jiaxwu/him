@@ -3,32 +3,32 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jiaxwu/him/service/common"
-	"github.com/jiaxwu/him/service/service/auth"
+	auth2 "github.com/jiaxwu/him/service/service/user/auth"
 	"github.com/jiaxwu/him/service/wrap"
 )
 
-func RegisterHandler(engine *gin.Engine, authService *auth.Service, wrapper *wrap.Wrapper) {
-	engine.POST("auth/login", wrapper.Wrap(authService.Login, &wrap.Config{
+func RegisterHandler(engine *gin.Engine, authService *auth2.Service, wrapper *wrap.Wrapper) {
+	engine.POST("user/auth/login", wrapper.Wrap(authService.Login, &wrap.Config{
 		NotNeedLogin: true,
 	}))
 
-	engine.POST("auth/sm-ver-code/send", wrapper.Wrap(authService.SendSmVerCode, &wrap.Config{
+	engine.POST("user/auth/sm-ver-code/send", wrapper.Wrap(authService.SendSmVerCode, &wrap.Config{
 		NotNeedLogin: true,
 	}))
 
-	engine.POST("auth/logout", wrapper.Wrap(func(req *auth.LogoutReq, header *common.Header,
-		session *auth.Session) (*auth.LogoutRsp, error) {
+	engine.POST("user/auth/logout", wrapper.Wrap(func(req *auth2.LogoutReq, header *common.Header,
+		session *auth2.Session) (*auth2.LogoutRsp, error) {
 		req.Token = header.Token
 		req.Terminal = session.Terminal
 		req.UserID = session.UserID
 		return authService.Logout(req)
 	}, &wrap.Config{
-		UserTypes: []auth.UserType{
-			auth.UserTypeUser,
+		UserTypes: []auth2.UserType{
+			auth2.UserTypeUser,
 		},
 	}))
 
-	engine.POST("auth/password/change", wrapper.Wrap(authService.ChangePassword, &wrap.Config{
+	engine.POST("user/auth/password/change", wrapper.Wrap(authService.ChangePassword, &wrap.Config{
 		NotNeedLogin: true,
 	}))
 }

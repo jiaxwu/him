@@ -3,11 +3,11 @@ package profile
 import (
 	"context"
 	"github.com/bits-and-blooms/bloom/v3"
+	"github.com/jiaxwu/him/service/service/user/profile/model"
 	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"gorm.io/gorm"
-	"github.com/jiaxwu/him/model"
 	"log"
 	"time"
 )

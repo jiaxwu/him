@@ -2,7 +2,7 @@ package auth
 
 import (
 	"errors"
-	"github.com/jiaxwu/him/service/service/auth/model"
+	"github.com/jiaxwu/him/service/service/user/auth/model"
 	"gorm.io/gorm"
 )
 

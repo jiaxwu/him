@@ -20,8 +20,12 @@ type UserProfile struct {
 	LastOnLineTime uint64 `json:"LastOnLineTime"`
 }
 
+// GetUserProfileReq 获取用户信息
+// 其中根据UserID获取的情况，如果用户
 type GetUserProfileReq struct {
-	UserID uint64 `json:"userID"`
+	UserID   uint64   `json:"UserID"`
+	Username string   `json:"Username"`
+	UserIDS  []uint64 `json:"UserIDS"`
 }
 
 type GetUserProfileRsp struct {

@@ -1,14 +1,15 @@
 package group
 
 import (
-	"github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 	"github.com/jiaxwu/him/conf"
-	"github.com/jiaxwu/him/model"
 	"github.com/jiaxwu/him/service/common"
 	"github.com/jiaxwu/him/service/service/friend"
+	model2 "github.com/jiaxwu/him/service/service/group/model"
 	"github.com/jiaxwu/him/service/service/msg"
 	"github.com/jiaxwu/him/service/service/msg/sender"
+	"github.com/jiaxwu/him/service/service/user/profile/model"
+	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 	"strconv"
 	"strings"
 	"time"
@@ -38,7 +39,7 @@ func NewService(db *gorm.DB, logger *logrus.Logger, config *conf.Config, senderS
 // GetGroupInfos 获取群信息
 func (s *Service) GetGroupInfos(req *GetGroupInfosReq) (*GetGroupInfosRsp, error) {
 	// 获取群编号
-	query := s.db.Model(&model.GroupMember{})
+	query := s.db.Model(&model2.GroupMember{})
 	if req.Condition.GroupID != 0 {
 		query = query.Where("member_id = ? and group_id = ?", req.UserID, req.Condition.GroupID)
 	} else if req.Condition.All {
@@ -53,7 +54,7 @@ func (s *Service) GetGroupInfos(req *GetGroupInfosReq) (*GetGroupInfosRsp, error
 	}
 
 	// 获取群信息
-	var groups []*model.Group
+	var groups []*model2.Group
 	if err := s.db.Where("id in ?", groupIDS).Find(&groups).Error; err != nil {
 		return nil, err
 	}
@@ -111,7 +112,7 @@ func (s *Service) CreateGroup(req *CreateGroupReq) (*CreateGroupRsp, error) {
 		}
 	}
 
-	group := model.Group{
+	group := model2.Group{
 		Name:      req.Name,
 		Icon:      req.Icon,
 		Members:   uint32(len(memberSet)),
@@ -127,11 +128,11 @@ func (s *Service) CreateGroup(req *CreateGroupReq) (*CreateGroupRsp, error) {
 
 		now := time.Now().Unix()
 		// 创建群成员
-		groupMembers := make([]*model.GroupMember, 0, len(memberSet))
+		groupMembers := make([]*model2.GroupMember, 0, len(memberSet))
 		memberIDS := make([]uint64, 0, len(memberSet))
 		for memberID, role := range memberSet {
 			memberIDS = append(memberIDS, memberID)
-			groupMembers = append(groupMembers, &model.GroupMember{
+			groupMembers = append(groupMembers, &model2.GroupMember{
 				GroupID:        group.ID,
 				MemberID:       memberID,
 				Role:           string(role),

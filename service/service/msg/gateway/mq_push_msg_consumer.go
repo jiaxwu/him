@@ -5,10 +5,10 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"github.com/Shopify/sarama"
-	"github.com/sirupsen/logrus"
 	"github.com/jiaxwu/him/conf"
-	"github.com/jiaxwu/him/service/service/auth"
 	"github.com/jiaxwu/him/service/service/msg"
+	"github.com/jiaxwu/him/service/service/user/auth"
+	"github.com/sirupsen/logrus"
 )
 
 // PushMsgConsumer 推送消息消费者
