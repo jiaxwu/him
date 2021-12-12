@@ -11,7 +11,6 @@ type Config struct {
 	COS      *COS
 	Server   *Server
 	SMS      *SMS
-	RocketMQ *RocketMQ
 	Logger   *Logger
 	Kafka    *Kafka
 	MongoDB  *MongoDB
@@ -57,11 +56,6 @@ type SMS struct {
 	Region      string // 区域
 	SMSSDKAppID string // 应用ID
 	SignName    string // 签名
-}
-
-type RocketMQ struct {
-	Topic        string   // 主题
-	NameSrvAddrs []string // 名字服务器地址
 }
 
 type Logger struct {
