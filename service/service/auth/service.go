@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/apache/rocketmq-client-go/v2"
-	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v8"
@@ -23,25 +21,23 @@ import (
 )
 
 type Service struct {
-	db                *gorm.DB
-	rdb               *redis.Client
-	validate          *validator.Validate
-	logger            *logrus.Logger
-	smService         *sm.Service
-	authEventProducer rocketmq.Producer
-	config            *conf.Config
+	db        *gorm.DB
+	rdb       *redis.Client
+	validate  *validator.Validate
+	logger    *logrus.Logger
+	smService *sm.Service
+	config    *conf.Config
 }
 
-func NewService(authEventProducer rocketmq.Producer, db *gorm.DB, rdb *redis.Client, validate *validator.Validate,
+func NewService(db *gorm.DB, rdb *redis.Client, validate *validator.Validate,
 	logger *logrus.Logger, smService *sm.Service, config *conf.Config) *Service {
 	return &Service{
-		db:                db,
-		rdb:               rdb,
-		validate:          validate,
-		logger:            logger,
-		smService:         smService,
-		config:            config,
-		authEventProducer: authEventProducer,
+		db:        db,
+		rdb:       rdb,
+		validate:  validate,
+		logger:    logger,
+		smService: smService,
+		config:    config,
 	}
 }
 
@@ -54,30 +50,14 @@ func (s *Service) Login(req *LoginReq) (rsp *LoginRsp, err error) {
 
 	// 短信验证码登录
 	if req.Type == LoginTypeSmVerCode {
-		rsp, err = s.loginBySmVerCode(req.Terminal, req.Content.SmVerCodeLoginContent)
-		if err != nil {
-			return nil, err
-		}
+		return s.loginBySmVerCode(req.Terminal, req.Content.SmVerCodeLoginContent)
 	} else
 	// 密码登录
 	if req.Type == LoginTypePassword {
-		rsp, err = s.loginByPassword(req.Terminal, req.Content.PasswordLoginContent)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		return nil, common.ErrCodeInvalidParameter
+		return s.loginByPassword(req.Terminal, req.Content.PasswordLoginContent)
 	}
 
-	// 发送登录事件
-	s.sendLoginEvent(&LoginEvent{
-		UserID:    rsp.UserID,
-		LoginTime: uint64(time.Now().Unix()),
-		Terminal:  req.Terminal,
-		LoginType: req.Type,
-	})
-
-	return rsp, nil
+	return nil, common.ErrCodeInvalidParameter
 }
 
 // 短信验证码登录
@@ -394,13 +374,6 @@ func (s *Service) Logout(req *LogoutReq) (*LogoutRsp, error) {
 		return nil, err
 	}
 
-	// 发送退出登录事件
-	s.sendLogoutEvent(&LogoutEvent{
-		UserID:     req.UserID,
-		Terminal:   req.Terminal,
-		LogoutTime: uint64(time.Now().Unix()),
-	})
-
 	return &LogoutRsp{}, nil
 }
 
@@ -483,28 +456,4 @@ func (s *Service) tokenRedisKey(token string) string {
 // antiTokenRedisKey 反向Token Redis Key
 func (s *Service) antiTokenRedisKey(userID uint64, terminal Terminal) string {
 	return fmt.Sprintf("auth:token:anti:%d:%s", userID, terminal)
-}
-
-// sendLoginEvent 发送登录事件
-func (s *Service) sendLoginEvent(loginEvent *LoginEvent) {
-	body, _ := json.Marshal(loginEvent)
-	message := primitive.NewMessage(s.config.RocketMQ.Topic, body).WithTag(LoginEventTag)
-	s.sendEventMessage(message)
-}
-
-// sendLogoutEvent 发送退出登录事件
-func (s *Service) sendLogoutEvent(logoutEvent *LogoutEvent) {
-	body, _ := json.Marshal(logoutEvent)
-	message := primitive.NewMessage(s.config.RocketMQ.Topic, body).WithTag(LogoutEventTag)
-	s.sendEventMessage(message)
-}
-
-// sendEventMessage 发送事件消息
-func (s *Service) sendEventMessage(message *primitive.Message) {
-	resCB := func(ctx context.Context, result *primitive.SendResult, err error) {
-		s.logger.WithField("res", result).Info("send msg success")
-	}
-	if err := s.authEventProducer.SendAsync(context.Background(), resCB, message); err != nil {
-		s.logger.WithField("err", err).Error("consumer msg exception")
-	}
 }

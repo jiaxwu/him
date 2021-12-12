@@ -1,7 +1,6 @@
 package main
 
 import (
-	"go.uber.org/fx"
 	"github.com/jiaxwu/him/conf"
 	"github.com/jiaxwu/him/conf/db"
 	"github.com/jiaxwu/him/conf/logger"
@@ -21,6 +20,7 @@ import (
 	"github.com/jiaxwu/him/service/service/sm"
 	"github.com/jiaxwu/him/service/service/user/profile"
 	"github.com/jiaxwu/him/service/wrap"
+	"go.uber.org/fx"
 )
 
 func main() {
@@ -44,25 +44,18 @@ func NewApp() *fx.App {
 				fx.ResultTags(`name:"MongoOfflineMsgCollection"`),
 			),
 			sm.NewService,
-			fx.Annotate(
-				auth.NewAuthEventProducer,
-				fx.ResultTags(`name:"AuthEventProducer"`),
-			),
-			fx.Annotate(
-				auth.NewService,
-				fx.ParamTags(`name:"AuthEventProducer"`),
-			),
+			auth.NewService,
 			fx.Annotate(
 				profile.NewUserAvatarBucketOSSClient,
 				fx.ResultTags(`name:"UserAvatarBucketOSSClient"`),
 			),
 			fx.Annotate(
-				profile.NewUserProfileEventProducer,
-				fx.ResultTags(`name:"UserProfileEventProducer"`),
+				profile.NewUserProfileUpdateEventProducer,
+				fx.ResultTags(`name:"UserProfileUpdateEventProducer"`),
 			),
 			fx.Annotate(
 				profile.NewService,
-				fx.ParamTags(`name:"UserAvatarBucketOSSClient"`, `name:"UserProfileEventProducer"`),
+				fx.ParamTags(`name:"UserAvatarBucketOSSClient"`, `name:"UserProfileUpdateEventProducer"`),
 			),
 			msg.NewIDGenerator,
 			fx.Annotate(
@@ -95,7 +88,6 @@ func NewApp() *fx.App {
 			msgShort.RegisterHandler,
 			friend.RegisterHandler,
 			group.RegisterHandler,
-			profile.NewAuthEventConsumer,
 			fx.Annotate(
 				msgTransfer.NewSendMsgConsumer,
 				fx.ParamTags(`name:"PushMsgProducer"`, `name:"MongoOfflineMsgCollection"`),

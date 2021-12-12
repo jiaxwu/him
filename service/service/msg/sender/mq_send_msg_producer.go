@@ -2,8 +2,8 @@ package sender
 
 import (
 	"github.com/Shopify/sarama"
-	"github.com/sirupsen/logrus"
 	"github.com/jiaxwu/him/conf"
+	"github.com/sirupsen/logrus"
 )
 
 // NewSendMsgProducer 创建发送消息生产者
@@ -13,7 +13,7 @@ func NewSendMsgProducer(config *conf.Config, logger *logrus.Logger) sarama.SyncP
 	producerConfig.Producer.RequiredAcks = sarama.WaitForAll
 	producer, err := sarama.NewSyncProducer(config.Kafka.Addrs, producerConfig)
 	if err != nil {
-		logger.WithField("err", err).Fatal("init kafka fail")
+		logger.WithError(err).Fatal("init kafka fail")
 	}
 	return producer
 }

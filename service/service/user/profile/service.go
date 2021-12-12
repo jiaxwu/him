@@ -2,43 +2,43 @@ package profile
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/apache/rocketmq-client-go/v2"
-	"github.com/apache/rocketmq-client-go/v2/primitive"
+	"github.com/Shopify/sarama"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/go-playground/validator/v10"
-	"github.com/sirupsen/logrus"
-	"github.com/tencentyun/cos-go-sdk-v5"
-	"gorm.io/gorm"
+	"github.com/jiaxwu/him/common/bytes"
 	httpHeaderKey "github.com/jiaxwu/him/common/constant/http/header/key"
+	"github.com/jiaxwu/him/common/jsons"
 	"github.com/jiaxwu/him/conf"
 	"github.com/jiaxwu/him/model"
 	"github.com/jiaxwu/him/service/common"
+	"github.com/sirupsen/logrus"
+	"github.com/tencentyun/cos-go-sdk-v5"
+	"gorm.io/gorm"
 	"regexp"
 	"strings"
 	"time"
 )
 
 type Service struct {
-	db                        *gorm.DB
-	validate                  *validator.Validate
-	logger                    *logrus.Logger
-	config                    *conf.Config
-	userAvatarBucketOSSClient *cos.Client
-	userProfileEventProducer  rocketmq.Producer
+	db                             *gorm.DB
+	validate                       *validator.Validate
+	logger                         *logrus.Logger
+	config                         *conf.Config
+	userAvatarBucketOSSClient      *cos.Client
+	userProfileUpdateEventProducer sarama.AsyncProducer
 }
 
-func NewService(userAvatarBucketOSSClient *cos.Client, userProfileEventProducer rocketmq.Producer,
+func NewService(userAvatarBucketOSSClient *cos.Client, userProfileUpdateEventProducer sarama.AsyncProducer,
 	db *gorm.DB, validate *validator.Validate, logger *logrus.Logger, config *conf.Config) *Service {
 	return &Service{
-		db:                        db,
-		validate:                  validate,
-		logger:                    logger,
-		config:                    config,
-		userAvatarBucketOSSClient: userAvatarBucketOSSClient,
-		userProfileEventProducer:  userProfileEventProducer,
+		db:                             db,
+		validate:                       validate,
+		logger:                         logger,
+		config:                         config,
+		userAvatarBucketOSSClient:      userAvatarBucketOSSClient,
+		userProfileUpdateEventProducer: userProfileUpdateEventProducer,
 	}
 }
 
@@ -172,7 +172,7 @@ func (s *Service) UpdateProfile(req *UpdateProfileReq) (*UpdateProfileRsp, error
 	}
 
 	// 发送用户信息更新事件
-	s.sendProfileUpdateEvent(&UpdateUserProfileEvent{
+	s.sendUserProfileUpdateEvent(&UserProfileUpdateEvent{
 		UserID:     req.UserID,
 		Action:     req.Action,
 		UpdateTime: uint64(time.Now().Unix()),
@@ -236,18 +236,10 @@ func (s *Service) UploadAvatar(req *UploadAvatarReq) (*UploadAvatarRsp, error) {
 }
 
 // 发送用户信息更新事件
-func (s *Service) sendProfileUpdateEvent(event *UpdateUserProfileEvent) {
-	body, _ := json.Marshal(event)
-	message := primitive.NewMessage(s.config.RocketMQ.Topic, body).WithTag(string(TagUpdateUserProfileEvent))
-	s.sendEventMessage(message)
-}
-
-// sendEventMessage 发送事件消息
-func (s *Service) sendEventMessage(message *primitive.Message) {
-	resCB := func(ctx context.Context, result *primitive.SendResult, err error) {
-		s.logger.WithField("res", result).Info("send msg success")
-	}
-	if err := s.userProfileEventProducer.SendAsync(context.Background(), resCB, message); err != nil {
-		s.logger.WithField("err", err).Error("consumer msg exception")
+func (s *Service) sendUserProfileUpdateEvent(event *UserProfileUpdateEvent) {
+	s.userProfileUpdateEventProducer.Input() <- &sarama.ProducerMessage{
+		Topic: UserProfileUpdateEventTopic,
+		Key:   sarama.ByteEncoder(bytes.Uint64ToBytes(event.UserID)),
+		Value: sarama.ByteEncoder(jsons.MarshalToBytes(event)),
 	}
 }
