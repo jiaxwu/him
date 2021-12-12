@@ -1,6 +1,6 @@
 package group
 
-import "him/service/common"
+import "github.com/jiaxwu/him/service/common"
 
 var (
 	ErrCodeInvalidParameterMustBeFriend = common.NewErrCode("InvalidParameter.MustBeFriend",

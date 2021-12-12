@@ -8,9 +8,9 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"him/conf"
-	"him/model"
-	"him/service/service/auth"
+	"github.com/jiaxwu/him/conf"
+	"github.com/jiaxwu/him/model"
+	"github.com/jiaxwu/him/service/service/auth"
 	"strings"
 )
 

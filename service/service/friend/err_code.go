@@ -1,6 +1,6 @@
 package friend
 
-import "him/service/common"
+import "github.com/jiaxwu/him/service/common"
 
 var (
 	ErrCodeInvalidParameterCanNotAddYourself = common.NewErrCode("InvalidParameter.CanNotAddYourself",

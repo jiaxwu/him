@@ -3,7 +3,7 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"him/service/common"
+	"github.com/jiaxwu/him/service/common"
 )
 
 // Recovery 异常恢复

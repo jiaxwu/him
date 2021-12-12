@@ -1,8 +1,8 @@
 package profile
 
 import (
-	httpHeaderValue "him/common/constant/http/header/value"
-	imageFormat "him/common/constant/image/format"
+	httpHeaderValue "github.com/jiaxwu/him/common/constant/http/header/value"
+	imageFormat "github.com/jiaxwu/him/common/constant/image/format"
 	"regexp"
 	"time"
 )

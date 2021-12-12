@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"github.com/Shopify/sarama"
-	"him/service/service/msg"
+	"github.com/jiaxwu/him/service/service/msg"
 	"time"
 )
 

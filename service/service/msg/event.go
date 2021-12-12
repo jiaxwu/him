@@ -1,6 +1,6 @@
 package msg
 
-import "him/service/common"
+import "github.com/jiaxwu/him/service/common"
 
 // Event 事件用于给用户推送消息
 // 会被发送到客户端，不会持久化，不可靠

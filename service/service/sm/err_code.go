@@ -1,6 +1,6 @@
 package sm
 
-import "him/service/common"
+import "github.com/jiaxwu/him/service/common"
 
 var (
 	ErrCodeThrottlingSm = common.NewErrCode("Throttling.Sm", "Too many sm requests within a short time.",

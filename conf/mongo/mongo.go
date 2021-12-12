@@ -2,10 +2,10 @@ package mongo
 
 import (
 	"context"
+	"github.com/jiaxwu/him/conf"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"him/conf"
 )
 
 // NewMongoDB 创建MongoDB实例

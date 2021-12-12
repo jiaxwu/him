@@ -2,7 +2,7 @@ package rdb
 
 import (
 	"github.com/go-redis/redis/v8"
-	"him/conf"
+	"github.com/jiaxwu/him/conf"
 )
 
 func NewRDB(config *conf.Config) *redis.Client {

@@ -4,10 +4,10 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"him/service/common"
-	"him/service/service/friend"
-	"him/service/service/msg"
-	"him/service/service/msg/sender"
+	"github.com/jiaxwu/him/service/common"
+	"github.com/jiaxwu/him/service/service/friend"
+	"github.com/jiaxwu/him/service/service/msg"
+	"github.com/jiaxwu/him/service/service/msg/sender"
 	"time"
 )
 

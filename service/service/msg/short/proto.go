@@ -1,7 +1,7 @@
 package short
 
 import (
-	"him/service/service/msg"
+	"github.com/jiaxwu/him/service/service/msg"
 	"mime/multipart"
 )
 

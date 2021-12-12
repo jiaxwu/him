@@ -2,9 +2,9 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"him/service/common"
-	"him/service/service/auth"
-	"him/service/wrap"
+	"github.com/jiaxwu/him/service/common"
+	"github.com/jiaxwu/him/service/service/auth"
+	"github.com/jiaxwu/him/service/wrap"
 )
 
 func RegisterHandler(engine *gin.Engine, authService *auth.Service, wrapper *wrap.Wrapper) {

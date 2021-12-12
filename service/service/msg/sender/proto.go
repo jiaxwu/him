@@ -1,6 +1,6 @@
 package sender
 
-import "him/service/service/msg"
+import "github.com/jiaxwu/him/service/service/msg"
 
 // SendMsgsReq 发送消息请求
 type SendMsgsReq struct {

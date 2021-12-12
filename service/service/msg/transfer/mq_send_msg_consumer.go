@@ -7,8 +7,8 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
-	"him/conf"
-	"him/service/service/msg"
+	"github.com/jiaxwu/him/conf"
+	"github.com/jiaxwu/him/service/service/msg"
 )
 
 // SendMsgConsumer 发送消息消费者

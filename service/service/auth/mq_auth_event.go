@@ -5,7 +5,7 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/apache/rocketmq-client-go/v2/producer"
 	"github.com/sirupsen/logrus"
-	"him/conf"
+	"github.com/jiaxwu/him/conf"
 )
 
 // NewAuthEventProducer 创建授权认证事件生产者

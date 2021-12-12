@@ -1,7 +1,7 @@
 package gateway
 
 import (
-	"him/service/service/msg"
+	"github.com/jiaxwu/him/service/service/msg"
 )
 
 // SendMsgReq 发送消息请求

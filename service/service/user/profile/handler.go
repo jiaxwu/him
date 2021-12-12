@@ -2,8 +2,8 @@ package profile
 
 import (
 	"github.com/gin-gonic/gin"
-	"him/service/service/auth"
-	"him/service/wrap"
+	"github.com/jiaxwu/him/service/service/auth"
+	"github.com/jiaxwu/him/service/wrap"
 )
 
 func RegisterUserProfileHandler(engine *gin.Engine, service *Service,

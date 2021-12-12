@@ -3,7 +3,7 @@ package server
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	httpHeaderKey "him/common/constant/http/header/key"
+	httpHeaderKey "github.com/jiaxwu/him/common/constant/http/header/key"
 	"net/http"
 )
 

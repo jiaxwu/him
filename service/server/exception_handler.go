@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"him/service/common"
+	"github.com/jiaxwu/him/service/common"
 	"net/http"
 )
 

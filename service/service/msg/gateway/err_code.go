@@ -1,6 +1,6 @@
 package gateway
 
-import "him/service/common"
+import "github.com/jiaxwu/him/service/common"
 
 var (
 	ErrCodeWebsocketUpgradeException = common.NewErrCode("Websocket.UpgradeException",

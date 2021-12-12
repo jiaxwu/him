@@ -3,7 +3,7 @@ package sender
 import (
 	"github.com/Shopify/sarama"
 	"github.com/sirupsen/logrus"
-	"him/conf"
+	"github.com/jiaxwu/him/conf"
 )
 
 // NewSendMsgProducer 创建发送消息生产者

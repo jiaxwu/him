@@ -6,12 +6,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"him/conf"
-	"him/model"
-	"him/service/common"
-	"him/service/service/msg"
-	"him/service/service/msg/sender"
-	"him/service/service/user/profile"
+	"github.com/jiaxwu/him/conf"
+	"github.com/jiaxwu/him/model"
+	"github.com/jiaxwu/him/service/common"
+	"github.com/jiaxwu/him/service/service/msg"
+	"github.com/jiaxwu/him/service/service/msg/sender"
+	"github.com/jiaxwu/him/service/service/user/profile"
 	"time"
 )
 

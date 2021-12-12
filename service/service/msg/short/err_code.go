@@ -1,6 +1,6 @@
 package short
 
-import "him/service/common"
+import "github.com/jiaxwu/him/service/common"
 
 var (
 	ErrCodeInvalidParameterImageSize = common.NewErrCode("InvalidParameter.Image.Size",

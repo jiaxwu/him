@@ -2,7 +2,7 @@ package short
 
 import (
 	"github.com/tencentyun/cos-go-sdk-v5"
-	"him/conf"
+	"github.com/jiaxwu/him/conf"
 	"net/http"
 	"net/url"
 )

@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"github.com/Shopify/sarama"
 	"github.com/sirupsen/logrus"
-	"him/conf"
-	"him/service/service/auth"
-	"him/service/service/msg"
+	"github.com/jiaxwu/him/conf"
+	"github.com/jiaxwu/him/service/service/auth"
+	"github.com/jiaxwu/him/service/service/msg"
 )
 
 // PushMsgConsumer 推送消息消费者

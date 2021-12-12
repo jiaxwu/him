@@ -7,9 +7,9 @@ import (
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
 	sms "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms/v20210111"
-	"him/common/jsons"
-	"him/conf"
-	"him/service/common"
+	"github.com/jiaxwu/him/common/jsons"
+	"github.com/jiaxwu/him/conf"
+	"github.com/jiaxwu/him/service/common"
 )
 
 type Service struct {

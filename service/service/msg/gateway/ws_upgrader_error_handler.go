@@ -3,9 +3,9 @@ package gateway
 import (
 	"encoding/json"
 	"github.com/sirupsen/logrus"
-	httpHeaderKey "him/common/constant/http/header/key"
-	httpHeaderValue "him/common/constant/http/header/value"
-	"him/service/common"
+	httpHeaderKey "github.com/jiaxwu/him/common/constant/http/header/key"
+	httpHeaderValue "github.com/jiaxwu/him/common/constant/http/header/value"
+	"github.com/jiaxwu/him/service/common"
 	"net/http"
 )
 

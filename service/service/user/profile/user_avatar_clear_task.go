@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"gorm.io/gorm"
-	"him/model"
+	"github.com/jiaxwu/him/model"
 	"log"
 	"time"
 )

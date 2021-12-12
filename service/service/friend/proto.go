@@ -1,6 +1,6 @@
 package friend
 
-import "him/service/service/user/profile"
+import "github.com/jiaxwu/him/service/service/user/profile"
 
 // FriendInfo 好友信息
 type FriendInfo struct {

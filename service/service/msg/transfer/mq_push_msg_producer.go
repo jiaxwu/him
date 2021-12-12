@@ -3,7 +3,7 @@ package transfer
 import (
 	"github.com/Shopify/sarama"
 	"github.com/sirupsen/logrus"
-	"him/conf"
+	"github.com/jiaxwu/him/conf"
 )
 
 // NewPushMsgProducer 创建推送消息生产者

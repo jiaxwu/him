@@ -1,7 +1,7 @@
 package msg
 
 import (
-	"him/service/service/auth"
+	"github.com/jiaxwu/him/service/service/auth"
 )
 
 // ------------------------- 基础资源

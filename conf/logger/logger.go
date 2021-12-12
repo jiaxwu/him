@@ -3,7 +3,7 @@ package logger
 import (
 	"github.com/apache/rocketmq-client-go/v2/rlog"
 	"github.com/sirupsen/logrus"
-	"him/conf"
+	"github.com/jiaxwu/him/conf"
 )
 
 func NewLogger(config *conf.Config) *logrus.Logger {

@@ -1,6 +1,6 @@
 package profile
 
-import "him/service/common"
+import "github.com/jiaxwu/him/service/common"
 
 var (
 	ErrCodeInvalidParameterAvatarLength = common.NewErrCode("InvalidParameter.Avatar.Length",

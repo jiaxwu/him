@@ -1,4 +1,4 @@
-module him
+module github.com/jiaxwu/him
 
 go 1.17
 

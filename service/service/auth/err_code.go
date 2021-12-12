@@ -1,6 +1,6 @@
 package auth
 
-import "him/service/common"
+import "github.com/jiaxwu/him/service/common"
 
 var (
 	ErrCodeInvalidParameterSmVerCodeNotExist = common.NewErrCode("InvalidParameter.SmVerCodeNotExist",
