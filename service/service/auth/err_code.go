@@ -16,4 +16,6 @@ var (
 		"the phone has not been register", "手机号码还没有注册，请先进行注册")
 	ErrCodeUnauthorizedInvalidToken = common.NewErrCode("Unauthorized.InvalidToken",
 		"the token is not validate", "无效Token")
+	ErrCodeNotFoundUser = common.NewErrCode("NotFound.User", "the request user not found",
+		"找不到要访问的用户")
 )

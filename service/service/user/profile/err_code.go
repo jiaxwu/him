@@ -25,6 +25,5 @@ var (
 	ErrCodeExistsUsername = common.NewErrCode("Exists.Username", "the username exists",
 		"用户名已经存在")
 
-	ErrCodeNotFoundUser = common.NewErrCode("NotFound.User", "the request user not found",
-		"找不到要访问的用户")
+
 )

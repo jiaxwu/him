@@ -13,6 +13,7 @@ import (
 	"github.com/jiaxwu/him/conf"
 	"github.com/jiaxwu/him/model"
 	"github.com/jiaxwu/him/service/common"
+	"github.com/jiaxwu/him/service/service/auth"
 	"github.com/sirupsen/logrus"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"gorm.io/gorm"
@@ -28,10 +29,12 @@ type Service struct {
 	config                         *conf.Config
 	userAvatarBucketOSSClient      *cos.Client
 	userProfileUpdateEventProducer sarama.AsyncProducer
+	authService                    *auth.Service
 }
 
 func NewService(userAvatarBucketOSSClient *cos.Client, userProfileUpdateEventProducer sarama.AsyncProducer,
-	db *gorm.DB, validate *validator.Validate, logger *logrus.Logger, config *conf.Config) *Service {
+	db *gorm.DB, validate *validator.Validate, logger *logrus.Logger, config *conf.Config,
+	authService *auth.Service) *Service {
 	return &Service{
 		db:                             db,
 		validate:                       validate,
@@ -39,6 +42,7 @@ func NewService(userAvatarBucketOSSClient *cos.Client, userProfileUpdateEventPro
 		config:                         config,
 		userAvatarBucketOSSClient:      userAvatarBucketOSSClient,
 		userProfileUpdateEventProducer: userProfileUpdateEventProducer,
+		authService:                    authService,
 	}
 }
 
@@ -77,31 +81,20 @@ func (s *Service) GetUserProfile(req *GetUserProfileReq) (*GetUserProfileRsp, er
 // initUserProfile 初始化用户信息
 func (s *Service) initUserProfile(userID uint64) (*UserProfile, error) {
 	// 判断用户是否存在
-	var count int64
-	if err := s.db.Model(&model.User{}).Where("id = ?", userID).Count(&count).Error; err != nil {
-		s.logger.WithField("err", err).Error("db exception")
+	if _, err := s.authService.GetUser(&auth.GetUserReq{UserID: userID}); err != nil {
 		return nil, err
-	}
-	if count < 1 {
-		return nil, ErrCodeNotFoundUser
 	}
 
 	// 判断是否已经初始化了
-	if err := s.db.Model(&model.UserProfile{}).Where("user_id = ?", userID).Count(&count).Error; err != nil {
+	var userProfile model.UserProfile
+	err := s.db.Where("user_id = ?", userID).Take(&userProfile).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		s.logger.WithField("err", err).Error("db exception")
 		return nil, err
 	}
 
-	// 用户已经初始化则直接查询返回
-	var userProfile model.UserProfile
-	if count > 0 {
-		if err := s.db.Where("user_id = ?", userID).Take(&userProfile).Error; err != nil {
-			s.logger.WithField("err", err).Error("db exception")
-			return nil, err
-		}
-	} else
-	// 否则创建用户信息
-	{
+	// 不存在则创建用户信息
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		userProfile.UserID = userID
 		userProfile.NickName = GenNickName()
 		userProfile.Username = fmt.Sprintf("him_%s", strings.ToLower(gofakeit.LetterN(20)))

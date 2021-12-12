@@ -118,3 +118,15 @@ var TerminalSet = map[Terminal]bool{
 	TerminalApp: true,
 	TerminalPC:  true,
 }
+
+// GetUserReq 获取用户请求
+type GetUserReq struct {
+	UserID uint64 `json:"UserID"` // 用户编号
+}
+
+// GetUserRsp 获取用户响应
+type GetUserRsp struct {
+	UserID       uint64 `json:"UserID"`       // 用户编号
+	Type         uint8  `json:"Type"`         // 用户类型
+	RegisteredAt uint64 `json:"RegisteredAt"` // 注册时间
+}

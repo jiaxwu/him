@@ -1,13 +1,14 @@
 package db
 
 import (
+	"github.com/jiaxwu/him/conf"
+	"github.com/jiaxwu/him/model"
+	"github.com/jiaxwu/him/service/service/auth"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
-	"github.com/jiaxwu/him/conf"
-	"github.com/jiaxwu/him/model"
 )
 
 func NewDB(log *logrus.Logger, config *conf.Config) *gorm.DB {
@@ -26,8 +27,8 @@ func NewDB(log *logrus.Logger, config *conf.Config) *gorm.DB {
 	if err != nil {
 		log.Fatal("打开数据库失败", err)
 	}
-	if err := db.AutoMigrate(model.User{}, model.UserProfile{}, model.Friend{}, model.ChatChannel{},
-		model.ChatChannelSubscribe{}, model.PasswordLogin{}, model.PhoneLogin{},
+	if err := db.AutoMigrate(auth.User{}, model.UserProfile{}, model.Friend{}, model.ChatChannel{},
+		model.ChatChannelSubscribe{}, auth.PasswordLogin{}, auth.PhoneLogin{},
 		model.AddFriendApplication{}, model.Group{}, model.GroupMember{}); err != nil {
 		log.Fatal("自动迁移数据库失败", err)
 	}

@@ -3,15 +3,16 @@ package friend
 import (
 	"errors"
 	"github.com/go-playground/validator/v10"
-	"github.com/sirupsen/logrus"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"github.com/jiaxwu/him/conf"
 	"github.com/jiaxwu/him/model"
 	"github.com/jiaxwu/him/service/common"
+	"github.com/jiaxwu/him/service/service/auth"
 	"github.com/jiaxwu/him/service/service/msg"
 	"github.com/jiaxwu/him/service/service/msg/sender"
 	"github.com/jiaxwu/him/service/service/user/profile"
+	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"time"
 )
 
@@ -280,7 +281,7 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 	}
 
 	// 判断好友是否存在
-	var user model.User
+	var user auth.User
 	err := s.db.Take(&user, req.FriendID).Error
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		s.logger.WithError(err).Error("db exception")
