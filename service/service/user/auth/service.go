@@ -10,6 +10,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/jiaxwu/him/conf"
 	"github.com/jiaxwu/him/service/common"
+	"github.com/jiaxwu/him/service/service/auth/model"
 	"github.com/jiaxwu/him/service/service/sm"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
@@ -106,7 +107,7 @@ func (s *Service) validSmVerCode(smVerCode, phone string, action SmVerCodeAction
 // loginByPhone 通过手机登录
 func (s *Service) loginByPhone(terminal Terminal, phone string) (*LoginRsp, error) {
 	// 获取用户编号
-	phoneLogin := PhoneLogin{
+	phoneLogin := model.PhoneLogin{
 		Phone: phone,
 	}
 	err := s.db.Where(&phoneLogin).Take(&phoneLogin).Error
@@ -129,7 +130,7 @@ func (s *Service) loginByPhone(terminal Terminal, phone string) (*LoginRsp, erro
 // 密码登录
 func (s *Service) loginByPassword(terminal Terminal, req *PasswordLoginContent) (*LoginRsp, error) {
 	// 获取对应的用户
-	phoneLogin := PhoneLogin{
+	phoneLogin := model.PhoneLogin{
 		Phone: req.Account,
 	}
 	err := s.db.Where(&phoneLogin).Take(&phoneLogin).Error
@@ -142,7 +143,7 @@ func (s *Service) loginByPassword(terminal Terminal, req *PasswordLoginContent) 
 	}
 
 	// 获取密码
-	passwordLogin := PasswordLogin{
+	passwordLogin := model.PasswordLogin{
 		UserID: phoneLogin.UserID,
 	}
 	err = s.db.Where(&passwordLogin).Take(&passwordLogin).Error
@@ -165,7 +166,7 @@ func (s *Service) loginByPassword(terminal Terminal, req *PasswordLoginContent) 
 // login 登录
 func (s *Service) login(terminal Terminal, userID uint64) (*LoginRsp, error) {
 	// 获取用户类型
-	var user User
+	var user model.User
 	if err := s.db.Take(&user, userID).Error; err != nil {
 		return nil, err
 	}
@@ -246,7 +247,7 @@ func (s *Service) SendSmVerCode(req *SendSmVerCodeReq) (*SendSmVerCodeRsp, error
 
 // 注册账号
 func (s *Service) register(phone string) (uint64, error) {
-	var user = User{
+	var user = model.User{
 		Type:         uint8(UserTypeUser),
 		RegisteredAt: uint64(time.Now().Unix()),
 	}
@@ -257,7 +258,7 @@ func (s *Service) register(phone string) (uint64, error) {
 		}
 
 		// 创建手机登录
-		if err := tx.Create(&PhoneLogin{
+		if err := tx.Create(&model.PhoneLogin{
 			UserID: user.ID,
 			Phone:  phone,
 		}).Error; err != nil {
@@ -285,7 +286,7 @@ func (s *Service) ChangePassword(req *ChangePasswordReq) (*ChangePasswordRsp, er
 	}
 
 	// 根据手机号获取用户编号
-	phoneLogin := PhoneLogin{
+	phoneLogin := model.PhoneLogin{
 		Phone: req.Phone,
 	}
 	err := s.db.Where(&phoneLogin).Take(&phoneLogin).Error
@@ -298,7 +299,7 @@ func (s *Service) ChangePassword(req *ChangePasswordReq) (*ChangePasswordRsp, er
 	}
 
 	// 获取原始密码
-	passwordLogin := PasswordLogin{
+	passwordLogin := model.PasswordLogin{
 		UserID: phoneLogin.UserID,
 	}
 	takeErr := s.db.Where(&passwordLogin).Take(&passwordLogin).Error

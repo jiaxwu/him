@@ -1,4 +1,4 @@
-package auth
+package model
 
 // User 用户
 type User struct {

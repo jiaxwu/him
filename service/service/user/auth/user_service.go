@@ -2,12 +2,13 @@ package auth
 
 import (
 	"errors"
+	"github.com/jiaxwu/him/service/service/auth/model"
 	"gorm.io/gorm"
 )
 
 // GetUser 获取用户
 func (s *Service) GetUser(req *GetUserReq) (*GetUserRsp, error) {
-	var user User
+	var user model.User
 	err := s.db.Take(&user, req.UserID).Error
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		s.logger.WithError(err).Error("db exception")
