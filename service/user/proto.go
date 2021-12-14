@@ -159,7 +159,7 @@ type AuthorizeRsp struct {
 }
 
 type GetSessionReq struct {
-	Token string `validate:"required,len=36"`
+	Token string `json:"Token" validate:"required,len=36"`
 }
 
 type GetSessionRsp struct {
