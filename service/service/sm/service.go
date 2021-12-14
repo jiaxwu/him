@@ -1,36 +1,25 @@
 package sm
 
 import (
-	"github.com/go-playground/validator/v10"
 	"github.com/jiaxwu/him/common/jsons"
 	"github.com/jiaxwu/him/conf"
 	"github.com/jiaxwu/him/conf/log"
 	"github.com/jiaxwu/him/service/common"
 	tcCommon "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
-	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
 	sms "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms/v20210111"
 )
 
 type Service struct {
 	config    *conf.Config
-	validate  *validator.Validate
 	smsClient *sms.Client
 }
 
-func NewService(config *conf.Config, validate *validator.Validate) *Service {
+func NewService(config *conf.Config, smsClient *sms.Client) *Service {
 	smService := &Service{
-		config:   config,
-		validate: validate,
+		config:    config,
+		smsClient: smsClient,
 	}
-	credential := tcCommon.NewCredential(
-		config.SMS.SecretID,
-		config.SMS.SecretKey,
-	)
-	cpf := profile.NewClientProfile()
-	cpf.HttpProfile.Endpoint = SendSmsTencentCloudURL
-	client, _ := sms.NewClient(credential, smService.config.SMS.Region, cpf)
-	smService.smsClient = client
 	return smService
 }
 

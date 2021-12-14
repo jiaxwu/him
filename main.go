@@ -39,10 +39,7 @@ func NewApp() *fx.App {
 			server.NewEngine,
 			server.NewServer,
 			wrap.NewWrapper,
-			fx.Annotate(
-				msg.NewMongoOfflineMsgCollection,
-				fx.ResultTags(`name:"MongoOfflineMsgCollection"`),
-			),
+			sm.NewTencentSMSClient,
 			sm.NewService,
 			fx.Annotate(
 				user.NewAvatarBucketOSSClient,
@@ -58,10 +55,15 @@ func NewApp() *fx.App {
 			),
 			msg.NewIDGenerator,
 			fx.Annotate(
+				msg.NewMongoOfflineMsgCollection,
+				fx.ResultTags(`name:"MongoOfflineMsgCollection"`),
+			),
+			fx.Annotate(
 				msgSender.NewSendMsgProducer,
 				fx.ResultTags(`name:"SendMsgProducer"`),
 			),
-			fx.Annotate(msgSender.NewService,
+			fx.Annotate(
+				msgSender.NewService,
 				fx.ParamTags(`name:"SendMsgProducer"`),
 			),
 			msgGateway.NewGatewayServer,
