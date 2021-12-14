@@ -2,14 +2,14 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
+	"github.com/jiaxwu/him/conf/log"
 	"github.com/jiaxwu/him/service/common"
 )
 
 // Recovery 异常恢复
-func Recovery(logger *logrus.Logger) gin.HandlerFunc {
+func Recovery() gin.HandlerFunc {
 	return gin.CustomRecovery(func(c *gin.Context, err interface{}) {
-		logger.WithField("err", err).Error("a panic captured")
+		log.WithField("err", err).Error("a panic captured")
 		common.Failure(c, common.ErrCodeInternalError)
 	})
 }

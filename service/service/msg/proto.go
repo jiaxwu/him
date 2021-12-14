@@ -1,7 +1,7 @@
 package msg
 
 import (
-	"github.com/jiaxwu/him/service/service/user/auth"
+	"github.com/jiaxwu/him/service/service/user"
 )
 
 // ------------------------- 基础资源
@@ -85,7 +85,7 @@ type Msg struct {
 type SenderType string
 
 const (
-	SenderTypeUser = "User" // 普通用户
+	SenderTypeUser = "UserInfo" // 普通用户
 	SenderTypeSys  = "Sys"  // 系统
 )
 
@@ -93,14 +93,14 @@ const (
 type Sender struct {
 	Type     SenderType    `json:"Type" bson:"Type"`         // 发送者类型
 	SenderID uint64        `json:"SenderID" bson:"SenderID"` // 发送者编号
-	Terminal auth.Terminal `json:"Terminal" bson:"Terminal"` // 发送者终端
+	Terminal user.Terminal `json:"Terminal" bson:"Terminal"` // 发送者终端
 }
 
 // ReceiverType 接收者类型
 type ReceiverType string
 
 const (
-	ReceiverTypeUser  = "User"  // 普通用户
+	ReceiverTypeUser  = "UserInfo"  // 普通用户
 	ReceiverTypeGroup = "Group" // 群
 )
 

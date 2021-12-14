@@ -6,29 +6,27 @@ import (
 	"encoding/json"
 	"github.com/Shopify/sarama"
 	"github.com/jiaxwu/him/conf"
+	"github.com/jiaxwu/him/conf/log"
 	"github.com/jiaxwu/him/service/service/msg"
-	"github.com/jiaxwu/him/service/service/user/auth"
-	"github.com/sirupsen/logrus"
+	"github.com/jiaxwu/him/service/service/user"
 )
 
 // PushMsgConsumer 推送消息消费者
 type PushMsgConsumer struct {
-	logger *logrus.Logger
 	server *Server
 }
 
 // NewPushMsgConsumer 创建推送消息消费者
-func NewPushMsgConsumer(config *conf.Config, logger *logrus.Logger, server *Server) *PushMsgConsumer {
+func NewPushMsgConsumer(config *conf.Config, server *Server) *PushMsgConsumer {
 	consumerConfig := sarama.NewConfig()
 	consumerConfig.Consumer.Return.Errors = false
 	consumerConfig.Consumer.Offsets.Initial = sarama.OffsetNewest
 	client, err := sarama.NewConsumerGroup(config.Kafka.Addrs, MQPushMsgConsumerGroupID, consumerConfig)
 	if err != nil {
-		logger.WithField("err", err).Fatal("init push msg consumer fail")
+		log.WithError(err).Fatal("init push msg consumer fail")
 	}
 
 	consumer := PushMsgConsumer{
-		logger: logger,
 		server: server,
 	}
 	go func() {
@@ -38,7 +36,7 @@ func NewPushMsgConsumer(config *conf.Config, logger *logrus.Logger, server *Serv
 				break
 			}
 		}
-		logger.WithField("err", err).Error("push msg consumer exception")
+		log.WithError(err).Fatal("push msg consumer exception")
 		defer client.Close()
 	}()
 	return &consumer
@@ -52,7 +50,7 @@ func (c *PushMsgConsumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 		// 解析消息
 		var protoMsg msg.Msg
 		if err := json.Unmarshal(message.Value, &protoMsg); err != nil {
-			c.logger.WithField("err", err).Error("unmarshal msg fail")
+			log.WithError(err).Error("unmarshal msg fail")
 			continue
 		}
 
@@ -60,7 +58,7 @@ func (c *PushMsgConsumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 		userID := binary.BigEndian.Uint64(message.Key)
 
 		// 发送给这个用户的所有终端
-		for terminal := range auth.TerminalSet {
+		for terminal := range user.TerminalSet {
 			sessionID := msg.SessionID(userID, terminal)
 			if conn := c.server.sessionIDToConn[sessionID]; conn != nil {
 				c.server.writeEvent(conn, &msg.Event{

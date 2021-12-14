@@ -2,12 +2,12 @@ package gateway
 
 import (
 	"github.com/go-redis/redis/v8"
-	"github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 	"github.com/jiaxwu/him/service/common"
 	"github.com/jiaxwu/him/service/service/friend"
 	"github.com/jiaxwu/him/service/service/msg"
 	"github.com/jiaxwu/him/service/service/msg/sender"
+	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -20,11 +20,10 @@ type Service struct {
 	friendService *friend.Service
 }
 
-func NewService(senderService *sender.Service, rdb *redis.Client, logger *logrus.Logger,
-	idGenerator *msg.IDGenerator, db *gorm.DB, friendService *friend.Service) *Service {
+func NewService(senderService *sender.Service, rdb *redis.Client, idGenerator *msg.IDGenerator, db *gorm.DB,
+	friendService *friend.Service) *Service {
 	return &Service{
 		rdb:           rdb,
-		logger:        logger,
 		senderService: senderService,
 		idGenerator:   idGenerator,
 		db:            db,

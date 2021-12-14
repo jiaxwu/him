@@ -2,11 +2,11 @@ package msg
 
 import (
 	"fmt"
-	"github.com/jiaxwu/him/service/service/user/auth"
+	"github.com/jiaxwu/him/service/service/user"
 )
 
 // SessionID 会话编号
-func SessionID(userID uint64, terminal auth.Terminal) string {
+func SessionID(userID uint64, terminal user.Terminal) string {
 	return fmt.Sprintf("msg:%d:%s", userID, terminal)
 }
 

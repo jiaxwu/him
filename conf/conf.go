@@ -6,14 +6,14 @@ import (
 )
 
 type Config struct {
-	MySQL    *MySQL
-	Redis    *Redis
-	COS      *COS
-	Server   *Server
-	SMS      *SMS
-	Logger   *Logger
-	Kafka    *Kafka
-	MongoDB  *MongoDB
+	MySQL   *MySQL
+	Redis   *Redis
+	COS     *COS
+	Server  *Server
+	SMS     *SMS
+	Log     *Log
+	Kafka   *Kafka
+	MongoDB *MongoDB
 }
 
 // NewConf 初始化配置
@@ -58,7 +58,7 @@ type SMS struct {
 	SignName    string // 签名
 }
 
-type Logger struct {
+type Log struct {
 	Level string // 日志等级
 }
 

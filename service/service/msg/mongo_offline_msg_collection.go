@@ -2,7 +2,7 @@ package msg
 
 import (
 	"context"
-	"github.com/sirupsen/logrus"
+	"github.com/jiaxwu/him/conf/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -14,7 +14,7 @@ const (
 )
 
 // NewMongoOfflineMsgCollection mongo离线消息集合
-func NewMongoOfflineMsgCollection(client *mongo.Client, logger *logrus.Logger) *mongo.Collection {
+func NewMongoOfflineMsgCollection(client *mongo.Client) *mongo.Collection {
 	collection := client.Database(MongoDBOfflineMsgDatabaseName).Collection(MongoDBOfflineMsgCollectionName)
 	if _, err := collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
 		Keys: bson.D{
@@ -23,7 +23,7 @@ func NewMongoOfflineMsgCollection(client *mongo.Client, logger *logrus.Logger) *
 		},
 		Options: options.Index().SetUnique(true),
 	}); err != nil {
-		logger.WithField("err", err).Fatal("can not create index")
+		log.WithError(err).Fatal("can not create index")
 	}
 	return collection
 }

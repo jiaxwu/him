@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/jiaxwu/him/conf"
 	"github.com/jiaxwu/him/conf/db"
-	"github.com/jiaxwu/him/conf/logger"
+	"github.com/jiaxwu/him/conf/log"
 	"github.com/jiaxwu/him/conf/mongo"
 	"github.com/jiaxwu/him/conf/rdb"
 	"github.com/jiaxwu/him/conf/validate"
@@ -16,11 +16,11 @@ import (
 	msgShort "github.com/jiaxwu/him/service/service/msg/short"
 	msgTransfer "github.com/jiaxwu/him/service/service/msg/transfer"
 	"github.com/jiaxwu/him/service/service/sm"
-	"github.com/jiaxwu/him/service/service/user/auth"
-	authHandler "github.com/jiaxwu/him/service/service/user/auth/handler"
-	"github.com/jiaxwu/him/service/service/user/profile"
+	"github.com/jiaxwu/him/service/service/user"
+	userHandler "github.com/jiaxwu/him/service/service/user/handler"
 	"github.com/jiaxwu/him/service/wrap"
 	"go.uber.org/fx"
+	"go.uber.org/fx/fxevent"
 )
 
 func main() {
@@ -29,10 +29,10 @@ func main() {
 
 func NewApp() *fx.App {
 	return fx.New(
+		fx.Provide(conf.NewConf),
+		fx.Invoke(log.InitLog),
 		fx.Provide(
-			conf.NewConf,
 			validate.NewValidate,
-			logger.NewLogger,
 			db.NewDB,
 			mongo.NewMongoDB,
 			rdb.NewRDB,
@@ -44,18 +44,17 @@ func NewApp() *fx.App {
 				fx.ResultTags(`name:"MongoOfflineMsgCollection"`),
 			),
 			sm.NewService,
-			auth.NewService,
 			fx.Annotate(
-				profile.NewUserAvatarBucketOSSClient,
+				user.NewAvatarBucketOSSClient,
 				fx.ResultTags(`name:"UserAvatarBucketOSSClient"`),
 			),
 			fx.Annotate(
-				profile.NewUserProfileUpdateEventProducer,
-				fx.ResultTags(`name:"UserProfileUpdateEventProducer"`),
+				user.NewUpdateUserEventProducer,
+				fx.ResultTags(`name:"UpdateUserEventProducer"`),
 			),
 			fx.Annotate(
-				profile.NewService,
-				fx.ParamTags(`name:"UserAvatarBucketOSSClient"`, `name:"UserProfileUpdateEventProducer"`),
+				user.NewService,
+				fx.ParamTags(`name:"UserAvatarBucketOSSClient"`, `name:"UpdateUserEventProducer"`),
 			),
 			msg.NewIDGenerator,
 			fx.Annotate(
@@ -83,8 +82,7 @@ func NewApp() *fx.App {
 			group.NewService,
 		),
 		fx.Invoke(
-			authHandler.RegisterHandler,
-			profile.RegisterUserProfileHandler,
+			userHandler.RegisterHandler,
 			msgShort.RegisterHandler,
 			friend.RegisterHandler,
 			group.RegisterHandler,
@@ -94,11 +92,18 @@ func NewApp() *fx.App {
 			),
 			msgGateway.NewPushMsgConsumer,
 			fx.Annotate(
-				profile.NewUserAvatarClearTask,
+				user.NewUserAvatarClearTask,
 				fx.ParamTags(`name:"UserAvatarBucketOSSClient"`),
 			),
 			server.Start,
 		),
-		fx.WithLogger(logger.NewFxEventLogger),
+		fx.WithLogger(NewFxEventLogger),
 	)
+}
+
+// NewFxEventLogger fx_event 的logger
+func NewFxEventLogger() fxevent.Logger {
+	return &fxevent.ConsoleLogger{
+		W: log.GetOutput(),
+	}
 }

@@ -8,62 +8,51 @@ import (
 	"github.com/jiaxwu/him/service/service/friend/model"
 	"github.com/jiaxwu/him/service/service/msg"
 	"github.com/jiaxwu/him/service/service/msg/sender"
-	auth2 "github.com/jiaxwu/him/service/service/user/auth"
-	"github.com/jiaxwu/him/service/service/user/profile"
-	model2 "github.com/jiaxwu/him/service/service/user/profile/model"
-	"github.com/sirupsen/logrus"
+	"github.com/jiaxwu/him/service/service/user"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"time"
 )
 
 type Service struct {
-	db             *gorm.DB
-	validate       *validator.Validate
-	logger         *logrus.Logger
-	config         *conf.Config
-	profileService *profile.Service
-	senderService  *sender.Service
-	authService    *auth2.Service
-	idGenerator    *msg.IDGenerator
+	db            *gorm.DB
+	validate      *validator.Validate
+	config        *conf.Config
+	senderService *sender.Service
+	userService   *user.Service
+	idGenerator   *msg.IDGenerator
 }
 
-func NewService(db *gorm.DB, validate *validator.Validate, logger *logrus.Logger, config *conf.Config,
-	profileService *profile.Service, senderService *sender.Service, authService *auth2.Service,
-	idGenerator *msg.IDGenerator) *Service {
+func NewService(db *gorm.DB, validate *validator.Validate, config *conf.Config, senderService *sender.Service,
+	userService *user.Service, idGenerator *msg.IDGenerator) *Service {
 	return &Service{
-		db:             db,
-		validate:       validate,
-		logger:         logger,
-		config:         config,
-		profileService: profileService,
-		senderService:  senderService,
-		authService:    authService,
-		idGenerator:    idGenerator,
+		db:            db,
+		validate:      validate,
+		config:        config,
+		senderService: senderService,
+		userService:   userService,
+		idGenerator:   idGenerator,
 	}
 }
 
 // GetFriendInfos 获取好友信息
 func (s *Service) GetFriendInfos(req *GetFriendInfosReq) (*GetFriendInfosRsp, error) {
-	// 如果用户名不为空，通过用户名查询好友编号
-	if req.Condition.Username != "" {
-		var userProfile model2.UserProfile
-		err := s.db.Model(model2.UserProfile{}).Where("username = ?", req.Condition.Username).
-			Take(&userProfile).Error
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	// 如果用户名或好友编号不为空
+	if req.Condition.Username != "" || req.Condition.FriendID != 0 {
+		getUserRsp, err := s.userService.GetUserInfos(&user.GetUserInfosReq{
+			Username: req.Condition.Username,
+			UserID:   req.Condition.FriendID,
+		})
+		if err != nil {
 			return nil, err
 		}
+		userInfos := getUserRsp.UserInfos
 		// 如果查询不到用户，返回空
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if len(userInfos) == 0 {
 			return &GetFriendInfosRsp{FriendInfos: []*FriendInfo{}}, nil
 		}
 		// 否则通过UserID查询好友信息
-		req.Condition.FriendID = userProfile.UserID
-	}
-
-	// 如果好友编号不为空，查询or创建好友
-	if req.Condition.FriendID != 0 {
-		friendInfo, err := s.getFriendInfoByFriendID(req.UserID, req.Condition.FriendID)
+		friendInfo, err := s.getFriendInfoByFriendUserInfo(req.UserID, userInfos[0])
 		if err != nil {
 			return nil, err
 		}
@@ -90,24 +79,26 @@ func (s *Service) getFriendInfosIfIsFriend(userID uint64) (*GetFriendInfosRsp, e
 	for _, friend := range friends {
 		friendIDS = append(friendIDS, friend.FriendID)
 	}
-	var profiles []*model2.UserProfile
-	if err := s.db.Where("user_id in ?", friendIDS).Find(&profiles).Error; err != nil {
+	getUserRsp, err := s.userService.GetUserInfos(&user.GetUserInfosReq{UserIDS: friendIDS})
+	if err != nil {
 		return nil, err
 	}
+	userInfos := getUserRsp.UserInfos
 	// 关联
-	userIDToProfileMap := make(map[uint64]*model2.UserProfile, len(profiles))
-	for _, userProfile := range profiles {
-		userIDToProfileMap[userProfile.UserID] = userProfile
+	userIDToUserInfoMap := make(map[uint64]*user.UserInfo, len(userInfos))
+	for _, userInfo := range userInfos {
+		userIDToUserInfoMap[userInfo.UserID] = userInfo
 	}
 	friendInfos := make([]*FriendInfo, 0, len(friends))
 	for _, friend := range friends {
-		userProfile := userIDToProfileMap[friend.FriendID]
+		userInfo := userIDToUserInfoMap[friend.FriendID]
 		friendInfos = append(friendInfos, &FriendInfo{
 			FriendID:    friend.FriendID,
-			NickName:    userProfile.NickName,
-			Username:    userProfile.Username,
-			Avatar:      userProfile.Avatar,
-			Gender:      profile.Gender(userProfile.Gender),
+			UserType:    userInfo.UserType,
+			NickName:    userInfo.NickName,
+			Username:    userInfo.Username,
+			Avatar:      userInfo.Avatar,
+			Gender:      userInfo.Gender,
 			Remark:      friend.Remark,
 			Description: friend.Description,
 			IsDisturb:   friend.IsDisturb,
@@ -121,35 +112,25 @@ func (s *Service) getFriendInfosIfIsFriend(userID uint64) (*GetFriendInfosRsp, e
 }
 
 // 通过好友编号获取好友
-func (s *Service) getFriendInfoByFriendID(userID, friendID uint64) (*FriendInfo, error) {
-	// 获取好友个人信息
-	getUserProfileRsp, err := s.profileService.GetUserProfile(&profile.GetUserProfileReq{
-		UserID: friendID,
-	})
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Service) getFriendInfoByFriendUserInfo(userID uint64, friend *user.UserInfo) (*FriendInfo, error) {
 	// 获取好友信息
-	friend := model.Friend{
-		UserID:   userID,
-		FriendID: friendID,
-	}
-	if err := s.db.FirstOrCreate(&friend, &friend).Error; err != nil {
+	var friendModel model.Friend
+	if err := s.db.Where("user_id = ? and friend_id = ?", userID, friend.UserID).
+		Take(&friendModel).Error; err != nil {
 		return nil, err
 	}
 	return &FriendInfo{
-		FriendID:    friend.FriendID,
-		NickName:    getUserProfileRsp.NickName,
-		Username:    getUserProfileRsp.Username,
-		Avatar:      getUserProfileRsp.Avatar,
-		Gender:      getUserProfileRsp.Gender,
-		Remark:      friend.Remark,
-		Description: friend.Description,
-		IsDisturb:   friend.IsDisturb,
-		IsBlacklist: friend.IsBlacklist,
-		IsTop:       friend.IsTop,
-		IsFriend:    friend.IsFriend,
+		FriendID:    friend.UserID,
+		NickName:    friend.NickName,
+		Username:    friend.Username,
+		Avatar:      friend.Avatar,
+		Gender:      friend.Gender,
+		Remark:      friendModel.Remark,
+		Description: friendModel.Description,
+		IsDisturb:   friendModel.IsDisturb,
+		IsBlacklist: friendModel.IsBlacklist,
+		IsTop:       friendModel.IsTop,
+		IsFriend:    friendModel.IsFriend,
 	}, nil
 }
 
@@ -169,10 +150,17 @@ func (s Service) IsFriend(req *IsFriendReq) (*IsFriendRsp, error) {
 
 // UpdateFriendInfo 更新好友信息
 func (s *Service) UpdateFriendInfo(req *UpdateFriendInfoReq) (*UpdateFriendInfoRsp, error) {
-	// 获取当前好友信息
-	friendInfo, err := s.getFriendInfoByFriendID(req.UserID, req.FriendID)
+	// 获取好友用户信息
+	getUserRsp, err := s.userService.GetUserInfos(&user.GetUserInfosReq{
+		UserID: req.FriendID,
+	})
 	if err != nil {
 		return nil, err
+	}
+	userInfos := getUserRsp.UserInfos
+	// 查询不到用户
+	if len(userInfos) == 0 {
+		return nil, common.ErrCodeInvalidParameter
 	}
 
 	// 修改
@@ -183,36 +171,36 @@ func (s *Service) UpdateFriendInfo(req *UpdateFriendInfoReq) (*UpdateFriendInfoR
 	if req.Action.IsDisturb != nil {
 		column = "is_disturb"
 		value = *req.Action.IsDisturb
-		friendInfo.IsDisturb = *req.Action.IsDisturb
 	} else if req.Action.IsBlacklist != nil {
 		column = "is_blacklist"
 		value = *req.Action.IsBlacklist
-		friendInfo.IsBlacklist = *req.Action.IsBlacklist
 	} else if req.Action.IsTop != nil {
 		column = "is_top"
 		value = *req.Action.IsTop
-		friendInfo.IsTop = *req.Action.IsTop
 	} else if req.Action.Remark != "" {
 		column = "remark"
 		value = req.Action.Remark
-		friendInfo.Remark = req.Action.Remark
 	} else if req.Action.Description != "" {
 		column = "description"
 		value = req.Action.Description
-		friendInfo.Description = req.Action.Description
 	} else {
 		return nil, common.ErrCodeInvalidParameter
 	}
+
+	// 确保好友存在
+	if err := s.createFriendIfNotExist(req.UserID, req.FriendID); err != nil {
+		return nil, err
+	}
+
 	if err := s.db.Transaction(func(tx *gorm.DB) error {
 		// 修改好友信息
 		if err := tx.Model(model.Friend{}).Where("user_id = ? and friend_id = ?", req.UserID, req.FriendID).
 			Update(column, value).Error; err != nil {
-			s.logger.WithError(err).Error("db exception")
 			return err
 		}
 
 		// 通知用户的多个端
-		_, err := s.senderService.SendEventMsg(&sender.SendEventMsgReq{
+		_, err = s.senderService.SendEventMsg(&sender.SendEventMsgReq{
 			UserIDS: []uint64{req.UserID},
 			EventMsg: &msg.EventMsg{
 				FriendInfoChange: &msg.FriendInfoChangeEventMsg{
@@ -220,13 +208,40 @@ func (s *Service) UpdateFriendInfo(req *UpdateFriendInfoReq) (*UpdateFriendInfoR
 				},
 			},
 		})
-		return err
+		return nil
 	}); err != nil {
+		return nil, err
+	}
+
+	// 用户好友信息
+	friendInfo, err := s.getFriendInfoByFriendUserInfo(req.UserID, userInfos[0])
+	if err != nil {
 		return nil, err
 	}
 
 	// 响应
 	return &UpdateFriendInfoRsp{FriendInfo: friendInfo}, nil
+}
+
+// 如果好友关系不存在，则创建
+func (s *Service) createFriendIfNotExist(userID, friendID uint64) error {
+	// 判断好友关系是否存在
+	err := s.db.Where("user_id = ? and friend_id = ?", userID, friendID).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
+	// 不存在就创建
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		friend := model.Friend{
+			UserID:   userID,
+			FriendID: friendID,
+		}
+		if err := s.db.Create(&friend).Error; err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // DeleteFriend 删除好友
@@ -235,13 +250,11 @@ func (s *Service) DeleteFriend(req *DeleteFriendReq) (*DeleteFriendRsp, error) {
 		if err := tx.Model(model.Friend{}).Where("user_id = ? and friend_id = ?",
 			req.UserID, req.FriendID).
 			Update("is_friend", false).Error; err != nil {
-			s.logger.WithError(err).Error("db exception")
 			return err
 		}
 		if err := tx.Model(model.Friend{}).Where("user_id = ? and friend_id = ?",
 			req.FriendID, req.UserID).
 			Update("is_friend", false).Error; err != nil {
-			s.logger.WithError(err).Error("db exception")
 			return err
 		}
 		return nil
@@ -257,7 +270,6 @@ func (s *Service) GetAddFriendApplications(req *GetAddFriendApplicationsReq) (*G
 	if err := s.db.Where("id > ? and (applicant_id = ? or friend_id = ?)",
 		req.LastAddFriendApplicationId, req.UserID, req.UserID).Limit(req.Size).
 		Find(&modelAddFriendApplications).Error; err != nil {
-		s.logger.WithError(err).Error("db exception")
 		return nil, err
 	}
 
@@ -285,12 +297,16 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 	}
 
 	// 判断好友是否存在
-	if _, err := s.authService.GetUser(&auth2.GetUserReq{UserID: req.FriendID}); err != nil {
+	rsp, err := s.userService.GetUserInfos(&user.GetUserInfosReq{UserID: req.FriendID})
+	if err != nil {
 		return nil, err
+	}
+	if len(rsp.UserInfos) != 1 {
+		return nil, common.ErrCodeInvalidParameter
 	}
 
 	// 检查好友是否已经是好友
-	friendInfo, err := s.getFriendInfoByFriendID(req.FriendID, req.ApplicantID)
+	friendInfo, err := s.getFriendInfoByFriendUserInfo(req.FriendID, rsp.UserInfos[0])
 	if err != nil {
 		return nil, err
 	}
@@ -307,7 +323,6 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 	var count int64
 	if err := s.db.Model(model.AddFriendApplication{}).Where("applicant_id = ? and friend_id = ? and status = ?",
 		req.ApplicantID, req.FriendID, AddFriendApplicationStatusWaitConfirm).Count(&count).Error; err != nil {
-		s.logger.WithError(err).Error("db exception")
 		return nil, err
 	}
 	if count != 0 {
@@ -324,7 +339,6 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 	}
 	if err := s.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&addFriendApplication).Error; err != nil {
-			s.logger.WithError(err).Error("db exception")
 			return err
 		}
 
@@ -363,7 +377,6 @@ func (s *Service) UpdateAddFriendApplication(req *UpdateAddFriendApplicationReq)
 	}).Take(&addFriendApplication, req.AddFriendApplicationID).Error
 	if err != nil &&
 		!errors.Is(err, gorm.ErrRecordNotFound) {
-		s.logger.WithError(err).Error("db exception")
 		return nil, err
 	}
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -380,28 +393,27 @@ func (s *Service) UpdateAddFriendApplication(req *UpdateAddFriendApplicationReq)
 	if err := s.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Model(model.AddFriendApplication{}).
 			Where("id = ?", req.AddFriendApplicationID).Update(column, value).Error; err != nil {
-			s.logger.WithError(err).Error("db exception")
 			return err
 		}
 
 		// 如果是接受好友申请的请求，则特殊处理
 		if req.Action.Accept {
-			if _, err := s.getFriendInfoByFriendID(addFriendApplication.ApplicantID, addFriendApplication.FriendID); err != nil {
+			if err := s.createFriendIfNotExist(addFriendApplication.ApplicantID,
+				addFriendApplication.FriendID); err != nil {
 				return err
 			}
-			if _, err := s.getFriendInfoByFriendID(addFriendApplication.FriendID, addFriendApplication.ApplicantID); err != nil {
+			if err := s.createFriendIfNotExist(addFriendApplication.FriendID,
+				addFriendApplication.ApplicantID); err != nil {
 				return err
 			}
 			if err := tx.Model(model.Friend{}).Where("user_id = ? and friend_id = ?",
 				addFriendApplication.ApplicantID, addFriendApplication.FriendID).
 				Update("is_friend", true).Error; err != nil {
-				s.logger.WithError(err).Error("db exception")
 				return err
 			}
 			if err := tx.Model(model.Friend{}).Where("user_id = ? and friend_id = ?",
 				addFriendApplication.FriendID, addFriendApplication.ApplicantID).
 				Update("is_friend", true).Error; err != nil {
-				s.logger.WithError(err).Error("db exception")
 				return err
 			}
 			if err := s.sendTextMsg(addFriendApplication.FriendID, addFriendApplication.ApplicantID,
@@ -421,7 +433,6 @@ func (s *Service) UpdateAddFriendApplication(req *UpdateAddFriendApplicationReq)
 		})
 		return err
 	}); err != nil {
-		s.logger.WithError(err).Error("transaction exception")
 		return nil, err
 	}
 

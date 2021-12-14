@@ -8,11 +8,11 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/websocket"
 	httpQueryKey "github.com/jiaxwu/him/common/constant/http/query/key"
+	"github.com/jiaxwu/him/conf/log"
 	"github.com/jiaxwu/him/service/common"
 	"github.com/jiaxwu/him/service/service/msg"
-	auth2 "github.com/jiaxwu/him/service/service/user/auth"
+	"github.com/jiaxwu/him/service/service/user"
 	"github.com/jiaxwu/him/service/wrap"
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"sync"
 	"time"
@@ -21,7 +21,7 @@ import (
 // Conn 一个连接
 type Conn struct {
 	conn    *websocket.Conn
-	session *auth2.Session
+	session *user.Session
 	mutex   sync.Mutex
 }
 
@@ -30,34 +30,33 @@ type Server struct {
 	upgrader        *websocket.Upgrader
 	sessionIDToConn map[string]*Conn
 	connToSessionID map[*Conn]string
-	authService     *auth2.Service
+	userService     *user.Service
 	rdb             *redis.Client
-	logger          *logrus.Logger
 	mutex           sync.Mutex
 	service         *Service
 }
 
 // NewGatewayServer 创建一个长连接入口
-func NewGatewayServer(engine *gin.Engine, wrapper *wrap.Wrapper, logger *logrus.Logger,
-	authService *auth2.Service, rdb *redis.Client, service *Service) *Server {
+func NewGatewayServer(engine *gin.Engine, wrapper *wrap.Wrapper, userService *user.Service, rdb *redis.Client,
+	service *Service) *Server {
 	server := Server{
 		upgrader: &websocket.Upgrader{
 			HandshakeTimeout: WSHandshakeTimeout,
 			ReadBufferSize:   WSReadBufferSize,
 			CheckOrigin:      newWSOriginChecker(),
-			Error:            newWSUpgradeErrorHandler(logger),
+			Error:            newWSUpgradeErrorHandler(),
 		},
 		sessionIDToConn: make(map[string]*Conn),
 		connToSessionID: make(map[*Conn]string),
-		authService:     authService,
+		userService:     userService,
 		rdb:             rdb,
-		logger:          logger,
 		service:         service,
 	}
 	engine.GET("/msg", wrapper.Wrap(func(w http.ResponseWriter, r *http.Request) {
 		// 建立连接
 		conn, err := server.buildConn(w, r)
 		if err != nil {
+			log.WithError(err).Debug("build conn error")
 			return
 		}
 
@@ -79,6 +78,7 @@ func (h *Server) handle(conn *Conn) {
 		}
 		msgType, reqBytes, err := conn.conn.ReadMessage()
 		if err != nil {
+			log.WithError(err).Error("read message exception")
 			break
 		}
 
@@ -91,6 +91,7 @@ func (h *Server) handle(conn *Conn) {
 		if err := h.writeEvent(conn, &msg.Event{
 			Rsp: h.sendMsg(conn.session, reqBytes),
 		}); err != nil {
+			log.WithError(err).Error("write event exception")
 			break
 		}
 	}
@@ -98,7 +99,7 @@ func (h *Server) handle(conn *Conn) {
 }
 
 // 发送消息
-func (h *Server) sendMsg(session *auth2.Session, reqBytes []byte) *common.Rsp {
+func (h *Server) sendMsg(session *user.Session, reqBytes []byte) *common.Rsp {
 	var req SendMsgReq
 	if err := json.Unmarshal(reqBytes, &req); err != nil {
 		return common.FailureRsp(common.ErrCodeInvalidParameter)
@@ -129,7 +130,7 @@ func (h *Server) buildConn(w http.ResponseWriter, r *http.Request) (*Conn, error
 	if token == "" {
 		return nil, errors.New("token is empty")
 	}
-	rsp, err := h.authService.GetSession(&auth2.GetSessionReq{
+	rsp, err := h.userService.GetSession(&user.GetSessionReq{
 		Token: token,
 	})
 	if err != nil {
@@ -144,14 +145,13 @@ func (h *Server) buildConn(w http.ResponseWriter, r *http.Request) (*Conn, error
 	if oldConn := h.sessionIDToConn[sessionID]; oldConn != nil {
 		// 断开ws连接
 		if err := oldConn.conn.Close(); err != nil {
-			h.logger.WithField("err", err).Error("close conn exception")
+			log.WithError(err).Error("close conn exception")
 		}
 		// 删除连接
 		delete(h.sessionIDToConn, sessionID)
 		delete(h.connToSessionID, oldConn)
 		// 删除Redis会话
 		if err := h.rdb.Del(context.Background(), sessionID).Err(); err != nil {
-			h.logger.WithField("err", err).Error("delete redis session exception")
 			return nil, err
 		}
 	}
@@ -169,7 +169,6 @@ func (h *Server) buildConn(w http.ResponseWriter, r *http.Request) (*Conn, error
 	h.connToSessionID[&newConn] = sessionID
 	// 添加Redis会话
 	if err := h.rdb.Set(context.Background(), sessionID, "", 0).Err(); err != nil {
-		h.logger.WithField("err", err).Error("set redis session exception")
 		// 删除连接
 		delete(h.sessionIDToConn, sessionID)
 		delete(h.connToSessionID, &newConn)
@@ -191,13 +190,13 @@ func (h *Server) clearConn(conn *Conn) {
 	// 删除会话
 	// 断开ws连接
 	if err := conn.conn.Close(); err != nil {
-		h.logger.WithField("err", err).Error("close conn exception")
+		log.WithError(err).Error("close conn exception")
 	}
 	// 删除连接
 	delete(h.sessionIDToConn, sessionID)
 	delete(h.connToSessionID, conn)
 	// 删除Redis会话
 	if err := h.rdb.Del(context.Background(), sessionID).Err(); err != nil {
-		h.logger.WithField("err", err).Error("delete redis session exception")
+		log.WithError(err).Error("delete redis session exception")
 	}
 }

@@ -2,12 +2,12 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
+	"github.com/jiaxwu/him/conf/log"
 )
 
 // NewLogger 日志
-func NewLogger(logger *logrus.Logger) gin.HandlerFunc {
+func NewLogger() gin.HandlerFunc {
 	return gin.LoggerWithConfig(gin.LoggerConfig{
-		Output: logger.Out,
+		Output: log.GetOutput(),
 	})
 }

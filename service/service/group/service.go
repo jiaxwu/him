@@ -7,8 +7,7 @@ import (
 	model2 "github.com/jiaxwu/him/service/service/group/model"
 	"github.com/jiaxwu/him/service/service/msg"
 	"github.com/jiaxwu/him/service/service/msg/sender"
-	"github.com/jiaxwu/him/service/service/user/profile/model"
-	"github.com/sirupsen/logrus"
+	"github.com/jiaxwu/him/service/service/user"
 	"gorm.io/gorm"
 	"strconv"
 	"strings"
@@ -17,22 +16,22 @@ import (
 
 type Service struct {
 	db            *gorm.DB
-	logger        *logrus.Logger
 	config        *conf.Config
 	senderService *sender.Service
 	idGenerator   *msg.IDGenerator
 	friendService *friend.Service
+	userService   *user.Service
 }
 
-func NewService(db *gorm.DB, logger *logrus.Logger, config *conf.Config, senderService *sender.Service,
-	idGenerator *msg.IDGenerator, friendService *friend.Service) *Service {
+func NewService(db *gorm.DB, config *conf.Config, senderService *sender.Service, idGenerator *msg.IDGenerator,
+	friendService *friend.Service, userService *user.Service) *Service {
 	return &Service{
 		db:            db,
-		logger:        logger,
 		config:        config,
 		senderService: senderService,
 		idGenerator:   idGenerator,
 		friendService: friendService,
+		userService:   userService,
 	}
 }
 
@@ -49,7 +48,6 @@ func (s *Service) GetGroupInfos(req *GetGroupInfosReq) (*GetGroupInfosRsp, error
 	}
 	var groupIDS []uint64
 	if err := query.Select("group_id").Find(&groupIDS).Error; err != nil {
-		s.logger.WithError(err).Error("db exception")
 		return nil, err
 	}
 
@@ -122,7 +120,6 @@ func (s *Service) CreateGroup(req *CreateGroupReq) (*CreateGroupRsp, error) {
 	if err := s.db.Transaction(func(tx *gorm.DB) error {
 		// 创建群
 		if err := tx.Create(&group).Error; err != nil {
-			s.logger.WithError(err).Error("db exception")
 			return err
 		}
 
@@ -141,7 +138,6 @@ func (s *Service) CreateGroup(req *CreateGroupReq) (*CreateGroupRsp, error) {
 			})
 		}
 		if err := tx.Create(&groupMembers).Error; err != nil {
-			s.logger.WithError(err).Error("db exception")
 			return err
 		}
 
@@ -194,11 +190,11 @@ func (s *Service) CreateGroup(req *CreateGroupReq) (*CreateGroupRsp, error) {
 // 装配创建群的tip
 func (s *Service) assembleCreateGroupNickNameTextTip(userID uint64, memberIDS []uint64) (*msg.NickNameTextTip, error) {
 	// 获取成员昵称
-	var userProfiles []*model.UserProfile
-	if err := s.db.Where("user_id in ?", memberIDS).Find(&userProfiles).Error; err != nil {
-		s.logger.WithError(err).Error("db exception")
+	getUserInfosRsp, err := s.userService.GetUserInfos(&user.GetUserInfosReq{UserIDS: memberIDS})
+	if err != nil {
 		return nil, err
 	}
+	userInfos := getUserInfosRsp.UserInfos
 
 	// 拼接
 	var leaderNickName string
@@ -210,14 +206,14 @@ func (s *Service) assembleCreateGroupNickNameTextTip(userID uint64, memberIDS []
 			Text: "邀请",
 		},
 	}
-	for _, userProfile := range userProfiles {
-		if userID == userProfile.UserID {
-			leaderNickName = userProfile.NickName
+	for _, userInfo := range userInfos {
+		if userID == userInfo.UserID {
+			leaderNickName = userInfo.NickName
 			continue
 		}
 		clickableTexts = append(clickableTexts, &msg.ClickableText{
-			Link: strconv.Itoa(int(userProfile.UserID)),
-			Text: userProfile.NickName,
+			Link: strconv.Itoa(int(userInfo.UserID)),
+			Text: userInfo.NickName,
 		})
 	}
 	clickableTexts[0].Text = leaderNickName

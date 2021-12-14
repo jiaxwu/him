@@ -2,14 +2,14 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 	"github.com/jiaxwu/him/conf"
+	"github.com/jiaxwu/him/conf/log"
 )
 
 // NewEngine 新建一个Gin Engine
-func NewEngine(logger *logrus.Logger) *gin.Engine {
+func NewEngine() *gin.Engine {
 	r := gin.New()
-	r.Use(NewLogger(logger), Cors(), ExceptionHandler(), Recovery(logger))
+	r.Use(NewLogger(), Cors(), ExceptionHandler(), Recovery())
 	return r
 }
 
@@ -26,6 +26,6 @@ func NewServer(engine *gin.Engine) *Server {
 }
 
 // Start 启动服务器
-func Start(server *Server, logger *logrus.Logger, config *conf.Config) {
-	logger.WithField("msg", "handler exit").Warn(server.engine.Run(config.Server.Addr))
+func Start(server *Server, config *conf.Config) {
+	log.WithField("msg", "handler exit").Warn(server.engine.Run(config.Server.Addr))
 }

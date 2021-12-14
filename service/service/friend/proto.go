@@ -1,20 +1,23 @@
 package friend
 
-import "github.com/jiaxwu/him/service/service/user/profile"
+import (
+	"github.com/jiaxwu/him/service/service/user"
+)
 
 // FriendInfo 好友信息
 type FriendInfo struct {
-	FriendID    uint64         `json:"FriendID"`    // 好友编号
-	NickName    string         `json:"NickName"`    // 昵称
-	Username    string         `json:"Username"`    // 用户名
-	Avatar      string         `json:"Avatar"`      // 头像
-	Gender      profile.Gender `json:"Gender"`      // 性别
-	Remark      string         `json:"Remark"`      // 备注
-	Description string         `json:"Description"` // 描述
-	IsDisturb   bool           `json:"IsDisturb"`   // 是否免打扰
-	IsBlacklist bool           `json:"IsBlacklist"` // 是否黑名单
-	IsTop       bool           `json:"IsTop"`       // 是否置顶
-	IsFriend    bool           `json:"IsFriend"`    // 是否是朋友(如果被删将不是朋友，陌生人也不是)
+	FriendID    uint64        `json:"FriendID"`    // 好友编号
+	UserType    user.UserType `json:"UserType"`    // 用户类型
+	NickName    string        `json:"NickName"`    // 昵称
+	Username    string        `json:"Username"`    // 用户名
+	Avatar      string        `json:"Avatar"`      // 头像
+	Gender      user.Gender   `json:"Gender"`      // 性别
+	Remark      string        `json:"Remark"`      // 备注
+	Description string        `json:"Description"` // 描述
+	IsDisturb   bool          `json:"IsDisturb"`   // 是否免打扰
+	IsBlacklist bool          `json:"IsBlacklist"` // 是否黑名单
+	IsTop       bool          `json:"IsTop"`       // 是否置顶
+	IsFriend    bool          `json:"IsFriend"`    // 是否是朋友(如果被删将不是朋友，陌生人也不是)
 }
 
 // GetFriendInfosReq 获取好友信息请求

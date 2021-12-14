@@ -5,13 +5,13 @@ import (
 	"errors"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/go-redis/redis/v8"
-	"github.com/sirupsen/logrus"
+	"github.com/jiaxwu/him/conf/log"
+	"github.com/jiaxwu/him/service/common"
+	"github.com/jiaxwu/him/service/service/msg"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/gorm"
-	"github.com/jiaxwu/him/service/common"
-	"github.com/jiaxwu/him/service/service/msg"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
@@ -24,17 +24,15 @@ import (
 type Service struct {
 	db                        *gorm.DB
 	rdb                       *redis.Client
-	logger                    *logrus.Logger
 	mongoOfflineMsgCollection *mongo.Collection
 	msgBucketOSSClient        *cos.Client
 }
 
 func NewService(mongoOfflineMsgCollection *mongo.Collection, msgBucketOSSClient *cos.Client, db *gorm.DB,
-	rdb *redis.Client, logger *logrus.Logger) *Service {
+	rdb *redis.Client) *Service {
 	return &Service{
 		db:                        db,
 		rdb:                       rdb,
-		logger:                    logger,
 		mongoOfflineMsgCollection: mongoOfflineMsgCollection,
 		msgBucketOSSClient:        msgBucketOSSClient,
 	}
@@ -64,7 +62,6 @@ func (s *Service) Upload(req *UploadReq) (rsp *UploadRsp, err error) {
 	// 上传
 	contentFile, err := content.Open()
 	if err != nil {
-		s.logger.WithError(err).Error("can not open file")
 		return nil, err
 	}
 	if _, err = s.msgBucketOSSClient.Object.Put(context.Background(), objectName, contentFile, &cos.ObjectPutOptions{
@@ -72,7 +69,7 @@ func (s *Service) Upload(req *UploadReq) (rsp *UploadRsp, err error) {
 			ContentType: contentType,
 		},
 	}); err != nil {
-		s.logger.WithError(err).Error("put object to cos exception")
+		log.WithError(err).Error("put object to cos exception")
 		return nil, err
 	}
 	return rsp, nil

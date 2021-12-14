@@ -1,5 +1,5 @@
 MySQL:
-  DSN: root:root@tcp(127.0.0.1:3306)/lolmclient?parseTime=True
+  DSN: root:root@tcp(127.0.0.1:3306)/him?parseTime=True
 Redis:
   Addr: 127.0.0.1:6379
 Server:
@@ -14,7 +14,7 @@ SMS:
   Region: ap-guangzhou
   SMSSDKAppID: 1400597505
   SignName: 小花师傅
-Logger:
+Log:
   Level: warn
 Kafka:
   Addrs:

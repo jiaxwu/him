@@ -4,8 +4,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/jiaxwu/him/common/jsons"
 	"github.com/jiaxwu/him/conf"
+	"github.com/jiaxwu/him/conf/log"
 	"github.com/jiaxwu/him/service/common"
-	"github.com/sirupsen/logrus"
 	tcCommon "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
@@ -14,15 +14,13 @@ import (
 
 type Service struct {
 	config    *conf.Config
-	logger    *logrus.Logger
 	validate  *validator.Validate
 	smsClient *sms.Client
 }
 
-func NewService(config *conf.Config, logger *logrus.Logger, validate *validator.Validate) *Service {
+func NewService(config *conf.Config, validate *validator.Validate) *Service {
 	smService := &Service{
 		config:   config,
-		logger:   logger,
 		validate: validate,
 	}
 	credential := tcCommon.NewCredential(
@@ -49,23 +47,23 @@ func (s *Service) SendSm(req *SendSmReq) (*SendSmRsp, error) {
 	// 发送请求
 	rsp, err := s.smsClient.SendSms(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
-		s.logger.WithError(err).WithField("req", jsons.MarshalToString(req)).Error("tencent cloud sdk error")
+		log.WithError(err).WithField("req", jsons.MarshalToString(req)).Error("tencent cloud sdk error")
 		return nil, err
 	}
 	if err != nil {
-		s.logger.WithError(err).WithField("req", jsons.MarshalToString(req)).Error("unknown exception catch")
+		log.WithError(err).WithField("req", jsons.MarshalToString(req)).Error("unknown exception catch")
 		return nil, err
 	}
 
 	// 超过限频限制
-	if *rsp.Response.SendStatusSet[0].Code ==
-		string(TencentCloudStatusCodeLimitExceededPhoneNumberThirtySecondLimit) {
+	if *rsp.Response.SendStatusSet[0].Code == string(TencentCloudStatusCodeLimitExceededPhoneNumberThirtySecondLimit) ||
+		*rsp.Response.SendStatusSet[0].Code == string(TencentCloudStatusCodeLimitExceededPhoneNumberOneHourLimit) {
 		return nil, ErrCodeThrottlingSm
 	}
 
 	// 结果处理
 	if *rsp.Response.SendStatusSet[0].Code != string(TencentCloudStatusCodeOK) {
-		s.logger.WithFields(logrus.Fields{
+		log.WithFields(log.Fields{
 			"req": jsons.MarshalToString(req),
 			"rsp": jsons.MarshalToString(rsp),
 		}).Error("received a code that is not 'Ok'")

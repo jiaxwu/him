@@ -2,8 +2,9 @@ package wrap
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/jiaxwu/him/conf/log"
 	"github.com/jiaxwu/him/service/common"
-	"github.com/jiaxwu/him/service/service/user/auth"
+	"github.com/jiaxwu/him/service/service/user"
 	"mime/multipart"
 	"reflect"
 )
@@ -12,16 +13,16 @@ import (
 type Config struct {
 	NotNeedResponse bool            // 不需要响应
 	NotNeedLogin    bool            // 不需要登录
-	UserTypes       []auth.UserType // 有权访问的用户类型
+	UserTypes       []user.UserType // 有权访问的用户类型
 }
 
 // Wrapper Handler的包装器
 type Wrapper struct {
-	authService *auth.Service
+	authService *user.Service
 }
 
 // NewWrapper 新建一个Handler的包装器
-func NewWrapper(authService *auth.Service) *Wrapper {
+func NewWrapper(authService *user.Service) *Wrapper {
 	return &Wrapper{
 		authService: authService,
 	}
@@ -44,10 +45,10 @@ func (w *Wrapper) wrap(c *gin.Context, handler interface{}, config *Config) {
 	}
 
 	// 如果需要登录则进行验证
-	var session *auth.Session
+	var session *user.Session
 	if !config.NotNeedLogin {
 		// 获取session
-		authorizeRsp, err := w.authService.Authorize(&auth.AuthorizeReq{
+		authorizeRsp, err := w.authService.Authorize(&user.AuthorizeReq{
 			Token:     header.Token,
 			UserTypes: config.UserTypes,
 		})
@@ -80,7 +81,13 @@ func (w *Wrapper) wrap(c *gin.Context, handler interface{}, config *Config) {
 
 	// 结果处理
 	if !rets[1].IsNil() {
-		common.Failure(c, rets[1].Interface().(error))
+		err := rets[1].Interface()
+		switch err.(type) {
+		case *common.ErrCode:
+		case error:
+			log.WithError(err.(error)).Error("internal exception")
+		}
+		common.Failure(c, err.(error))
 		return
 	}
 	common.Success(c, rets[0].Interface())
@@ -88,12 +95,12 @@ func (w *Wrapper) wrap(c *gin.Context, handler interface{}, config *Config) {
 
 // 获取参数值
 func (w *Wrapper) getParamValue(fn reflect.Type, paramIndex int, c *gin.Context, header *common.Header,
-	session *auth.Session) (interface{}, error) {
+	session *user.Session) (interface{}, error) {
 	paramPointType := fn.In(paramIndex)
 	if reflect.TypeOf(&common.Header{}).AssignableTo(paramPointType) {
 		return header, nil
 	}
-	if reflect.TypeOf(&auth.Session{}).AssignableTo(paramPointType) {
+	if reflect.TypeOf(&user.Session{}).AssignableTo(paramPointType) {
 		return session, nil
 	}
 	if reflect.TypeOf(&multipart.Form{}).AssignableTo(paramPointType) {
