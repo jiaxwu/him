@@ -2,8 +2,6 @@ package user
 
 import (
 	"fmt"
-	httpHeaderValue "github.com/jiaxwu/him/common/constant/http/header/value"
-	imageFormat "github.com/jiaxwu/him/common/constant/image/format"
 	"regexp"
 	"strings"
 	"time"
@@ -18,13 +16,6 @@ const (
 
 // UsernameCharSetRegexp 用户名字符集正则表达式
 var UsernameCharSetRegexp = regexp.MustCompile(`\w{5,30}`)
-
-// UserAvatarContentTypeToImageFormatMap 用户头像的 ContentType 到 FileType 的转换
-var UserAvatarContentTypeToImageFormatMap = map[string]string{
-	httpHeaderValue.ImagePNG:  imageFormat.PNG,
-	httpHeaderValue.ImageGIF:  imageFormat.GIF,
-	httpHeaderValue.ImageJPEG: imageFormat.JPEG,
-}
 
 const (
 	// UserAvatarClearTaskCron 用户头像清理任务cron

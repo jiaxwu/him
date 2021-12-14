@@ -65,14 +65,13 @@ func (s *Service) GetUserInfos(req *GetUserInfosReq) (*GetUserInfosRsp, error) {
 
 	// 转换
 	userInfos := make([]*UserInfo, 0, len(users))
-	// todo avatar要拼接前缀
 	for _, user := range users {
 		userInfos = append(userInfos, &UserInfo{
 			UserID:       user.ID,
 			UserType:     UserType(user.Type),
 			Username:     user.Username,
 			NickName:     user.NickName,
-			Avatar:       user.Avatar,
+			Avatar:       UserAvatarBucketURL + user.Avatar,
 			Gender:       Gender(user.Gender),
 			Phone:        user.Phone,
 			Email:        user.Email,
@@ -171,12 +170,6 @@ func (s *Service) UploadAvatar(req *UploadAvatarReq) (*UploadAvatarRsp, error) {
 		return nil, ErrCodeInvalidParameterAvatarSize
 	}
 
-	// 检查头像类型
-	contentType := req.Avatar.Header.Get(httpHeaderKey.ContentType)
-	if UserAvatarContentTypeToImageFormatMap[contentType] == "" {
-		return nil, ErrCodeInvalidParameterAvatarContentType
-	}
-
 	// 上传头像
 	avatar, err := req.Avatar.Open()
 	if err != nil {
@@ -185,14 +178,14 @@ func (s *Service) UploadAvatar(req *UploadAvatarReq) (*UploadAvatarRsp, error) {
 	objectName := gofakeit.UUID()
 	if _, err = s.userAvatarBucketOSSClient.Object.Put(context.Background(), objectName, avatar, &cos.ObjectPutOptions{
 		ObjectPutHeaderOptions: &cos.ObjectPutHeaderOptions{
-			ContentType: contentType,
+			ContentType: req.Avatar.Header.Get(httpHeaderKey.ContentType),
 		},
 	}); err != nil {
 		return nil, err
 	}
 
 	return &UploadAvatarRsp{
-		Avatar: UserAvatarBucketURL + objectName,
+		Avatar: objectName,
 	}, nil
 }
 
