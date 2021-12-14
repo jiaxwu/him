@@ -7,18 +7,18 @@ import (
 	"github.com/jiaxwu/him/conf/mongo"
 	"github.com/jiaxwu/him/conf/rdb"
 	"github.com/jiaxwu/him/conf/validate"
-	"github.com/jiaxwu/him/service/server"
-	"github.com/jiaxwu/him/service/service/friend"
-	"github.com/jiaxwu/him/service/service/group"
-	"github.com/jiaxwu/him/service/service/msg"
-	msgGateway "github.com/jiaxwu/him/service/service/msg/gateway"
-	msgSender "github.com/jiaxwu/him/service/service/msg/sender"
-	msgShort "github.com/jiaxwu/him/service/service/msg/short"
-	msgTransfer "github.com/jiaxwu/him/service/service/msg/transfer"
-	"github.com/jiaxwu/him/service/service/sm"
-	"github.com/jiaxwu/him/service/service/user"
-	userHandler "github.com/jiaxwu/him/service/service/user/handler"
-	"github.com/jiaxwu/him/service/wrap"
+	"github.com/jiaxwu/him/server"
+	"github.com/jiaxwu/him/service/friend"
+	"github.com/jiaxwu/him/service/group"
+	"github.com/jiaxwu/him/service/msg"
+	"github.com/jiaxwu/him/service/msg/gateway"
+	"github.com/jiaxwu/him/service/msg/sender"
+	"github.com/jiaxwu/him/service/msg/short"
+	"github.com/jiaxwu/him/service/msg/transfer"
+	"github.com/jiaxwu/him/service/sm"
+	"github.com/jiaxwu/him/service/user"
+	userHandler "github.com/jiaxwu/him/service/user/handler"
+	"github.com/jiaxwu/him/wrap"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 )
@@ -59,25 +59,25 @@ func NewApp() *fx.App {
 				fx.ResultTags(`name:"MongoOfflineMsgCollection"`),
 			),
 			fx.Annotate(
-				msgSender.NewSendMsgProducer,
+				sender.NewSendMsgProducer,
 				fx.ResultTags(`name:"SendMsgProducer"`),
 			),
 			fx.Annotate(
-				msgSender.NewService,
+				sender.NewService,
 				fx.ParamTags(`name:"SendMsgProducer"`),
 			),
-			msgGateway.NewGatewayServer,
-			msgGateway.NewService,
+			gateway.NewGatewayServer,
+			gateway.NewService,
 			fx.Annotate(
-				msgTransfer.NewPushMsgProducer,
+				transfer.NewPushMsgProducer,
 				fx.ResultTags(`name:"PushMsgProducer"`),
 			),
 			fx.Annotate(
-				msgShort.NewMsgBucketOSSClient,
+				short.NewMsgBucketOSSClient,
 				fx.ResultTags(`name:"MsgBucketOSSClient"`),
 			),
 			fx.Annotate(
-				msgShort.NewService,
+				short.NewService,
 				fx.ParamTags(`name:"MongoOfflineMsgCollection"`, `name:"MsgBucketOSSClient"`),
 			),
 			friend.NewService,
@@ -85,14 +85,14 @@ func NewApp() *fx.App {
 		),
 		fx.Invoke(
 			userHandler.RegisterHandler,
-			msgShort.RegisterHandler,
+			short.RegisterHandler,
 			friend.RegisterHandler,
 			group.RegisterHandler,
 			fx.Annotate(
-				msgTransfer.NewSendMsgConsumer,
+				transfer.NewSendMsgConsumer,
 				fx.ParamTags(`name:"PushMsgProducer"`, `name:"MongoOfflineMsgCollection"`),
 			),
-			msgGateway.NewPushMsgConsumer,
+			gateway.NewPushMsgConsumer,
 			fx.Annotate(
 				user.NewUserAvatarClearTask,
 				fx.ParamTags(`name:"UserAvatarBucketOSSClient"`),

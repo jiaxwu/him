@@ -3,9 +3,9 @@ package db
 import (
 	"github.com/jiaxwu/him/conf"
 	"github.com/jiaxwu/him/conf/log"
-	friendModel "github.com/jiaxwu/him/service/service/friend/model"
-	groupModel "github.com/jiaxwu/him/service/service/group/model"
-	authModel "github.com/jiaxwu/him/service/service/user/model"
+	friendModel "github.com/jiaxwu/him/service/friend/model"
+	groupModel "github.com/jiaxwu/him/service/group/model"
+	authModel "github.com/jiaxwu/him/service/user/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
