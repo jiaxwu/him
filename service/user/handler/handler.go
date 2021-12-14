@@ -38,10 +38,6 @@ func RegisterHandler(engine *gin.Engine, service *user.Service, wrapper *wrap.Wr
 		NotNeedLogin: true,
 	}))
 
-	engine.POST("user/auth/session/get", wrapper.Wrap(service.GetSession, &wrap.Config{
-		NotNeedLogin: true,
-	}))
-
 	engine.POST("user/auth/logout", wrapper.Wrap(func(req *user.LogoutReq, header *common.Header,
 		session *user.Session) (*user.LogoutRsp, error) {
 		req.Token = header.Token
