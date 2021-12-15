@@ -58,7 +58,7 @@ func (c *PushMsgConsumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 		userID := binary.BigEndian.Uint64(message.Key)
 
 		// 发送给这个用户的所有终端
-		for terminal := range user.TerminalSet {
+		for terminal := range user.TerminalSet() {
 			sessionID := msg.SessionID(userID, terminal)
 			if conn := c.server.sessionIDToConn[sessionID]; conn != nil {
 				c.server.writeEvent(conn, &msg.Event{

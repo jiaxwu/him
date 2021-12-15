@@ -33,6 +33,8 @@ var (
 		"密码长度必须8-20个字符且由数字、小写字母、大写字母和符号!@#~$%^&*()+|_中的三种组成")
 	ErrCodeInvalidParameterPhoneNotRegister = common.NewErrCode("InvalidParameter.Phone.NotRegister",
 		"the phone has not been register", "手机号码还没有注册，请先进行注册")
+	ErrCodeInvalidParameterPhoneExists = common.NewErrCode("InvalidParameter.Phone.Exists",
+		"the phone has been exists", "手机号码已经被注册了")
 	ErrCodeInvalidParameterUsernameExists = common.NewErrCode("ErrCodeInvalidParameter.UsernameExists",
 		"the username exists", "用户名已经存在")
 	ErrCodeUnauthorizedInvalidToken = common.NewErrCode("Unauthorized.InvalidToken",

@@ -108,7 +108,7 @@ func (s *Service) UpdateUserInfo(req *UpdateUserInfoReq) (*UpdateUserInfoRsp, er
 		column = "username"
 		value = req.Action.Username
 	} else if req.Action.Gender != nil {
-		if !GenderSet[*req.Action.Gender] {
+		if !GenderSet()[*req.Action.Gender] {
 			return nil, ErrCodeInvalidParameterGender
 		}
 		column = "gender"

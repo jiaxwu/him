@@ -13,6 +13,7 @@ import (
 	"github.com/jiaxwu/him/service/user/model"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"regexp"
 	"strconv"
 	"strings"
@@ -22,7 +23,7 @@ import (
 // Login 登录
 func (s *Service) Login(req *LoginReq) (rsp *LoginRsp, err error) {
 	// 检查终端是否正确
-	if !TerminalSet[req.Terminal] {
+	if !TerminalSet()[req.Terminal] {
 		return nil, common.ErrCodeInvalidParameter
 	}
 
@@ -174,7 +175,7 @@ func (s *Service) login(terminal Terminal, user *model.User) (*LoginRsp, error) 
 // SendSmVerCode 发送短信验证码
 func (s *Service) SendSmVerCode(req *SendSmVerCodeReq) (*SendSmVerCodeRsp, error) {
 	// 验证行为
-	if SmVerCodeActionToTemplateIDMap[req.Action] == "" {
+	if SmVerCodeActionToTemplateIDMap()[req.Action] == "" {
 		return nil, common.ErrCodeInvalidParameter
 	}
 	if err := s.checkPhone(req.Phone); err != nil {
@@ -190,11 +191,13 @@ func (s *Service) SendSmVerCode(req *SendSmVerCodeReq) (*SendSmVerCodeRsp, error
 	}
 
 	// 发送验证码
-	smVerCodeTemplateID := SmVerCodeActionToTemplateIDMap[req.Action]
-	params := []string{smVerCode, strconv.Itoa(SmVerCodeExpMinute)}[:SmVerCodeTemplateParamsCount[smVerCodeTemplateID]]
+	smVerCodeTemplateID := SmVerCodeActionToTemplateIDMap()[req.Action]
+	smVerCodeTemplateParamsCount := SmVerCodeTemplateParamsCount()[smVerCodeTemplateID]
+	params := []string{smVerCode, strconv.Itoa(SmVerCodeExpMinute)}
+	params = params[:smVerCodeTemplateParamsCount]
 	if _, err := s.smService.SendSm(&sm.SendSmReq{
 		Phone:      req.Phone,
-		TemplateID: smVerCodeTemplateID,
+		TemplateID: string(smVerCodeTemplateID),
 		Params:     params,
 	}); err != nil {
 		return nil, err
@@ -204,19 +207,37 @@ func (s *Service) SendSmVerCode(req *SendSmVerCodeReq) (*SendSmVerCodeRsp, error
 }
 
 // 注册账号
-// todo phone要加锁
 func (s *Service) register(phone string) (*model.User, error) {
-	user := model.User{
-		Type:         string(UserTypeUser),
-		Username:     s.genUsername(),
-		NickName:     s.genNickName(),
-		Phone:        phone,
-		RegisteredAt: uint64(time.Now().Unix()),
-	}
-	// 创建用户
-	if err := s.db.Create(&user).Error; err != nil {
+	var user model.User
+	if err := s.db.Transaction(func(tx *gorm.DB) error {
+		// 锁住手机号码
+		err := tx.Clauses(clause.Locking{
+			Strength: "UPDATE",
+			Options:  "NOWAIT",
+		}).Where("phone = ?", phone).Take(&user).Error
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+		// 如果查到数据，说明手机号码已经被注册了，不进行注册
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrCodeInvalidParameterPhoneExists
+		}
+		// 创建用户
+		user = model.User{
+			Type:         string(UserTypeUser),
+			Username:     s.genUsername(),
+			NickName:     s.genNickName(),
+			Phone:        phone,
+			RegisteredAt: uint64(time.Now().Unix()),
+		}
+		if err := tx.Create(&user).Error; err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
 		return nil, err
 	}
+
 	return &user, nil
 }
 

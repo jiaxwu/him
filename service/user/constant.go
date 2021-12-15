@@ -47,21 +47,28 @@ return redis.call("DEL", antiKey)
 `
 )
 
+// SmVerCodeTemplateID 短信验证码模板编号
+type SmVerCodeTemplateID string
+
 const (
-	SmVerCodeTemplateIDLogin          = "1179214" // 短信模板-发送登录短信验证码
-	SmVerCodeTemplateIDChangePassword = "1219668" // 短信模板-发送修改密码短信验证码
+	SmVerCodeTemplateIDLogin          SmVerCodeTemplateID = "1179214" // 短信模板-发送登录短信验证码
+	SmVerCodeTemplateIDChangePassword SmVerCodeTemplateID = "1219668" // 短信模板-发送修改密码短信验证码
 )
 
 // SmVerCodeActionToTemplateIDMap 短信验证码行为到模板编号Map
-var SmVerCodeActionToTemplateIDMap = map[SmVerCodeAction]string{
-	SmVerCodeActionLogin:          SmVerCodeTemplateIDLogin,
-	SmVerCodeActionChangePassword: SmVerCodeTemplateIDChangePassword,
+func SmVerCodeActionToTemplateIDMap() map[SmVerCodeAction]SmVerCodeTemplateID {
+	return map[SmVerCodeAction]SmVerCodeTemplateID{
+		SmVerCodeActionLogin:          SmVerCodeTemplateIDLogin,
+		SmVerCodeActionChangePassword: SmVerCodeTemplateIDChangePassword,
+	}
 }
 
 // SmVerCodeTemplateParamsCount 短信验证码模板的参数数量
-var SmVerCodeTemplateParamsCount = map[string]int{
-	SmVerCodeTemplateIDLogin:          2,
-	SmVerCodeTemplateIDChangePassword: 1,
+func SmVerCodeTemplateParamsCount() map[SmVerCodeTemplateID]int {
+	return map[SmVerCodeTemplateID]int{
+		SmVerCodeTemplateIDLogin:          2,
+		SmVerCodeTemplateIDChangePassword: 1,
+	}
 }
 
 var (

@@ -13,10 +13,12 @@ const (
 	GenderFemale  Gender = 2 // 女性
 )
 
-var GenderSet = map[Gender]bool{
-	GenderUnknown: true,
-	GenderMale:    true,
-	GenderFemale:  true,
+func GenderSet() map[Gender]bool {
+	return map[Gender]bool{
+		GenderUnknown: true,
+		GenderMale:    true,
+		GenderFemale:  true,
+	}
 }
 
 type UserType string
@@ -26,9 +28,11 @@ const (
 	UserTypeSys  UserType = "Sys"  // 系统
 )
 
-var UserTypeSet = map[UserType]bool{
-	UserTypeUser: true,
-	UserTypeSys:  true,
+func UserTypeSet() map[UserType]bool {
+	return map[UserType]bool{
+		UserTypeUser: true,
+		UserTypeSys:  true,
+	}
 }
 
 // Terminal 终端类型
@@ -41,10 +45,12 @@ const (
 )
 
 // TerminalSet 终端集合
-var TerminalSet = map[Terminal]bool{
-	TerminalWeb: true,
-	TerminalApp: true,
-	TerminalPC:  true,
+func TerminalSet() map[Terminal]bool {
+	return map[Terminal]bool{
+		TerminalWeb: true,
+		TerminalApp: true,
+		TerminalPC:  true,
+	}
 }
 
 type UserInfo struct {
