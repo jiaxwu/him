@@ -65,6 +65,7 @@ const (
 // Msg 消息会持久化存储
 // 通过客户端信箱编号同步机制，保证消息可靠性，同时客户端需要保证消息被成功处理
 // 消息通过事件推送给客户端
+// todo 也许sender和receiver平铺更好？
 type Msg struct {
 	UserID      uint64    `json:"UserID" bson:"UserID"`           // 信箱拥有者用户编号
 	Seq         uint64    `json:"Seq" bson:"Seq"`                 // 每人一个，序列号会递增（保证不丢失消息）

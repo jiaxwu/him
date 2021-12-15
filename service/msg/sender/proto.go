@@ -12,6 +12,16 @@ type SendMsgsReq struct {
 // SendMsgsRsp 发送消息响应
 type SendMsgsRsp struct{}
 
+// SendTextMsgReq 发送text消息请求
+type SendTextMsgReq struct {
+	UserIDS  []uint64      `json:"UserIDS"`
+	TextMsg   *msg.TextMsg   `json:"TextMsg"`
+	Receiver *msg.Receiver `json:"Receiver"`
+}
+
+// SendTextMsgRsp 发送text消息响应
+type SendTextMsgRsp struct{}
+
 // SendTipMsgReq 发送tip消息请求
 type SendTipMsgReq struct {
 	UserIDS  []uint64      `json:"UserIDS"`

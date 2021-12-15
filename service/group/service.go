@@ -1,6 +1,8 @@
 package group
 
 import (
+	"errors"
+	"fmt"
 	"github.com/jiaxwu/him/common"
 	"github.com/jiaxwu/him/conf"
 	"github.com/jiaxwu/him/service/friend"
@@ -177,7 +179,7 @@ func (s *Service) CreateGroup(req *CreateGroupReq) (*CreateGroupRsp, error) {
 	// 响应
 	getGroupInfosRsp, err := s.GetGroupInfos(&GetGroupInfosReq{
 		UserID: req.UserID,
-		Condition: &GetGroupInfosReqCondition{
+		Condition: &GetGroupInfosCondition{
 			GroupID: group.ID,
 		},
 	})
@@ -185,6 +187,149 @@ func (s *Service) CreateGroup(req *CreateGroupReq) (*CreateGroupRsp, error) {
 		return nil, err
 	}
 	return &CreateGroupRsp{GroupInfo: getGroupInfosRsp.GroupInfos[0]}, nil
+}
+
+// UpdateGroupInfo 更新群信息
+func (s Service) UpdateGroupInfo(req *UpdateGroupInfoReq) (*UpdateGroupInfoRsp, error) {
+	// 判断群是否存在
+	var group model.Group
+	err := s.db.Take(&group, req.GroupID).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, common.ErrCodeInvalidParameter
+	}
+
+	// 判断操作者是否是群主或者管理员
+	var groupMember model.GroupMember
+	err = s.db.Where("group_id = ? and member_id = ?", req.GroupID, req.OperatorID).Take(&groupMember).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, common.ErrCodeInvalidParameter
+	}
+	if groupMember.Role != string(GroupMemberRoleManager) && groupMember.Role != string(GroupMemberRoleLeader) {
+		return nil, common.ErrCodeForbidden
+	}
+
+	// 准备好更新和通知的内容
+	var (
+		column          string
+		value           string
+		nickNameTextTip *msg.NickNameTextTip
+		textMsg         *msg.TextMsg
+		memberIDS       []uint64
+	)
+	if req.Action.Name != "" {
+		column = "name"
+		value = req.Action.Name
+		tipText := fmt.Sprintf(`修改了群名称为"%s"`, req.Action.Name)
+		if nickNameTextTip, err = s.assembleUpdateGroupInfoNickTextTip(req.OperatorID, tipText); err != nil {
+			return nil, err
+		}
+	} else if req.Action.Icon != "" {
+		column = "icon"
+		value = req.Action.Icon
+		if nickNameTextTip, err = s.assembleUpdateGroupInfoNickTextTip(req.OperatorID, "修改了群头像"); err != nil {
+			return nil, err
+		}
+	} else if req.Action.Notice != "" {
+		column = "notice"
+		value = req.Action.Notice
+		textMsg = &msg.TextMsg{
+			Content:     req.Action.Notice,
+			IsNotice:    true,
+		}
+	} else {
+		return nil, common.ErrCodeInvalidParameter
+	}
+	if err := s.db.Model(model.GroupMember{}).Where("group_id = ?", req.GroupID).
+		Select("member_id").Find(&memberIDS).Error; err != nil {
+		return nil, err
+	}
+
+	// 更新，并发送通知
+	if err := s.db.Model(model.Group{}).Where("id = ?", req.GroupID).Update(column, value).Error; err != nil {
+		return nil, err
+	}
+
+	// 如果需要提示则发送提示
+	if nickNameTextTip != nil {
+		if _, err := s.senderService.SendTipMsg(&sender.SendTipMsgReq{
+			UserIDS: memberIDS,
+			TipMsg: &msg.TipMsg{
+				NickNameTextTip: nickNameTextTip,
+			},
+			Receiver: &msg.Receiver{
+				Type:       msg.ReceiverTypeGroup,
+				ReceiverID: req.GroupID,
+			},
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	// 如果需要公告则发送公告
+	if textMsg != nil {
+		if _, err := s.senderService.SendTextMsg(&sender.SendTextMsgReq{
+			UserIDS: memberIDS,
+			TextMsg: textMsg,
+			Receiver: &msg.Receiver{
+				Type:       msg.ReceiverTypeGroup,
+				ReceiverID: req.GroupID,
+			},
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	// 发送群信息更新时间
+	if _, err := s.senderService.SendEventMsg(&sender.SendEventMsgReq{
+		UserIDS: memberIDS,
+		EventMsg: &msg.EventMsg{
+			GroupInfoChange: &msg.GroupInfoChangeEventMsg{
+				GroupID: group.ID,
+			},
+		},
+	}); err != nil {
+		return nil, err
+	}
+
+	getGroupInfosRsp, err := s.GetGroupInfos(&GetGroupInfosReq{
+		UserID: req.OperatorID,
+		Condition: &GetGroupInfosCondition{
+			GroupID: req.GroupID,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &UpdateGroupInfoRsp{
+		GroupInfo: getGroupInfosRsp.GroupInfos[0],
+	}, nil
+}
+
+// 装配修改群信息tip
+func (s *Service) assembleUpdateGroupInfoNickTextTip(operatorID uint64, text string) (*msg.NickNameTextTip, error) {
+	getUserInfosRsp, err := s.userService.GetUserInfos(&user.GetUserInfosReq{UserID: operatorID})
+	if err != nil {
+		return nil, err
+	}
+	userInfo := getUserInfosRsp.UserInfos[0]
+	return &msg.NickNameTextTip{
+		ClickableTexts: []*msg.ClickableText{
+			{
+				Text: userInfo.NickName,
+				Link: strconv.Itoa(int(operatorID)),
+			},
+			{
+				Text: text,
+			},
+		},
+	}, nil
 }
 
 // 装配创建群的tip

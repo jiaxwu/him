@@ -34,12 +34,12 @@ type GroupInfo struct {
 
 // GetGroupInfosReq 获取群信息请求
 type GetGroupInfosReq struct {
-	UserID    uint64                     `json:"UserID"`    // 用户编号
-	Condition *GetGroupInfosReqCondition `json:"Condition"` // 条件
+	UserID    uint64                  `json:"UserID"`    // 用户编号
+	Condition *GetGroupInfosCondition `json:"Condition"` // 条件
 }
 
-// GetGroupInfosReqCondition 获取群信息请求条件
-type GetGroupInfosReqCondition struct {
+// GetGroupInfosCondition 获取群信息条件
+type GetGroupInfosCondition struct {
 	GroupID uint64 `json:"GroupID,omitempty"` // 群编号
 	All     bool   `json:"All,omitempty"`     // 全部
 }
@@ -59,5 +59,24 @@ type CreateGroupReq struct {
 
 // CreateGroupRsp 创建群响应
 type CreateGroupRsp struct {
+	GroupInfo *GroupInfo `json:"GroupInfo"` // 群信息
+}
+
+// UpdateGroupInfoReq 更新群信息请求
+type UpdateGroupInfoReq struct {
+	OperatorID uint64                 `json:"OperatorID"` // 操作者编号
+	GroupID    uint64                 `json:"GroupID"`    // 群编号
+	Action     *UpdateGroupInfoAction `json:"Action"`     // 更新群信息行为
+}
+
+// UpdateGroupInfoAction 更新群信息行为
+type UpdateGroupInfoAction struct {
+	Name   string `json:"Name"`   // 群名
+	Icon   string `json:"Icon"`   // 图标
+	Notice string `json:"Notice"` // 群公告
+}
+
+// UpdateGroupInfoRsp 更新群信息响应
+type UpdateGroupInfoRsp struct {
 	GroupInfo *GroupInfo `json:"GroupInfo"` // 群信息
 }

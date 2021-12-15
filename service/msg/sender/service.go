@@ -38,6 +38,37 @@ func (s *Service) SendMsgs(req *SendMsgsReq) (*SendMsgsRsp, error) {
 	return &SendMsgsRsp{}, nil
 }
 
+// SendTextMsg 发送text消息
+// todo 搞一个能群发，但是自定义消息内容的接口（SendTextMsg和SendTipMsg重复了）
+func (s *Service) SendTextMsg(req *SendTextMsgReq) (*SendTextMsgRsp, error) {
+	msgs := make([]*msg.Msg, 0, len(req.UserIDS))
+	now := uint64(time.Now().Unix())
+	msgID := s.idGenerator.GenMsgID()
+	sysSender := &msg.Sender{
+		Type: msg.SenderTypeSys,
+	}
+	content := msg.Content{
+		TextMsg: req.TextMsg,
+	}
+
+	// 发送
+	for _, userID := range req.UserIDS {
+		msgs = append(msgs, &msg.Msg{
+			UserID:      userID,
+			MsgID:       msgID,
+			Sender:      sysSender,
+			Receiver:    req.Receiver,
+			SendTime:    now,
+			ArrivalTime: now,
+			Content:     &content,
+		})
+	}
+	if _, err := s.SendMsgs(&SendMsgsReq{Msgs: msgs}); err != nil {
+		return nil, err
+	}
+	return &SendTextMsgRsp{}, nil
+}
+
 // SendTipMsg 发送tip消息
 func (s *Service) SendTipMsg(req *SendTipMsgReq) (*SendTipMsgRsp, error) {
 	msgs := make([]*msg.Msg, 0, len(req.UserIDS))
