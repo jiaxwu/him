@@ -363,17 +363,17 @@ func (s *Service) GetSession(req *GetSessionReq) (*GetSessionRsp, error) {
 
 // 登录短信验证码 Redis Key
 func (s *Service) smVerCodeRedisKey(phone string, action SmVerCodeAction) string {
-	return fmt.Sprintf("auth:sm-ver-code:%s:%s", phone, action)
+	return fmt.Sprintf("user:auth:sm-ver-code:%s:%s", phone, action)
 }
 
 // Token Redis Key
 func (s *Service) tokenRedisKey(token string) string {
-	return fmt.Sprintf("auth:token:%s", token)
+	return fmt.Sprintf("user:auth:token:%s", token)
 }
 
 // 反向Token Redis Key
 func (s *Service) antiTokenRedisKey(userID uint64, terminal Terminal) string {
-	return fmt.Sprintf("auth:token:anti:%d:%s", userID, terminal)
+	return fmt.Sprintf("user:auth:token:anti:%d:%s", userID, terminal)
 }
 
 // checkPasswordLevel 检查密码强度
