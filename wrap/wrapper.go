@@ -29,14 +29,14 @@ func NewWrapper(userService *user.Service) *Wrapper {
 }
 
 // Wrap 对handler进行包装，成为一个 func(*gin.Context) Handler
-func (w *Wrapper) Wrap(handler interface{}, config *Config) func(*gin.Context) {
+func (w *Wrapper) Wrap(handler any, config *Config) func(*gin.Context) {
 	return func(c *gin.Context) {
 		w.wrap(c, handler, config)
 	}
 }
 
 // wrap 抽象包装类
-func (w *Wrapper) wrap(c *gin.Context, handler interface{}, config *Config) {
+func (w *Wrapper) wrap(c *gin.Context, handler any, config *Config) {
 	// 获取header
 	var header common.Header
 	if err := c.ShouldBindHeader(&header); err != nil {
@@ -95,7 +95,7 @@ func (w *Wrapper) wrap(c *gin.Context, handler interface{}, config *Config) {
 
 // 获取参数值
 func (w *Wrapper) getParamValue(fn reflect.Type, paramIndex int, c *gin.Context, header *common.Header,
-	session *user.Session) (interface{}, error) {
+	session *user.Session) (any, error) {
 	paramPointType := fn.In(paramIndex)
 	if reflect.TypeOf(&common.Header{}).AssignableTo(paramPointType) {
 		return header, nil

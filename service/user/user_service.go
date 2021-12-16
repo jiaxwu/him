@@ -86,7 +86,7 @@ func (s *Service) UpdateUserInfo(req *UpdateUserInfoReq) (*UpdateUserInfoRsp, er
 	// 参数校验
 	var (
 		column string
-		value  interface{}
+		value  any
 	)
 	if req.Action.Avatar != "" {
 		if len(req.Action.Avatar) > 200 {
