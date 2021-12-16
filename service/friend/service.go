@@ -166,7 +166,7 @@ func (s *Service) UpdateFriendInfo(req *UpdateFriendInfoReq) (*UpdateFriendInfoR
 	// 修改
 	var (
 		column string
-		value  interface{}
+		value  any
 	)
 	if req.Action.IsDisturb != nil {
 		column = "is_disturb"
@@ -493,7 +493,7 @@ func (s *Service) sendTextMsg(senderID, receiverID uint64, textMsgContent string
 
 // 更新添加好友申请请求检查，会有副作用，会修改addFriendApplication参数的值
 func (s *Service) updateAddFriendApplicationReqCheck(addFriendApplication *model.AddFriendApplication,
-	req *UpdateAddFriendApplicationReq) (column string, value interface{}, err error) {
+	req *UpdateAddFriendApplicationReq) (column string, value any, err error) {
 	// 是不是申请的拥有者
 	if addFriendApplication.FriendID != req.UserID && addFriendApplication.ApplicantID != req.UserID {
 		return "", nil, common.ErrCodeForbidden

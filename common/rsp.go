@@ -7,13 +7,13 @@ import (
 
 // Rsp 响应
 type Rsp struct {
-	Code string      `json:"Code,omitempty"` // 错误码
-	Msg  string      `json:"Msg,omitempty"`  // 消息
-	Data interface{} `json:"Data,omitempty"` // 数据
+	Code string `json:"Code,omitempty"` // 错误码
+	Msg  string `json:"Msg,omitempty"`  // 消息
+	Data any    `json:"Data,omitempty"` // 数据
 }
 
 // SuccessRsp 成功响应
-func SuccessRsp(data interface{}) *Rsp {
+func SuccessRsp(data any) *Rsp {
 	return rsp(ErrCodeOK, data)
 }
 
@@ -27,7 +27,7 @@ func FailureRsp(err error) *Rsp {
 }
 
 // Success 请求成功
-func Success(c *gin.Context, data interface{}) {
+func Success(c *gin.Context, data any) {
 	ginRsp(c, SuccessRsp(data))
 }
 
@@ -42,7 +42,7 @@ func ginRsp(c *gin.Context, rsp *Rsp) {
 }
 
 // 响应
-func rsp(errCode *ErrCode, data interface{}) *Rsp {
+func rsp(errCode *ErrCode, data any) *Rsp {
 	return &Rsp{
 		Code: errCode.Code,
 		Msg:  errCode.Advice,
