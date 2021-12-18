@@ -34,8 +34,8 @@ type GroupInfo struct {
 
 // GetGroupInfosReq 获取群信息请求
 type GetGroupInfosReq struct {
-	UserID    uint64                  `json:"UserID"`    // 用户编号
-	Condition *GetGroupInfosCondition `json:"Condition"` // 条件
+	UserID    uint64                 `json:"UserID"`    // 用户编号
+	Condition GetGroupInfosCondition `json:"Condition"` // 条件
 }
 
 // GetGroupInfosCondition 获取群信息条件
@@ -54,7 +54,7 @@ type CreateGroupReq struct {
 	UserID    uint64   `json:"UserID"`    // 用户编号
 	Name      string   `json:"Name"`      // 群名
 	Icon      string   `json:"Icon"`      // 图标
-	MemberIDS []uint64 `json:"memberIDS"` // 初始成员编号列表
+	MemberIDS []uint64 `json:"MemberIDS"` // 初始成员编号列表
 }
 
 // CreateGroupRsp 创建群响应
@@ -64,9 +64,9 @@ type CreateGroupRsp struct {
 
 // UpdateGroupInfoReq 更新群信息请求
 type UpdateGroupInfoReq struct {
-	OperatorID uint64                 `json:"OperatorID"` // 操作者编号
-	GroupID    uint64                 `json:"GroupID"`    // 群编号
-	Action     *UpdateGroupInfoAction `json:"Action"`     // 更新群信息行为
+	UserID  uint64                `json:"UserID"`  // 用户编号
+	GroupID uint64                `json:"GroupID"` // 群编号
+	Action  UpdateGroupInfoAction `json:"Action"`  // 更新群信息行为
 }
 
 // UpdateGroupInfoAction 更新群信息行为
@@ -83,11 +83,38 @@ type UpdateGroupInfoRsp struct {
 
 // GetGroupMemberInfosReq 获取群成员信息请求
 type GetGroupMemberInfosReq struct {
-	UserID  uint64 `json:"UserID"`  // 用户编号
-	GroupID uint64 `json:"GroupID"` // 群编号
+	UserID    uint64                       `json:"UserID"`    // 用户编号
+	GroupID   uint64                       `json:"GroupID"`   // 群编号
+	Condition GetGroupMemberInfosCondition `json:"Condition"` // 条件
+}
+
+// GetGroupMemberInfosCondition 获取群成员信息条件
+type GetGroupMemberInfosCondition struct {
+	All      bool   `json:"All"`      // 全部
+	MemberID uint64 `json:"MemberID"` // 成员编号
 }
 
 // GetGroupMemberInfosRsp 获取群成员信息响应
 type GetGroupMemberInfosRsp struct {
 	GroupMemberInfos []*GroupMemberInfo `json:"GroupMemberInfos"` // 群成员信息列表
+}
+
+// ChangeGroupMemberInfoReq 改变群成员信息请求
+type ChangeGroupMemberInfoReq struct {
+	UserID  uint64                      `json:"UserID"`  // 用户编号
+	GroupID uint64                      `json:"GroupID"` // 群编号
+	Action  ChangeGroupMemberInfoAction `json:"Action"`  // 行为
+}
+
+// ChangeGroupMemberInfoAction 改变群成员信息行为
+type ChangeGroupMemberInfoAction struct {
+	GroupNickName  *string `json:"GroupNickName,omitempty"`  // 群昵称
+	IsDisturb      *bool   `json:"IsDisturb,omitempty"`      // 是否免打扰
+	IsTop          *bool   `json:"IsTop,omitempty"`          // 是否置顶
+	IsShowNickName *bool   `json:"IsShowNickName,omitempty"` // 是显示群成员昵称
+}
+
+// ChangeGroupMemberInfoRsp 改变群成员信息响应
+type ChangeGroupMemberInfoRsp struct {
+	GroupMemberInfo *GroupMemberInfo `json:"GroupMemberInfo"` // 群成员信息
 }

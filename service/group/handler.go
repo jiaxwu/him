@@ -29,7 +29,7 @@ func RegisterHandler(engine *gin.Engine, service *Service, wrapper *wrap.Wrapper
 
 	engine.POST("group/info/update", wrapper.Wrap(func(req *UpdateGroupInfoReq,
 		session *user.Session) (*UpdateGroupInfoRsp, error) {
-		req.OperatorID = session.UserID
+		req.UserID = session.UserID
 		return service.UpdateGroupInfo(req)
 	}, &wrap.Config{
 		UserTypes: []user.UserType{
@@ -41,6 +41,16 @@ func RegisterHandler(engine *gin.Engine, service *Service, wrapper *wrap.Wrapper
 		session *user.Session) (*GetGroupMemberInfosRsp, error) {
 		req.UserID = session.UserID
 		return service.GetGroupMemberInfos(req)
+	}, &wrap.Config{
+		UserTypes: []user.UserType{
+			user.UserTypeUser,
+		},
+	}))
+
+	engine.POST("group/member/info/change", wrapper.Wrap(func(req *ChangeGroupMemberInfoReq,
+		session *user.Session) (*ChangeGroupMemberInfoRsp, error) {
+		req.UserID = session.UserID
+		return service.ChangeGroupMemberInfo(req)
 	}, &wrap.Config{
 		UserTypes: []user.UserType{
 			user.UserTypeUser,

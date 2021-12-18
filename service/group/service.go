@@ -179,7 +179,7 @@ func (s *Service) CreateGroup(req *CreateGroupReq) (*CreateGroupRsp, error) {
 	// 响应
 	getGroupInfosRsp, err := s.GetGroupInfos(&GetGroupInfosReq{
 		UserID: req.UserID,
-		Condition: &GetGroupInfosCondition{
+		Condition: GetGroupInfosCondition{
 			GroupID: group.ID,
 		},
 	})
@@ -203,7 +203,7 @@ func (s Service) UpdateGroupInfo(req *UpdateGroupInfoReq) (*UpdateGroupInfoRsp, 
 
 	// 判断操作者是否是群主或者管理员
 	var groupMember model.GroupMember
-	err = s.db.Where("group_id = ? and member_id = ?", req.GroupID, req.OperatorID).Take(&groupMember).Error
+	err = s.db.Where("group_id = ? and member_id = ?", req.GroupID, req.UserID).Take(&groupMember).Error
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
@@ -226,13 +226,13 @@ func (s Service) UpdateGroupInfo(req *UpdateGroupInfoReq) (*UpdateGroupInfoRsp, 
 		column = "name"
 		value = req.Action.Name
 		tipText := fmt.Sprintf(`修改了群名称为"%s"`, req.Action.Name)
-		if nickNameTextTip, err = s.assembleUpdateGroupInfoNickTextTip(req.OperatorID, tipText); err != nil {
+		if nickNameTextTip, err = s.assembleUpdateGroupInfoNickTextTip(req.UserID, tipText); err != nil {
 			return nil, err
 		}
 	} else if req.Action.Icon != "" {
 		column = "icon"
 		value = req.Action.Icon
-		if nickNameTextTip, err = s.assembleUpdateGroupInfoNickTextTip(req.OperatorID, "修改了群头像"); err != nil {
+		if nickNameTextTip, err = s.assembleUpdateGroupInfoNickTextTip(req.UserID, "修改了群头像"); err != nil {
 			return nil, err
 		}
 	} else if req.Action.Notice != "" {
@@ -298,8 +298,8 @@ func (s Service) UpdateGroupInfo(req *UpdateGroupInfoReq) (*UpdateGroupInfoRsp, 
 	}
 
 	getGroupInfosRsp, err := s.GetGroupInfos(&GetGroupInfosReq{
-		UserID: req.OperatorID,
-		Condition: &GetGroupInfosCondition{
+		UserID: req.UserID,
+		Condition: GetGroupInfosCondition{
 			GroupID: req.GroupID,
 		},
 	})
@@ -309,48 +309,6 @@ func (s Service) UpdateGroupInfo(req *UpdateGroupInfoReq) (*UpdateGroupInfoRsp, 
 
 	return &UpdateGroupInfoRsp{
 		GroupInfo: getGroupInfosRsp.GroupInfos[0],
-	}, nil
-}
-
-// GetGroupMemberInfos 获取群成员信息
-func (s *Service) GetGroupMemberInfos(req *GetGroupMemberInfosReq) (*GetGroupMemberInfosRsp, error) {
-	// 判断用户是否属于该群的
-	getGroupInfosRsp, err := s.GetGroupInfos(&GetGroupInfosReq{
-		UserID: req.UserID,
-		Condition: &GetGroupInfosCondition{
-			GroupID: req.GroupID,
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-	groupInfos := getGroupInfosRsp.GroupInfos
-	if len(groupInfos) == 0 {
-		return nil, ErrCodeInvalidParameterMustBeMember
-	}
-
-	// 获取群成员信息
-	groupMembers := make([]*model.GroupMember, 0, groupInfos[0].Members)
-	if err := s.db.Where("group_id = ?", req.GroupID).Find(&groupMembers).Error; err != nil {
-		return nil, err
-	}
-
-	// 装配
-	groupMemberInfos := make([]*GroupMemberInfo, 0, len(groupMembers))
-	for _, groupMember := range groupMembers {
-		groupMemberInfos = append(groupMemberInfos, &GroupMemberInfo{
-			GroupID:        groupMember.GroupID,
-			MemberID:       groupMember.MemberID,
-			Role:           GroupMemberRole(groupMember.Role),
-			GroupNickName:  groupMember.GroupNickName,
-			IsDisturb:      groupMember.IsDisturb,
-			IsTop:          groupMember.IsTop,
-			IsShowNickName: groupMember.IsShowNickName,
-			JoinTime:       groupMember.JoinTime,
-		})
-	}
-	return &GetGroupMemberInfosRsp{
-		GroupMemberInfos: groupMemberInfos,
 	}, nil
 }
 
