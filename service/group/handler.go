@@ -36,4 +36,14 @@ func RegisterHandler(engine *gin.Engine, service *Service, wrapper *wrap.Wrapper
 			user.UserTypeUser,
 		},
 	}))
+
+	engine.POST("group/member/infos/get", wrapper.Wrap(func(req *GetGroupMemberInfosReq,
+		session *user.Session) (*GetGroupMemberInfosRsp, error) {
+		req.UserID = session.UserID
+		return service.GetGroupMemberInfos(req)
+	}, &wrap.Config{
+		UserTypes: []user.UserType{
+			user.UserTypeUser,
+		},
+	}))
 }

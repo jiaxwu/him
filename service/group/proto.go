@@ -80,3 +80,14 @@ type UpdateGroupInfoAction struct {
 type UpdateGroupInfoRsp struct {
 	GroupInfo *GroupInfo `json:"GroupInfo"` // 群信息
 }
+
+// GetGroupMemberInfosReq 获取群成员信息请求
+type GetGroupMemberInfosReq struct {
+	UserID  uint64 `json:"UserID"`  // 用户编号
+	GroupID uint64 `json:"GroupID"` // 群编号
+}
+
+// GetGroupMemberInfosRsp 获取群成员信息响应
+type GetGroupMemberInfosRsp struct {
+	GroupMemberInfos []*GroupMemberInfo `json:"GroupMemberInfos"` // 群成员信息列表
+}

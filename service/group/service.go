@@ -239,8 +239,8 @@ func (s Service) UpdateGroupInfo(req *UpdateGroupInfoReq) (*UpdateGroupInfoRsp, 
 		column = "notice"
 		value = req.Action.Notice
 		textMsg = &msg.TextMsg{
-			Content:     req.Action.Notice,
-			IsNotice:    true,
+			Content:  req.Action.Notice,
+			IsNotice: true,
 		}
 	} else {
 		return nil, common.ErrCodeInvalidParameter
@@ -309,6 +309,48 @@ func (s Service) UpdateGroupInfo(req *UpdateGroupInfoReq) (*UpdateGroupInfoRsp, 
 
 	return &UpdateGroupInfoRsp{
 		GroupInfo: getGroupInfosRsp.GroupInfos[0],
+	}, nil
+}
+
+// GetGroupMemberInfos 获取群成员信息
+func (s *Service) GetGroupMemberInfos(req *GetGroupMemberInfosReq) (*GetGroupMemberInfosRsp, error) {
+	// 判断用户是否属于该群的
+	getGroupInfosRsp, err := s.GetGroupInfos(&GetGroupInfosReq{
+		UserID: req.UserID,
+		Condition: &GetGroupInfosCondition{
+			GroupID: req.GroupID,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	groupInfos := getGroupInfosRsp.GroupInfos
+	if len(groupInfos) == 0 {
+		return nil, ErrCodeInvalidParameterMustBeMember
+	}
+
+	// 获取群成员信息
+	groupMembers := make([]*model.GroupMember, 0, groupInfos[0].Members)
+	if err := s.db.Where("group_id = ?", req.GroupID).Find(&groupMembers).Error; err != nil {
+		return nil, err
+	}
+
+	// 装配
+	groupMemberInfos := make([]*GroupMemberInfo, 0, len(groupMembers))
+	for _, groupMember := range groupMembers {
+		groupMemberInfos = append(groupMemberInfos, &GroupMemberInfo{
+			GroupID:        groupMember.GroupID,
+			MemberID:       groupMember.MemberID,
+			Role:           GroupMemberRole(groupMember.Role),
+			GroupNickName:  groupMember.GroupNickName,
+			IsDisturb:      groupMember.IsDisturb,
+			IsTop:          groupMember.IsTop,
+			IsShowNickName: groupMember.IsShowNickName,
+			JoinTime:       groupMember.JoinTime,
+		})
+	}
+	return &GetGroupMemberInfosRsp{
+		GroupMemberInfos: groupMemberInfos,
 	}, nil
 }
 

@@ -8,7 +8,7 @@ import (
 
 // Recovery 异常恢复
 func Recovery() gin.HandlerFunc {
-	return gin.CustomRecovery(func(c *gin.Context, err interface{}) {
+	return gin.CustomRecovery(func(c *gin.Context, err any) {
 		log.WithField("err", err).Error("a panic captured")
 		common.Failure(c, common.ErrCodeInternalError)
 	})

@@ -14,7 +14,7 @@ import (
 
 type gormLogger struct{}
 
-func (l *gormLogger) Printf(format string, args ...interface{}) {
+func (l *gormLogger) Printf(format string, args ...any) {
 	log.Printf(format, args)
 }
 
