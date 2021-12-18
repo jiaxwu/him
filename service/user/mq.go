@@ -2,12 +2,12 @@ package user
 
 import (
 	"github.com/Shopify/sarama"
-	"github.com/jiaxwu/him/conf"
-	"github.com/jiaxwu/him/conf/log"
+	"github.com/jiaxwu/him/config"
+	"github.com/jiaxwu/him/config/log"
 )
 
 // NewUpdateUserEventProducer 创建用户信息更新事件生产者
-func NewUpdateUserEventProducer(config *conf.Config) sarama.AsyncProducer {
+func NewUpdateUserEventProducer(config *config.Config) sarama.AsyncProducer {
 	producerConfig := sarama.NewConfig()
 	producer, err := sarama.NewAsyncProducer(config.Kafka.Addrs, producerConfig)
 	if err != nil {

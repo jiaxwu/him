@@ -11,7 +11,7 @@ import (
 	"github.com/jiaxwu/him/common/bytes"
 	httpHeaderKey "github.com/jiaxwu/him/common/constant/http/header/key"
 	"github.com/jiaxwu/him/common/jsons"
-	"github.com/jiaxwu/him/conf"
+	"github.com/jiaxwu/him/config"
 	"github.com/jiaxwu/him/service/sm"
 	"github.com/jiaxwu/him/service/user/model"
 	"github.com/tencentyun/cos-go-sdk-v5"
@@ -24,14 +24,14 @@ type Service struct {
 	db                        *gorm.DB
 	rdb                       *redis.Client
 	validate                  *validator.Validate
-	config                    *conf.Config
+	config                    *config.Config
 	smService                 *sm.Service
 	userAvatarBucketOSSClient *cos.Client
 	updateUserEventProducer   sarama.AsyncProducer
 }
 
 func NewService(userAvatarBucketOSSClient *cos.Client, updateUserEventProducer sarama.AsyncProducer, db *gorm.DB,
-	validate *validator.Validate, config *conf.Config, smService *sm.Service, rdb *redis.Client) *Service {
+	validate *validator.Validate, config *config.Config, smService *sm.Service, rdb *redis.Client) *Service {
 	return &Service{
 		db:                        db,
 		rdb:                       rdb,

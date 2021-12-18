@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/jiaxwu/him/conf"
-	"github.com/jiaxwu/him/conf/db"
-	"github.com/jiaxwu/him/conf/log"
-	"github.com/jiaxwu/him/conf/mongo"
-	"github.com/jiaxwu/him/conf/rdb"
-	"github.com/jiaxwu/him/conf/validate"
+	"github.com/jiaxwu/him/config"
+	"github.com/jiaxwu/him/config/db"
+	"github.com/jiaxwu/him/config/log"
+	"github.com/jiaxwu/him/config/mongo"
+	"github.com/jiaxwu/him/config/rdb"
+	"github.com/jiaxwu/him/config/validate"
 	"github.com/jiaxwu/him/server"
 	"github.com/jiaxwu/him/service/friend"
 	"github.com/jiaxwu/him/service/group"
@@ -29,7 +29,7 @@ func main() {
 
 func NewApp() *fx.App {
 	return fx.New(
-		fx.Provide(conf.NewConf),
+		fx.Provide(config.New),
 		fx.Invoke(log.InitLog),
 		fx.Provide(
 			validate.NewValidate,

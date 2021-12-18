@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jiaxwu/him/conf/log"
+	"github.com/jiaxwu/him/config/log"
 )
 
 // NewLogger 日志

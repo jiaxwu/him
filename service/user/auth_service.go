@@ -8,7 +8,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/go-redis/redis/v8"
 	"github.com/jiaxwu/him/common"
-	"github.com/jiaxwu/him/conf/log"
+	"github.com/jiaxwu/him/config/log"
 	"github.com/jiaxwu/him/service/sm"
 	"github.com/jiaxwu/him/service/user/model"
 	"golang.org/x/crypto/bcrypt"

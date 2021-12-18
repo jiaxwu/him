@@ -1,8 +1,8 @@
 package db
 
 import (
-	"github.com/jiaxwu/him/conf"
-	"github.com/jiaxwu/him/conf/log"
+	"github.com/jiaxwu/him/config"
+	"github.com/jiaxwu/him/config/log"
 	friendModel "github.com/jiaxwu/him/service/friend/model"
 	groupModel "github.com/jiaxwu/him/service/group/model"
 	authModel "github.com/jiaxwu/him/service/user/model"
@@ -18,7 +18,7 @@ func (l *gormLogger) Printf(format string, args ...any) {
 	log.Printf(format, args)
 }
 
-func NewDB(config *conf.Config) *gorm.DB {
+func NewDB(config *config.Config) *gorm.DB {
 	newLogger := logger.New(
 		&gormLogger{},
 		logger.Config{

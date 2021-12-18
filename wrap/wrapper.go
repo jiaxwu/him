@@ -3,7 +3,7 @@ package wrap
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jiaxwu/him/common"
-	"github.com/jiaxwu/him/conf/log"
+	"github.com/jiaxwu/him/config/log"
 	"github.com/jiaxwu/him/service/user"
 	"mime/multipart"
 	"reflect"

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jiaxwu/him/common"
-	"github.com/jiaxwu/him/conf"
+	"github.com/jiaxwu/him/config"
 	"github.com/jiaxwu/him/service/friend"
 	"github.com/jiaxwu/him/service/group/model"
 	"github.com/jiaxwu/him/service/msg"
@@ -18,14 +18,14 @@ import (
 
 type Service struct {
 	db            *gorm.DB
-	config        *conf.Config
+	config        *config.Config
 	senderService *sender.Service
 	idGenerator   *msg.IDGenerator
 	friendService *friend.Service
 	userService   *user.Service
 }
 
-func NewService(db *gorm.DB, config *conf.Config, senderService *sender.Service, idGenerator *msg.IDGenerator,
+func NewService(db *gorm.DB, config *config.Config, senderService *sender.Service, idGenerator *msg.IDGenerator,
 	friendService *friend.Service, userService *user.Service) *Service {
 	return &Service{
 		db:            db,

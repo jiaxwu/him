@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/jiaxwu/him/common/jsons"
-	"github.com/jiaxwu/him/conf/log"
+	"github.com/jiaxwu/him/config/log"
 	"github.com/jiaxwu/him/service/user/model"
 	"github.com/robfig/cron/v3"
 	"github.com/tencentyun/cos-go-sdk-v5"

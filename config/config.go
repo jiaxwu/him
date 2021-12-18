@@ -1,4 +1,4 @@
-package conf
+package config
 
 import (
 	"github.com/spf13/viper"
@@ -16,12 +16,12 @@ type Config struct {
 	MongoDB *MongoDB
 }
 
-// NewConf 初始化配置
-func NewConf() *Config {
+// New 初始化配置
+func New() *Config {
 	var config Config
-	viper.SetConfigName("conf")
+	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("./conf/")
+	viper.AddConfigPath("./config/")
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatal("初始化配置失败", err)
 	}

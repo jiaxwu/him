@@ -5,7 +5,7 @@ import (
 	"github.com/jiaxwu/him/common"
 	httpHeaderKey "github.com/jiaxwu/him/common/constant/http/header/key"
 	httpHeaderValue "github.com/jiaxwu/him/common/constant/http/header/value"
-	"github.com/jiaxwu/him/conf/log"
+	"github.com/jiaxwu/him/config/log"
 	"net/http"
 )
 

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"github.com/Shopify/sarama"
 	"github.com/go-redis/redis/v8"
-	"github.com/jiaxwu/him/conf"
-	"github.com/jiaxwu/him/conf/log"
+	"github.com/jiaxwu/him/config"
+	"github.com/jiaxwu/him/config/log"
 	"github.com/jiaxwu/him/service/msg"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -20,7 +20,7 @@ type SendMsgConsumer struct {
 
 // NewSendMsgConsumer 创建发送消息消费者
 func NewSendMsgConsumer(pushMsgProducer sarama.AsyncProducer, mongoOfflineMsgCollection *mongo.Collection,
-	config *conf.Config, rdb *redis.Client) *SendMsgConsumer {
+	config *config.Config, rdb *redis.Client) *SendMsgConsumer {
 	consumerConfig := sarama.NewConfig()
 	consumerConfig.Consumer.Return.Errors = false
 	consumerConfig.Consumer.Offsets.Initial = sarama.OffsetNewest

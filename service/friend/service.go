@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/go-playground/validator/v10"
 	"github.com/jiaxwu/him/common"
-	"github.com/jiaxwu/him/conf"
+	"github.com/jiaxwu/him/config"
 	"github.com/jiaxwu/him/service/friend/model"
 	"github.com/jiaxwu/him/service/msg"
 	"github.com/jiaxwu/him/service/msg/sender"
@@ -17,13 +17,13 @@ import (
 type Service struct {
 	db            *gorm.DB
 	validate      *validator.Validate
-	config        *conf.Config
+	config        *config.Config
 	senderService *sender.Service
 	userService   *user.Service
 	idGenerator   *msg.IDGenerator
 }
 
-func NewService(db *gorm.DB, validate *validator.Validate, config *conf.Config, senderService *sender.Service,
+func NewService(db *gorm.DB, validate *validator.Validate, config *config.Config, senderService *sender.Service,
 	userService *user.Service, idGenerator *msg.IDGenerator) *Service {
 	return &Service{
 		db:            db,

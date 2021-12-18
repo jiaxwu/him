@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/jiaxwu/him/common"
 	httpQueryKey "github.com/jiaxwu/him/common/constant/http/query/key"
-	"github.com/jiaxwu/him/conf/log"
+	"github.com/jiaxwu/him/config/log"
 	"github.com/jiaxwu/him/service/msg"
 	"github.com/jiaxwu/him/service/user"
 	"github.com/jiaxwu/him/wrap"

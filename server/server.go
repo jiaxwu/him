@@ -2,8 +2,8 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jiaxwu/him/conf"
-	"github.com/jiaxwu/him/conf/log"
+	"github.com/jiaxwu/him/config"
+	"github.com/jiaxwu/him/config/log"
 )
 
 // NewEngine 新建一个Gin Engine
@@ -26,6 +26,6 @@ func NewServer(engine *gin.Engine) *Server {
 }
 
 // Start 启动服务器
-func Start(server *Server, config *conf.Config) {
+func Start(server *Server, config *config.Config) {
 	log.WithField("msg", "handler exit").Warn(server.engine.Run(config.Server.Addr))
 }

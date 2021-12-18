@@ -3,19 +3,19 @@ package sm
 import (
 	"github.com/jiaxwu/him/common"
 	"github.com/jiaxwu/him/common/jsons"
-	"github.com/jiaxwu/him/conf"
-	"github.com/jiaxwu/him/conf/log"
+	"github.com/jiaxwu/him/config"
+	"github.com/jiaxwu/him/config/log"
 	tcCommon "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	sms "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms/v20210111"
 )
 
 type Service struct {
-	config    *conf.Config
+	config    *config.Config
 	smsClient *sms.Client
 }
 
-func NewService(config *conf.Config, smsClient *sms.Client) *Service {
+func NewService(config *config.Config, smsClient *sms.Client) *Service {
 	smService := &Service{
 		config:    config,
 		smsClient: smsClient,

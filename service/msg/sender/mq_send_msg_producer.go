@@ -2,12 +2,12 @@ package sender
 
 import (
 	"github.com/Shopify/sarama"
-	"github.com/jiaxwu/him/conf"
-	"github.com/jiaxwu/him/conf/log"
+	"github.com/jiaxwu/him/config"
+	"github.com/jiaxwu/him/config/log"
 )
 
 // NewSendMsgProducer 创建发送消息生产者
-func NewSendMsgProducer(config *conf.Config) sarama.SyncProducer {
+func NewSendMsgProducer(config *config.Config) sarama.SyncProducer {
 	producerConfig := sarama.NewConfig()
 	producerConfig.Producer.Return.Successes = true
 	producerConfig.Producer.RequiredAcks = sarama.WaitForAll

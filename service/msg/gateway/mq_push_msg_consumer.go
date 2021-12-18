@@ -5,8 +5,8 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"github.com/Shopify/sarama"
-	"github.com/jiaxwu/him/conf"
-	"github.com/jiaxwu/him/conf/log"
+	"github.com/jiaxwu/him/config"
+	"github.com/jiaxwu/him/config/log"
 	"github.com/jiaxwu/him/service/msg"
 	"github.com/jiaxwu/him/service/user"
 )
@@ -17,7 +17,7 @@ type PushMsgConsumer struct {
 }
 
 // NewPushMsgConsumer 创建推送消息消费者
-func NewPushMsgConsumer(config *conf.Config, server *Server) *PushMsgConsumer {
+func NewPushMsgConsumer(config *config.Config, server *Server) *PushMsgConsumer {
 	consumerConfig := sarama.NewConfig()
 	consumerConfig.Consumer.Return.Errors = false
 	consumerConfig.Consumer.Offsets.Initial = sarama.OffsetNewest
