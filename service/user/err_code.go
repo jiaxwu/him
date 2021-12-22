@@ -37,6 +37,8 @@ var (
 		"the phone has been exists", "手机号码已经被注册了")
 	ErrCodeInvalidParameterUsernameExists = common.NewErrCode("ErrCodeInvalidParameter.UsernameExists",
 		"the username exists", "用户名已经存在")
+	ErrCodeInvalidParameterUserNotExists = common.NewErrCode("ErrCodeInvalidParameter.UserNotExists",
+		"the user not exists", "用户不存在")
 	ErrCodeUnauthorizedInvalidToken = common.NewErrCode("Unauthorized.InvalidToken",
 		"the token is not validate", "无效Token")
 	ErrCodeCanNotOpenFile = common.NewErrCode("CanNotOpenFile", "can not open the FileHeader",

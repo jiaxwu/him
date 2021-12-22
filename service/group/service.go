@@ -37,24 +37,74 @@ func NewService(db *gorm.DB, config *config.Config, senderService *sender.Servic
 	}
 }
 
-// GetGroupInfos 获取群信息
-func (s *Service) GetGroupInfos(req *GetGroupInfosReq) (*GetGroupInfosRsp, error) {
-	// 获取群编号
-	query := s.db.Model(&model.GroupMember{})
-	if req.Condition.GroupID != 0 {
-		query = query.Where("member_id = ? and group_id = ?", req.UserID, req.Condition.GroupID)
-	} else if req.Condition.All {
-		query = query.Where("member_id = ?", req.UserID)
-	} else {
-		return nil, common.ErrCodeInvalidParameter
+// GetGroupInfo 获取群信息
+func (s *Service) GetGroupInfo(req *GetGroupInfoReq) (*GetGroupInfoRsp, error) {
+	// 获取群信息
+	var group model.Group
+	err := s.db.Take(&group, req.GroupID).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
 	}
-	var groupIDS []uint64
-	if err := query.Select("group_id").Find(&groupIDS).Error; err != nil {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, ErrCodeInvalidParameterGroupNotExists
+	}
+	groupInfo := GroupInfo{
+		GroupID:                      group.ID,
+		Name:                         group.Name,
+		Icon:                         group.Icon,
+		Members:                      group.Members,
+		IsInviteJoinGroupNeedConfirm: group.IsInviteJoinGroupNeedConfirm,
+	}
+
+	// 判断是否是群成员
+	getGroupMemberInfoRsp, err := s.GetGroupMemberInfo(&GetGroupMemberInfoReq{
+		MemberID: req.UserID,
+		GroupID:  req.GroupID,
+	})
+	if err != nil && !errors.Is(err, ErrCodeInvalidParameterNotGroupMember) {
 		return nil, err
 	}
 
+	// 如果是群成员，设置群成员才能看到的信息
+	if err == nil {
+		groupInfo.Notice = group.Notice
+		groupInfo.GroupMemberInfo = getGroupMemberInfoRsp.GroupMemberInfo
+	}
+	return &GetGroupInfoRsp{GroupInfo: &groupInfo}, nil
+}
+
+// GetUserGroupInfos 获取用户群信息
+// todo 分页
+func (s *Service) GetUserGroupInfos(req *GetUserGroupInfosReq) (*GetUserGroupInfosRsp, error) {
+	// 调整页码和页大小
+	if req.Page == 0 {
+		req.Page = 1
+	}
+	if req.Size > 100 {
+		req.Size = 100
+	} else if req.Size == 0 {
+		req.Size = 30
+	}
+
+	// 获取群成员信息
+	var groupMembers []*model.GroupMember
+	if err := s.db.Where("member_id = ?", req.UserID).Find(&groupMembers).Error; err != nil {
+		return nil, err
+	}
+	if len(groupMembers) == 0 {
+		return &GetUserGroupInfosRsp{}, nil
+	}
+
+	// 群成员信息转换成群编号
+	groupIDS := make([]uint64, 0, len(groupMembers))
+	groupIDToGroupMemberMap := make(map[uint64]*model.GroupMember, len(groupMembers))
+	for _, groupMember := range groupMembers {
+		groupIDS = append(groupIDS, groupMember.GroupID)
+		groupIDToGroupMemberMap[groupMember.GroupID] = groupMember
+	}
+
 	// 获取群信息
-	var groups []*model.Group
+	groups := make([]*model.Group, 0, len(groupIDS))
 	if err := s.db.Where("id in ?", groupIDS).Find(&groups).Error; err != nil {
 		return nil, err
 	}
@@ -62,17 +112,18 @@ func (s *Service) GetGroupInfos(req *GetGroupInfosReq) (*GetGroupInfosRsp, error
 	// 装配
 	groupInfos := make([]*GroupInfo, 0, len(groups))
 	for _, group := range groups {
+		groupMember := groupIDToGroupMemberMap[group.ID]
 		groupInfos = append(groupInfos, &GroupInfo{
 			GroupID:                      group.ID,
 			Name:                         group.Name,
 			Icon:                         group.Icon,
 			Members:                      group.Members,
 			Notice:                       group.Notice,
-			IsJoinApplication:            group.IsJoinApplication,
 			IsInviteJoinGroupNeedConfirm: group.IsInviteJoinGroupNeedConfirm,
+			GroupMemberInfo:              s.assembleGroupMemberInfo(groupMember),
 		})
 	}
-	return &GetGroupInfosRsp{
+	return &GetUserGroupInfosRsp{
 		GroupInfos: groupInfos,
 	}, nil
 }
@@ -134,7 +185,7 @@ func (s *Service) CreateGroup(req *CreateGroupReq) (*CreateGroupRsp, error) {
 			groupMembers = append(groupMembers, &model.GroupMember{
 				GroupID:        group.ID,
 				MemberID:       memberID,
-				Role:           string(role),
+				Role:           uint8(role),
 				IsShowNickName: true,
 				JoinTime:       uint64(now),
 			})
@@ -177,18 +228,17 @@ func (s *Service) CreateGroup(req *CreateGroupReq) (*CreateGroupRsp, error) {
 	}
 
 	// 响应
-	getGroupInfosRsp, err := s.GetGroupInfos(&GetGroupInfosReq{
-		UserID: req.UserID,
-		Condition: GetGroupInfosCondition{
-			GroupID: group.ID,
-		},
+	getGroupInfoRsp, err := s.GetGroupInfo(&GetGroupInfoReq{
+		UserID:  req.UserID,
+		GroupID: group.ID,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &CreateGroupRsp{GroupInfo: getGroupInfosRsp.GroupInfos[0]}, nil
+	return &CreateGroupRsp{GroupInfo: getGroupInfoRsp.GroupInfo}, nil
 }
 
+// todo 群头像用群编号作为索引
 // UpdateGroupInfo 更新群信息
 func (s Service) UpdateGroupInfo(req *UpdateGroupInfoReq) (*UpdateGroupInfoRsp, error) {
 	// 判断群是否存在
@@ -210,7 +260,7 @@ func (s Service) UpdateGroupInfo(req *UpdateGroupInfoReq) (*UpdateGroupInfoRsp, 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, common.ErrCodeInvalidParameter
 	}
-	if groupMember.Role != string(GroupMemberRoleManager) && groupMember.Role != string(GroupMemberRoleLeader) {
+	if groupMember.Role != uint8(GroupMemberRoleManager) && groupMember.Role != uint8(GroupMemberRoleLeader) {
 		return nil, common.ErrCodeForbidden
 	}
 
@@ -297,18 +347,16 @@ func (s Service) UpdateGroupInfo(req *UpdateGroupInfoReq) (*UpdateGroupInfoRsp, 
 		return nil, err
 	}
 
-	getGroupInfosRsp, err := s.GetGroupInfos(&GetGroupInfosReq{
-		UserID: req.UserID,
-		Condition: GetGroupInfosCondition{
-			GroupID: req.GroupID,
-		},
+	// 获取新的群信息
+	getGroupInfoRsp, err := s.GetGroupInfo(&GetGroupInfoReq{
+		UserID:  req.UserID,
+		GroupID: req.GroupID,
 	})
 	if err != nil {
 		return nil, err
 	}
-
 	return &UpdateGroupInfoRsp{
-		GroupInfo: getGroupInfosRsp.GroupInfos[0],
+		GroupInfo: getGroupInfoRsp.GroupInfo,
 	}, nil
 }
 

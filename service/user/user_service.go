@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/Shopify/sarama"
 	"github.com/brianvoe/gofakeit/v6"
@@ -41,6 +42,42 @@ func NewService(userAvatarBucketOSSClient *cos.Client, updateUserEventProducer s
 		updateUserEventProducer:   updateUserEventProducer,
 		smService:                 smService,
 	}
+}
+
+// GetUserInfo 根据id获取用户信息
+func (s *Service) GetUserInfo(req *GetUserInfoReq) (*GetUserInfoRsp, error) {
+	// 拼接条件
+	var condition *gorm.DB
+	if req.UserID != 0 {
+		condition = s.db.Where("id = ?", req.UserID)
+	} else if req.Username != "" {
+		condition = s.db.Where("username = ?", req.Username)
+	} else {
+		return nil, common.ErrCodeInvalidParameter
+	}
+
+	// 查询
+	var user model.User
+	err := condition.Take(&user).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, ErrCodeInvalidParameterUserNotExists
+	}
+
+	// 转换
+	return &GetUserInfoRsp{UserInfo: &UserInfo{
+		UserID:       user.ID,
+		UserType:     UserType(user.Type),
+		Username:     user.Username,
+		NickName:     user.NickName,
+		Avatar:       UserAvatarBucketURL + user.Avatar,
+		Gender:       Gender(user.Gender),
+		Phone:        user.Phone,
+		Email:        user.Email,
+		RegisteredAt: user.RegisteredAt,
+	}}, nil
 }
 
 // GetUserInfos 获取用户信息

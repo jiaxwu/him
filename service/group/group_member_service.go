@@ -1,6 +1,7 @@
 package group
 
 import (
+	"errors"
 	"github.com/jiaxwu/him/common"
 	"github.com/jiaxwu/him/service/group/model"
 	"github.com/jiaxwu/him/service/msg"
@@ -8,43 +9,68 @@ import (
 	"gorm.io/gorm"
 )
 
-// GetGroupMemberInfos 获取群成员信息
-func (s *Service) GetGroupMemberInfos(req *GetGroupMemberInfosReq) (*GetGroupMemberInfosRsp, error) {
-	// 判断是否是群成员
-	groupInfo, err := s.isGroupMember(req.UserID, req.GroupID)
-	if err != nil {
+// GetGroupMemberInfo 获取群成员信息
+func (s *Service) GetGroupMemberInfo(req *GetGroupMemberInfoReq) (*GetGroupMemberInfoRsp, error) {
+	// 查询群成员信息
+	var groupMember model.GroupMember
+	err := s.db.Where("group_id = ? and member_id = ?", req.GroupID, req.MemberID).Take(&groupMember).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
 
-	// 构造查询条件
-	var query *gorm.DB
-	if req.Condition.All {
-		query = s.db.Where("group_id = ?", req.GroupID)
-	} else if req.Condition.MemberID != 0 {
-		query = s.db.Where("group_id = ? and member_id = ?", req.Condition.MemberID, req.GroupID)
-	} else {
-		return nil, common.ErrCodeInvalidParameter
+	// 不是群成员
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, ErrCodeInvalidParameterNotGroupMember
+	}
+
+	// 装配
+	return &GetGroupMemberInfoRsp{
+		GroupMemberInfo: s.assembleGroupMemberInfo(&groupMember),
+	}, nil
+}
+
+// GetGroupMemberInfos 获取群成员信息
+// todo 分页
+func (s *Service) GetGroupMemberInfos(req *GetGroupMemberInfosReq) (*GetGroupMemberInfosRsp, error) {
+	// 调整页码页大小
+	if req.Page == 0 {
+		req.Page = 1
+	}
+	if req.Size > 500 {
+		req.Size = 500
+	} else if req.Size == 0 {
+		req.Size = 100
+	}
+
+	// 获取群信息
+	getGroupInfoRsp, err := s.GetGroupInfo(&GetGroupInfoReq{
+		UserID:  req.UserID,
+		GroupID: req.GroupID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	groupInfo := getGroupInfoRsp.GroupInfo
+
+	// 必须是群成员
+	if groupInfo.GroupMemberInfo == nil {
+		return nil, ErrCodeInvalidParameterNotGroupMember
 	}
 
 	// 获取群成员信息
 	groupMembers := make([]*model.GroupMember, 0, groupInfo.Members)
-	if err := query.Find(&groupMembers).Error; err != nil {
+	if err := s.db.Where("group_id = ?", req.GroupID).Find(&groupMembers).Error; err != nil {
 		return nil, err
 	}
 
 	// 装配
 	groupMemberInfos := make([]*GroupMemberInfo, 0, len(groupMembers))
 	for _, groupMember := range groupMembers {
-		groupMemberInfos = append(groupMemberInfos, &GroupMemberInfo{
-			GroupID:        groupMember.GroupID,
-			MemberID:       groupMember.MemberID,
-			Role:           GroupMemberRole(groupMember.Role),
-			GroupNickName:  groupMember.GroupNickName,
-			IsDisturb:      groupMember.IsDisturb,
-			IsTop:          groupMember.IsTop,
-			IsShowNickName: groupMember.IsShowNickName,
-			JoinTime:       groupMember.JoinTime,
-		})
+		groupMemberInfo := s.assembleGroupMemberInfo(groupMember)
+		groupMemberInfo.IsTop = false
+		groupMemberInfo.IsDisturb = false
+		groupMemberInfo.IsShowNickName = false
+		groupMemberInfos = append(groupMemberInfos, groupMemberInfo)
 	}
 	return &GetGroupMemberInfosRsp{
 		GroupMemberInfos: groupMemberInfos,
@@ -101,30 +127,47 @@ func (s *Service) ChangeGroupMemberInfo(req *ChangeGroupMemberInfoReq) (*ChangeG
 	}
 
 	// 获取新的群成员信息
-	getGroupMemberInfosRsp, err := s.GetGroupMemberInfos(&GetGroupMemberInfosReq{
-		UserID:  req.UserID,
-		GroupID: req.GroupID,
-		Condition: GetGroupMemberInfosCondition{
-			MemberID: req.UserID,
-		},
+	getGroupMemberInfoRsp, err := s.GetGroupMemberInfo(&GetGroupMemberInfoReq{
+		MemberID: req.UserID,
+		GroupID:  req.GroupID,
 	})
 	if err != nil {
 		return nil, err
 	}
-	groupMemberInfos := getGroupMemberInfosRsp.GroupMemberInfos
-	if len(groupMemberInfos) == 0 {
-		return nil, ErrCodeInvalidParameterGroupMemberNotExists
-	}
+	groupMemberInfo := getGroupMemberInfoRsp.GroupMemberInfo
 	return &ChangeGroupMemberInfoRsp{
-		GroupMemberInfo: groupMemberInfos[0],
+		GroupMemberInfo: groupMemberInfo,
 	}, nil
+}
+
+// 装配群成员信息
+func (s *Service) assembleGroupMemberInfo(groupMember *model.GroupMember) *GroupMemberInfo {
+	return &GroupMemberInfo{
+		GroupID:        groupMember.GroupID,
+		MemberID:       groupMember.MemberID,
+		Role:           GroupMemberRole(groupMember.Role),
+		GroupNickName:  groupMember.GroupNickName,
+		IsDisturb:      groupMember.IsDisturb,
+		IsTop:          groupMember.IsTop,
+		IsShowNickName: groupMember.IsShowNickName,
+		JoinTime:       groupMember.JoinTime,
+	}
+}
+
+// 获取全部群成员编号
+func (s *Service) getAllGroupMemberIDS(groupID uint64) ([]uint64, error) {
+	var memberIDS []uint64
+	if err := s.db.Model(model.GroupMember{}).Where("group_id = ?", groupID).
+		Select("member_id").Find(&memberIDS).Error; err != nil {
+		return nil, err
+	}
+	return memberIDS, nil
 }
 
 // 发送群成员信息改变事件消息给所有群成员
 func (s *Service) sendGroupMemberInfoChangeEventMsgToAllGroupMembers(groupID uint64) error {
-	var memberIDS []uint64
-	if err := s.db.Model(model.GroupMember{}).Where("group_id = ?", groupID).
-		Select("member_id").Find(&memberIDS).Error; err != nil {
+	memberIDS, err := s.getAllGroupMemberIDS(groupID)
+	if err != nil {
 		return err
 	}
 	return s.sendGroupMemberInfoChangeEventMsg(memberIDS, groupID)
@@ -145,19 +188,19 @@ func (s *Service) sendGroupMemberInfoChangeEventMsg(userIDS []uint64, groupID ui
 
 // 判断是否是群成员
 func (s *Service) isGroupMember(userID, groupID uint64) (*GroupInfo, error) {
-	// 判断用户是否属于该群的
-	getGroupInfosRsp, err := s.GetGroupInfos(&GetGroupInfosReq{
-		UserID: userID,
-		Condition: GetGroupInfosCondition{
-			GroupID: groupID,
-		},
+	// 获取群信息
+	getGroupInfoRsp, err := s.GetGroupInfo(&GetGroupInfoReq{
+		UserID:  userID,
+		GroupID: groupID,
 	})
 	if err != nil {
 		return nil, err
 	}
-	groupInfos := getGroupInfosRsp.GroupInfos
-	if len(groupInfos) == 0 {
-		return nil, ErrCodeInvalidParameterMustBeMember
+	groupInfo := getGroupInfoRsp.GroupInfo
+
+	// 判断用户是否属于该群的
+	if groupInfo.GroupMemberInfo == nil {
+		return nil, ErrCodeInvalidParameterNotGroupMember
 	}
-	return groupInfos[0], err
+	return groupInfo, err
 }

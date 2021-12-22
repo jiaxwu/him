@@ -35,7 +35,7 @@ func NewDB(config *config.Config) *gorm.DB {
 		log.Fatal("打开数据库失败", err)
 	}
 	if err := db.AutoMigrate(authModel.User{}, friendModel.Friend{}, friendModel.AddFriendApplication{},
-		groupModel.Group{}, groupModel.GroupMember{}); err != nil {
+		groupModel.Group{}, groupModel.GroupMember{}, groupModel.JoinGroupApplication{}); err != nil {
 		log.Fatal("自动迁移数据库失败", err)
 	}
 	return db

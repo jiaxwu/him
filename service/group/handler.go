@@ -7,10 +7,20 @@ import (
 )
 
 func RegisterHandler(engine *gin.Engine, service *Service, wrapper *wrap.Wrapper) {
-	engine.POST("group/infos/get", wrapper.Wrap(func(req *GetGroupInfosReq,
-		session *user.Session) (*GetGroupInfosRsp, error) {
+	engine.POST("group/info/get", wrapper.Wrap(func(req *GetGroupInfoReq,
+		session *user.Session) (*GetGroupInfoRsp, error) {
 		req.UserID = session.UserID
-		return service.GetGroupInfos(req)
+		return service.GetGroupInfo(req)
+	}, &wrap.Config{
+		UserTypes: []user.UserType{
+			user.UserTypeUser,
+		},
+	}))
+
+	engine.POST("user/group/infos/get", wrapper.Wrap(func(req *GetUserGroupInfosReq,
+		session *user.Session) (*GetUserGroupInfosRsp, error) {
+		req.UserID = session.UserID
+		return service.GetUserGroupInfos(req)
 	}, &wrap.Config{
 		UserTypes: []user.UserType{
 			user.UserTypeUser,
@@ -51,6 +61,26 @@ func RegisterHandler(engine *gin.Engine, service *Service, wrapper *wrap.Wrapper
 		session *user.Session) (*ChangeGroupMemberInfoRsp, error) {
 		req.UserID = session.UserID
 		return service.ChangeGroupMemberInfo(req)
+	}, &wrap.Config{
+		UserTypes: []user.UserType{
+			user.UserTypeUser,
+		},
+	}))
+
+	engine.POST("group/qrcode/gen", wrapper.Wrap(func(req *GenGroupQRCodeReq, session *user.Session,
+	) (*GenGroupQRCodeRsp, error) {
+		req.UserID = session.UserID
+		return service.GenGroupQRCode(req)
+	}, &wrap.Config{
+		UserTypes: []user.UserType{
+			user.UserTypeUser,
+		},
+	}))
+
+	engine.POST("group/join/code/scan", wrapper.Wrap(func(req *ScanCodeJoinGroupReq, session *user.Session,
+	) (*ScanCodeJoinGroupRsp, error) {
+		req.UserID = session.UserID
+		return service.ScanCodeJoinGroup(req)
 	}, &wrap.Config{
 		UserTypes: []user.UserType{
 			user.UserTypeUser,

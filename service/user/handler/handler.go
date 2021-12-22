@@ -8,7 +8,11 @@ import (
 )
 
 func RegisterHandler(engine *gin.Engine, service *user.Service, wrapper *wrap.Wrapper) {
-	engine.POST("user/infos/get", wrapper.Wrap(service.GetUserInfos, &wrap.Config{
+	engine.POST("user/info/get", wrapper.Wrap(func(req *user.GetUserInfoReq, session *user.Session) (
+		*user.GetUserInfoRsp, error) {
+		req.UserID = session.UserID
+		return service.GetUserInfo(req)
+	}, &wrap.Config{
 		UserTypes: []user.UserType{
 			user.UserTypeUser,
 		},

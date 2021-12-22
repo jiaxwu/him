@@ -65,6 +65,17 @@ type UserInfo struct {
 	RegisteredAt uint64   `json:"RegisteredAt"` // 注册时间
 }
 
+// GetUserInfoReq 获取用户信息
+type GetUserInfoReq struct {
+	UserID   uint64 `json:"UserID"`
+	Username string `json:"Username"`
+}
+
+// GetUserInfoRsp 获取用户信息响应
+type GetUserInfoRsp struct {
+	UserInfo *UserInfo `json:"UserInfo"`
+}
+
 // GetUserInfosReq 获取用户信息，条件只能选1个
 type GetUserInfosReq struct {
 	UserID   uint64   `json:"UserID"`
