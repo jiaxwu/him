@@ -23,4 +23,7 @@ var (
 		"the group qrcode already expired", "群二维码已经过期")
 	ErrCodeInvalidParameterGroupMemberNotExists = common.NewErrCode("InvalidParameter.GroupMember.NotExists",
 		"the group member not exists", "查询不到群成员")
+	ErrCodeInvalidParameterJoinGroupInviteNotExists = common.NewErrCode(
+		"InvalidParameter.JoinGroupInvite.NotExists",
+		"the join group invite not exists", "入群邀请不存在")
 )

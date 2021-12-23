@@ -162,13 +162,13 @@ func (s *Service) login(terminal Terminal, user *model.User) (*LoginRsp, error) 
 		return nil, err
 	}
 
-	getUserRsp, err := s.GetUserInfos(&GetUserInfosReq{UserID: user.ID})
+	getUserInfoRsp, err := s.GetUserInfo(&GetUserInfoReq{UserID: user.ID})
 	if err != nil {
 		return nil, err
 	}
 	return &LoginRsp{
 		Token:    token,
-		UserInfo: getUserRsp.UserInfos[0],
+		UserInfo: getUserInfoRsp.UserInfo,
 	}, nil
 }
 

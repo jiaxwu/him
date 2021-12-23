@@ -255,30 +255,42 @@ func (s Service) UpdateGroupInfo(req *UpdateGroupInfoReq) (*UpdateGroupInfoRsp, 
 	// 准备好更新和通知的内容
 	var (
 		column          string
-		value           string
+		value           any
 		nickNameTextTip *msg.NickNameTextTip
 		textMsg         *msg.TextMsg
 		memberIDS       []uint64
 	)
-	if req.Action.Name != "" {
+	if req.Action.Name != nil {
 		column = "name"
-		value = req.Action.Name
-		tipText := fmt.Sprintf(`修改了群名称为"%s"`, req.Action.Name)
+		value = *req.Action.Name
+		tipText := fmt.Sprintf(`修改群名称为“%s”`, *req.Action.Name)
 		if nickNameTextTip, err = s.assembleUpdateGroupInfoNickTextTip(req.UserID, tipText); err != nil {
 			return nil, err
 		}
-	} else if req.Action.Icon != "" {
+	} else if req.Action.Icon != nil {
 		column = "icon"
-		value = req.Action.Icon
+		value = *req.Action.Icon
 		if nickNameTextTip, err = s.assembleUpdateGroupInfoNickTextTip(req.UserID, "修改了群头像"); err != nil {
 			return nil, err
 		}
-	} else if req.Action.Notice != "" {
+	} else if req.Action.Notice != nil {
 		column = "notice"
-		value = req.Action.Notice
+		value = *req.Action.Notice
 		textMsg = &msg.TextMsg{
-			Content:  req.Action.Notice,
+			Content:  *req.Action.Notice,
 			IsNotice: true,
+		}
+	} else if req.Action.IsInviteJoinGroupNeedConfirm != nil {
+		column = "is_invite_join_group_need_confirm"
+		value = *req.Action.IsInviteJoinGroupNeedConfirm
+		var tipText string
+		if *req.Action.IsInviteJoinGroupNeedConfirm {
+			tipText = "已启用“群聊邀请确认”，群成员需群主或群管理员确认才能邀请朋友进群"
+		} else {
+			tipText = "已恢复默认进群方式"
+		}
+		if nickNameTextTip, err = s.assembleUpdateGroupInfoNickTextTip(req.UserID, tipText); err != nil {
+			return nil, err
 		}
 	} else {
 		return nil, common.ErrCodeInvalidParameter
@@ -350,11 +362,14 @@ func (s Service) UpdateGroupInfo(req *UpdateGroupInfoReq) (*UpdateGroupInfoRsp, 
 
 // 装配修改群信息tip
 func (s *Service) assembleUpdateGroupInfoNickTextTip(operatorID uint64, text string) (*msg.NickNameTextTip, error) {
-	getUserInfosRsp, err := s.userService.GetUserInfos(&user.GetUserInfosReq{UserID: operatorID})
+	// 获取用户信息
+	getUserInfoRsp, err := s.userService.GetUserInfo(&user.GetUserInfoReq{UserID: operatorID})
 	if err != nil {
 		return nil, err
 	}
-	userInfo := getUserInfosRsp.UserInfos[0]
+	userInfo := getUserInfoRsp.UserInfo
+
+	// 装配
 	return &msg.NickNameTextTip{
 		ClickableTexts: []*msg.ClickableText{
 			{

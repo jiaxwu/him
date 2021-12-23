@@ -39,20 +39,16 @@ func NewService(db *gorm.DB, validate *validator.Validate, config *config.Config
 func (s *Service) GetFriendInfos(req *GetFriendInfosReq) (*GetFriendInfosRsp, error) {
 	// 如果用户名或好友编号不为空
 	if req.Condition.Username != "" || req.Condition.FriendID != 0 {
-		getUserRsp, err := s.userService.GetUserInfos(&user.GetUserInfosReq{
+		// 获取用户信息
+		getUserInfoRsp, err := s.userService.GetUserInfo(&user.GetUserInfoReq{
 			Username: req.Condition.Username,
 			UserID:   req.Condition.FriendID,
 		})
 		if err != nil {
 			return nil, err
 		}
-		userInfos := getUserRsp.UserInfos
-		// 如果查询不到用户，返回空
-		if len(userInfos) == 0 {
-			return &GetFriendInfosRsp{FriendInfos: []*FriendInfo{}}, nil
-		}
-		// 否则通过UserID查询好友信息
-		friendInfo, err := s.getFriendInfoByFriendUserInfo(req.UserID, userInfos[0])
+		// 获取好友信息
+		friendInfo, err := s.getFriendInfoByFriendUserInfo(req.UserID, getUserInfoRsp.UserInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -79,11 +75,11 @@ func (s *Service) getFriendInfosIfIsFriend(userID uint64) (*GetFriendInfosRsp, e
 	for _, friend := range friends {
 		friendIDS = append(friendIDS, friend.FriendID)
 	}
-	getUserRsp, err := s.userService.GetUserInfos(&user.GetUserInfosReq{UserIDS: friendIDS})
+	getUserInfosRsp, err := s.userService.GetUserInfos(&user.GetUserInfosReq{UserIDS: friendIDS})
 	if err != nil {
 		return nil, err
 	}
-	userInfos := getUserRsp.UserInfos
+	userInfos := getUserInfosRsp.UserInfos
 	// 关联
 	userIDToUserInfoMap := make(map[uint64]*user.UserInfo, len(userInfos))
 	for _, userInfo := range userInfos {
@@ -151,17 +147,13 @@ func (s Service) IsFriend(req *IsFriendReq) (*IsFriendRsp, error) {
 // UpdateFriendInfo 更新好友信息
 func (s *Service) UpdateFriendInfo(req *UpdateFriendInfoReq) (*UpdateFriendInfoRsp, error) {
 	// 获取好友用户信息
-	getUserRsp, err := s.userService.GetUserInfos(&user.GetUserInfosReq{
+	getUserInfoRsp, err := s.userService.GetUserInfo(&user.GetUserInfoReq{
 		UserID: req.FriendID,
 	})
 	if err != nil {
 		return nil, err
 	}
-	userInfos := getUserRsp.UserInfos
-	// 查询不到用户
-	if len(userInfos) == 0 {
-		return nil, common.ErrCodeInvalidParameter
-	}
+	userInfo := getUserInfoRsp.UserInfo
 
 	// 修改
 	var (
@@ -214,7 +206,7 @@ func (s *Service) UpdateFriendInfo(req *UpdateFriendInfoReq) (*UpdateFriendInfoR
 	}
 
 	// 用户好友信息
-	friendInfo, err := s.getFriendInfoByFriendUserInfo(req.UserID, userInfos[0])
+	friendInfo, err := s.getFriendInfoByFriendUserInfo(req.UserID, userInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -297,16 +289,14 @@ func (s *Service) CreateAddFriendApplication(req *CreateAddFriendApplicationReq)
 	}
 
 	// 判断好友是否存在
-	rsp, err := s.userService.GetUserInfos(&user.GetUserInfosReq{UserID: req.FriendID})
+	getUserInfoRsp, err := s.userService.GetUserInfo(&user.GetUserInfoReq{UserID: req.FriendID})
 	if err != nil {
 		return nil, err
 	}
-	if len(rsp.UserInfos) != 1 {
-		return nil, common.ErrCodeInvalidParameter
-	}
+	userInfo := getUserInfoRsp.UserInfo
 
 	// 检查好友是否已经是好友
-	friendInfo, err := s.getFriendInfoByFriendUserInfo(req.FriendID, rsp.UserInfos[0])
+	friendInfo, err := s.getFriendInfoByFriendUserInfo(req.FriendID, userInfo)
 	if err != nil {
 		return nil, err
 	}

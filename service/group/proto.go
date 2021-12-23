@@ -76,9 +76,10 @@ type UpdateGroupInfoReq struct {
 
 // UpdateGroupInfoAction 更新群信息行为
 type UpdateGroupInfoAction struct {
-	Name   string `json:"Name"`   // 群名
-	Icon   string `json:"Icon"`   // 图标
-	Notice string `json:"Notice"` // 群公告
+	Name                         *string `json:"Name,omitempty"`                         // 群名
+	Icon                         *string `json:"Icon,omitempty"`                         // 图标
+	Notice                       *string `json:"Notice,omitempty"`                       // 群公告
+	IsInviteJoinGroupNeedConfirm *bool   `json:"IsInviteJoinGroupNeedConfirm,omitempty"` // 是否邀请入群需要管理员或群主确认（默认不需要确认直接入群）
 }
 
 // UpdateGroupInfoRsp 更新群信息响应
@@ -130,70 +131,49 @@ type ChangeGroupMemberInfoRsp struct {
 	GroupMemberInfo *GroupMemberInfo `json:"GroupMemberInfo"` // 群成员信息
 }
 
-// ApplicationStatus 入群申请状态
-type ApplicationStatus string
-
-const (
-	ApplicationStatusWaitConfirm ApplicationStatus = "WaitConfirm" // 等待确认
-	ApplicationStatusReject      ApplicationStatus = "Reject"      // 拒绝
-	ApplicationStatusAccept      ApplicationStatus = "Accept"      // 接受
-	ApplicationStatusExpire      ApplicationStatus = "Expire"      // 过期
-)
-
 // InviteStatus 入群邀请状态
 type InviteStatus string
 
 const (
-	InviteStatusWaitManagerConfirm InviteStatus = "WaitManagerConfirm" // 等待管理员确认
-	InviteStatusWaitInviteeConfirm InviteStatus = "WaitInviteeConfirm" // 等待被邀请人确认
-	InviteStatusInviteeAccept      InviteStatus = "InviteeAccept"      // 被邀请人接受
-	InviteStatusManagerReject      InviteStatus = "ManagerReject"      // 管理员拒绝
-	InviteStatusInviteeReject      InviteStatus = "InviteeReject"      // 被邀请人拒绝
-	InviteStatusExpire             InviteStatus = "Expire"             // 过期
+	InviteStatusWaitConfirm    InviteStatus = "WaitConfirm"    // 等待确认
+	InviteStatusAlreadyConfirm InviteStatus = "AlreadyConfirm" // 已确认
 )
 
-// JoinGroupEvent 入群事件
-type JoinGroupEvent struct {
-	JoinGroupEventID uint64          `json:"JoinGroupEventID"` // 入群事件编号
-	GroupID          uint64          `json:"GroupID"`          // 群编号
-	ManagerMsg       string          `json:"ManagerMsg"`       // 管理员消息
-	Action           JoinGroupAction `json:"Action"`           // 入群行为
-	CreatedAt        uint64          `json:"CreatedAt"`        // 创建时间
-	UpdatedAt        uint64          `json:"UpdatedAt"`        // 更新时间
+// InviteJoinGroupReq 邀请入群请求
+type InviteJoinGroupReq struct {
+	InviterID  uint64   `json:"InviterID"`  // 邀请者编号
+	GroupID    uint64   `json:"GroupID"`    // 群编号
+	InviteeIDS []uint64 `json:"InviteeIDS"` // 被邀请人编号列表
+	Reason     string   `json:"Reason"`     // 邀请理由
 }
 
-// JoinGroupReq 入群请求
-type JoinGroupReq1 struct {
-	UserID  uint64          `json:"UserID"`  // 用户编号
-	GroupID uint64          `json:"GroupID"` // 群编号
-	Action  JoinGroupAction `json:"Action"`  // 入群事件行为
+// InviteJoinGroupRsp 邀请入群响应
+type InviteJoinGroupRsp struct{}
+
+// GetJoinGroupInviteReq 获取入群邀请请求
+type GetJoinGroupInviteReq struct {
+	UserID            uint64 `json:"UserID"`            // 用户编号
+	JoinGroupInviteID uint64 `json:"JoinGroupInviteID"` // 入群邀请编号
 }
 
-// JoinGroupAction 入群行为
-type JoinGroupAction struct {
-	Application *Application `json:"Application,omitempty"` // 入群申请
-	Invite      *Invite      `json:"Invite,omitempty"`      // 入群邀请
+// GetJoinGroupInviteRsp 获取入群邀请响应
+type GetJoinGroupInviteRsp struct {
+	JoinGroupInviteID uint64       `json:"JoinGroupInviteID"` // 入群邀请编号
+	GroupID           uint64       `json:"GroupID"`           // 群编号
+	InviterID         uint64       `json:"InviterID"`         // 邀请者编号
+	InviteeIDS        []uint64     `json:"InviteeIDS"`        // 被邀请人编号列表
+	Reason            string       `json:"Reason"`            // 邀请理由
+	Status            InviteStatus `json:"Status"`            // 入群邀请状态
 }
 
-// Application 入群申请
-type Application struct {
-	JoinGroupUserID   uint64            `json:"JoinGroupUserID"`   // 入群用户编号
-	JoinGroupUserMsg  string            `json:"JoinGroupUserMsg"`  // 入群用户消息
-	ApplicationStatus ApplicationStatus `json:"ApplicationStatus"` // 入群申请状态
+// ConfirmJoinGroupInviteReq 确认入群邀请请求
+type ConfirmJoinGroupInviteReq struct {
+	UserID            uint64 `json:"UserID"`            // 用户编号
+	JoinGroupInviteID uint64 `json:"JoinGroupInviteID"` // 入群邀请编号
 }
 
-// Invite 入群邀请
-type Invite struct {
-	InviterID    uint64       `json:"InviterID"`    // 邀请者编号
-	InviteeIDS   []uint64     `json:"InviteeIDS"`   // 被邀请人编号列表
-	InviterMsg   string       `json:"InviterMsg"`   // 邀请者消息
-	InviteStatus InviteStatus `json:"InviteStatus"` // 入群邀请状态
-}
-
-// JoinGroupRsp 入群响应
-type JoinGroupRsp1 struct {
-	JoinGroupEvent *JoinGroupEvent `json:"JoinGroupEvent"` // 入群事件
-}
+// ConfirmJoinGroupInviteRsp 确认入群邀请响应
+type ConfirmJoinGroupInviteRsp struct{}
 
 // GenGroupQRCodeReq 生成群二维码请求
 type GenGroupQRCodeReq struct {

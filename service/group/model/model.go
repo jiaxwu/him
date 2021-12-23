@@ -28,28 +28,13 @@ type GroupMember struct {
 	UpdatedAt      uint64 `gorm:"not null; index"`                             // 修改时间
 }
 
-type JoinGroupEvent struct {
-	ID                uint64
-	GroupID           uint64 `gorm:"not null; index"`          // 群编号
-	JoinGroupUserID   uint64 `gorm:"not null; index"`          // 入群用户编号
-	JoinGroupUserMsg  string `gorm:"not null; size:50"`        // 入群用户消息
-	InviterID         uint64 `gorm:"not null; index"`          // 邀请者编号
-	InviterMsg        string `gorm:"not null; size:50"`        // 邀请人消息
-	ManagerMsg        string `gorm:"not null; size:50"`        // 管理员消息
-	Type              string `gorm:"not null; size:10; index"` // 入群事件类型
-	ApplicationStatus string `gorm:"not null; size:10; index"` // 入群申请状态
-	InviteStatus      string `gorm:"not null; size:10; index"` // 入群邀请状态
-	CreatedAt         uint64 `gorm:"not null; index"`          // 创建时间
-	UpdatedAt         uint64 `gorm:"not null; index"`          // 更新时间
-}
-
-// JoinGroupApplication 入群申请
-type JoinGroupApplication struct {
-	ID                uint64
-	GroupID           uint64 `gorm:"not null; index"`          // 群编号
-	ApplicantID       uint64 `gorm:"not null; index"`          // 申请者编号
-	ApplicationMsg    string `gorm:"not null; size:50"`        // 申请消息
-	ApplicationStatus string `gorm:"not null; size:10; index"` // 入群申请状态
-	CreatedAt         uint64 `gorm:"not null; index"`          // 创建时间
-	UpdatedAt         uint64 `gorm:"not null; index"`          // 更新时间
+type JoinGroupInvite struct {
+	ID         uint64
+	GroupID    uint64 `gorm:"not null; index"`    // 群编号
+	InviterID  uint64 `gorm:"not null"`           // 邀请者编号
+	InviteeIDS string `gorm:"not null; size:500"` // 被邀请人编号列表
+	Reason     string `gorm:"not null; size:50"`  // 邀请理由
+	Status     string `gorm:"not null; size:20"`  // 入群邀请状态
+	CreatedAt  uint64 `gorm:"not null; index"`    // 创建时间
+	UpdatedAt  uint64 `gorm:"not null; index"`    // 更新时间
 }

@@ -86,4 +86,34 @@ func RegisterHandler(engine *gin.Engine, service *Service, wrapper *wrap.Wrapper
 			user.UserTypeUser,
 		},
 	}))
+
+	engine.POST("group/join/invite", wrapper.Wrap(func(req *InviteJoinGroupReq, session *user.Session,
+	) (*InviteJoinGroupRsp, error) {
+		req.InviterID = session.UserID
+		return service.InviteJoinGroup(req)
+	}, &wrap.Config{
+		UserTypes: []user.UserType{
+			user.UserTypeUser,
+		},
+	}))
+
+	engine.POST("group/join/invite/get", wrapper.Wrap(func(req *GetJoinGroupInviteReq, session *user.Session,
+	) (*GetJoinGroupInviteRsp, error) {
+		req.UserID = session.UserID
+		return service.GetJoinGroupInvite(req)
+	}, &wrap.Config{
+		UserTypes: []user.UserType{
+			user.UserTypeUser,
+		},
+	}))
+
+	engine.POST("group/join/invite/confirm", wrapper.Wrap(func(req *ConfirmJoinGroupInviteReq,
+		session *user.Session) (*ConfirmJoinGroupInviteRsp, error) {
+		req.UserID = session.UserID
+		return service.ConfirmJoinGroupInvite(req)
+	}, &wrap.Config{
+		UserTypes: []user.UserType{
+			user.UserTypeUser,
+		},
+	}))
 }

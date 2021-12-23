@@ -57,3 +57,7 @@ https://mp.weixin.qq.com/s?__biz=MzI1ODY0NjAwMA==&mid=2247483714&idx=1&sn=8f1292
 https://mp.weixin.qq.com/s?__biz=MzI1ODY0NjAwMA==&mid=2247483854&idx=1&sn=f87ef6cac20032e1a97076cabc36a648&chksm=ea044b51dd73c24723d13c9265dd11dd30ae143dcb44b6b8777ae125478f0b6494e9de464624&scene=21#wechat_redirect
 
 https://mp.weixin.qq.com/s?__biz=MzI1ODY0NjAwMA==&mid=2247483859&idx=1&sn=51bdc587fd4a2ab6334e2ce7b82bf3f2&chksm=ea044b4cdd73c25ac7e97542f82cc248b807df613cb2e28cf2726482428bddf9a717b89fcf7d&scene=21#wechat_redirect
+
+# 群邀请流程
+https://jingyan.baidu.com/article/48a42057fca993a9242504bb.html
+https://jingyan.baidu.com/article/f54ae2fc440d041e92b849eb.html

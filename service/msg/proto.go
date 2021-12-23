@@ -87,7 +87,7 @@ type SenderType string
 
 const (
 	SenderTypeUser = "UserInfo" // 普通用户
-	SenderTypeSys  = "Sys"  // 系统
+	SenderTypeSys  = "Sys"      // 系统
 )
 
 // Sender 发送者
@@ -101,8 +101,8 @@ type Sender struct {
 type ReceiverType string
 
 const (
-	ReceiverTypeUser  = "UserInfo"  // 普通用户
-	ReceiverTypeGroup = "Group" // 群
+	ReceiverTypeUser  = "UserInfo" // 普通用户
+	ReceiverTypeGroup = "Group"    // 群
 )
 
 // Receiver 接收者
@@ -136,8 +136,9 @@ type ImageMsg struct {
 
 // TipMsg 提示消息
 type TipMsg struct {
-	TextTip         *TextTip         `json:"TextTip,omitempty" bson:"TextTip,omitempty"`
-	NickNameTextTip *NickNameTextTip `json:"NickNameTextTip,omitempty" bson:"NickNameTextTip,omitempty"`
+	TextTip                   *TextTip                   `json:"TextTip,omitempty" bson:"TextTip,omitempty"`
+	NickNameTextTip           *NickNameTextTip           `json:"NickNameTextTip,omitempty" bson:"NickNameTextTip,omitempty"`
+	JoinGroupInviteConfirmTip *JoinGroupInviteConfirmTip `json:"JoinGroupInviteConfirmTip,omitempty" bson:"JoinGroupInviteConfirmTip,omitempty"`
 }
 
 // TextTip 文本提示
@@ -148,6 +149,12 @@ type TextTip struct {
 // NickNameTextTip 昵称文本提示
 type NickNameTextTip struct {
 	ClickableTexts []*ClickableText `json:"ClickableTexts,omitempty" bson:"ClickableTexts,omitempty"`
+}
+
+// JoinGroupInviteConfirmTip 入群邀请确认提示
+type JoinGroupInviteConfirmTip struct {
+	Inviter           *ClickableText `json:"Inviter" bson:"Inviter"`                     // 邀请者编号
+	JoinGroupInviteID uint64         `json:"JoinGroupInviteID" bson:"JoinGroupInviteID"` // 入群邀请编号
 }
 
 // ClickableText 可点击文本

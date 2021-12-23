@@ -84,11 +84,7 @@ func (s *Service) GetUserInfo(req *GetUserInfoReq) (*GetUserInfoRsp, error) {
 func (s *Service) GetUserInfos(req *GetUserInfosReq) (*GetUserInfosRsp, error) {
 	// 拼接条件
 	var condition *gorm.DB
-	if req.UserID != 0 {
-		condition = s.db.Where("id = ?", req.UserID)
-	} else if req.Username != "" {
-		condition = s.db.Where("username = ?", req.Username)
-	} else if len(req.UserIDS) != 0 {
+	if len(req.UserIDS) != 0 {
 		condition = s.db.Where("id in ?", req.UserIDS)
 	} else {
 		return nil, common.ErrCodeInvalidParameter
@@ -135,11 +131,13 @@ func (s *Service) UpdateUserInfo(req *UpdateUserInfoReq) (*UpdateUserInfoRsp, er
 		if err := s.checkUsername(req.Action.Username); err != nil {
 			return nil, err
 		}
-		rsp, err := s.GetUserInfos(&GetUserInfosReq{Username: req.Action.Username})
-		if err != nil {
+		// 判断用户名是否已经存在
+		var user model.User
+		err := s.db.Where("username = ?", req.Action.Username).Take(&user).Error
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, err
 		}
-		if len(rsp.UserInfos) != 0 {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrCodeInvalidParameterUsernameExists
 		}
 		column = "username"
@@ -172,11 +170,13 @@ func (s *Service) UpdateUserInfo(req *UpdateUserInfoReq) (*UpdateUserInfoRsp, er
 		Action:     req.Action,
 		UpdateTime: uint64(time.Now().Unix()),
 	})
-	getUserInfosRsp, err := s.GetUserInfos(&GetUserInfosReq{UserID: req.UserID})
+
+	// 获取新的用户信息
+	getUserInfoRsp, err := s.GetUserInfo(&GetUserInfoReq{UserID: req.UserID})
 	if err != nil {
 		return nil, err
 	}
-	return &UpdateUserInfoRsp{UserInfo: getUserInfosRsp.UserInfos[0]}, nil
+	return &UpdateUserInfoRsp{UserInfo: getUserInfoRsp.UserInfo}, nil
 }
 
 // 检查用户名

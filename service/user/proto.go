@@ -78,9 +78,7 @@ type GetUserInfoRsp struct {
 
 // GetUserInfosReq 获取用户信息，条件只能选1个
 type GetUserInfosReq struct {
-	UserID   uint64   `json:"UserID"`
-	Username string   `json:"Username"`
-	UserIDS  []uint64 `json:"UserIDS"`
+	UserIDS []uint64 `json:"UserIDS"`
 }
 
 type GetUserInfosRsp struct {
