@@ -74,18 +74,7 @@ func (s *Service) GetGroupInfo(req *GetGroupInfoReq) (*GetGroupInfoRsp, error) {
 }
 
 // GetUserGroupInfos 获取用户群信息
-// todo 分页
 func (s *Service) GetUserGroupInfos(req *GetUserGroupInfosReq) (*GetUserGroupInfosRsp, error) {
-	// 调整页码和页大小
-	if req.Page == 0 {
-		req.Page = 1
-	}
-	if req.Size > 100 {
-		req.Size = 100
-	} else if req.Size == 0 {
-		req.Size = 30
-	}
-
 	// 获取群成员信息
 	var groupMembers []*model.GroupMember
 	if err := s.db.Where("member_id = ?", req.UserID).Find(&groupMembers).Error; err != nil {
@@ -238,7 +227,6 @@ func (s *Service) CreateGroup(req *CreateGroupReq) (*CreateGroupRsp, error) {
 	return &CreateGroupRsp{GroupInfo: getGroupInfoRsp.GroupInfo}, nil
 }
 
-// todo 群头像用群编号作为索引
 // UpdateGroupInfo 更新群信息
 func (s Service) UpdateGroupInfo(req *UpdateGroupInfoReq) (*UpdateGroupInfoRsp, error) {
 	// 判断群是否存在

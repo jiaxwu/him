@@ -47,8 +47,6 @@ type GetGroupInfoRsp struct {
 // GetUserGroupInfosReq 获取用户群信息请求
 type GetUserGroupInfosReq struct {
 	UserID uint64 `json:"UserID"` // 用户编号
-	Page   uint64 `json:"Page"`   // 页码
-	Size   uint64 `json:"Size"`   // 页大小
 }
 
 // GetUserGroupInfosRsp 获取用户群信息响应

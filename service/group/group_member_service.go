@@ -30,18 +30,7 @@ func (s *Service) GetGroupMemberInfo(req *GetGroupMemberInfoReq) (*GetGroupMembe
 }
 
 // GetGroupMemberInfos 获取群成员信息
-// todo 分页
 func (s *Service) GetGroupMemberInfos(req *GetGroupMemberInfosReq) (*GetGroupMemberInfosRsp, error) {
-	// 调整页码页大小
-	if req.Page == 0 {
-		req.Page = 1
-	}
-	if req.Size > 500 {
-		req.Size = 500
-	} else if req.Size == 0 {
-		req.Size = 100
-	}
-
 	// 获取群信息
 	getGroupInfoRsp, err := s.GetGroupInfo(&GetGroupInfoReq{
 		UserID:  req.UserID,
