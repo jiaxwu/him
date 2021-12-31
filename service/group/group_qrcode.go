@@ -4,12 +4,12 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	_ "embed"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 	"github.com/jiaxwu/him/common/jsons"
 	"github.com/jiaxwu/him/config/log"
-	"os"
 	"time"
 )
 
@@ -25,16 +25,18 @@ const (
 	GroupQRCodePrefix        = "https://www.him.com/group/qrcode/" // 群二维码前缀
 )
 
-const (
-	groupQRCodePrivateKeyFilePath = "service/group/group_qrcode_private_key.pem" // 私钥文件路径
-	groupQRCodePublicKeyFilePath  = "service/group/group_qrcode_public_key.pem"  // 公钥文件路径
+var (
+	//go:embed group_qrcode_private_key.pem
+	groupQRCodePrivateKeyFile []byte // 私钥文件
+	//go:embed group_qrcode_public_key.pem
+	groupQRCodePublicKeyFile []byte // 公钥文件
 )
 
 var (
 	// 群二维码私钥
-	groupQrcodePrivateKey = mustGroupQRCodePrivateKey(groupQRCodePrivateKeyFilePath)
+	groupQrcodePrivateKey = mustGroupQRCodePrivateKey()
 	// 群二维码公钥
-	groupQrcodePublicKey = mustGroupQRCodePublicKey(groupQRCodePublicKeyFilePath)
+	groupQrcodePublicKey = mustGroupQRCodePublicKey()
 )
 
 // 群二维码解密（使用私钥）
@@ -73,12 +75,8 @@ func groupQRCodeEncrypt(groupQRCode *GroupQRCode) (string, error) {
 }
 
 // 群二维码公钥
-func mustGroupQRCodePublicKey(path string) *rsa.PublicKey {
-	buf, err := os.ReadFile(path)
-	if err != nil {
-		log.WithError(err).Fatal()
-	}
-	block, _ := pem.Decode(buf)
+func mustGroupQRCodePublicKey() *rsa.PublicKey {
+	block, _ := pem.Decode(groupQRCodePublicKeyFile)
 	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
 		log.WithError(err).Fatal("parse exception")
@@ -91,12 +89,8 @@ func mustGroupQRCodePublicKey(path string) *rsa.PublicKey {
 }
 
 // 群二维码私钥
-func mustGroupQRCodePrivateKey(path string) *rsa.PrivateKey {
-	buf, err := os.ReadFile(path)
-	if err != nil {
-		log.WithError(err).Fatal()
-	}
-	block, _ := pem.Decode(buf)
+func mustGroupQRCodePrivateKey() *rsa.PrivateKey {
+	block, _ := pem.Decode(groupQRCodePrivateKeyFile)
 	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
 		log.WithError(err).Fatal("parse exception")
