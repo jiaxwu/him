@@ -2,7 +2,7 @@
 HIM是一个即时消息通信系统，主要实现了单聊、群聊等服务
 
 # 消息架构
-![image.png](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4f70908d3e2a4c33b205f8a1978189c6~tplv-k3u1fbpfcp-watermark.image?)
+![img.png](img.png)
 - 客户端会和gateway建立WebSocket长连接
 - 客户端的消息会通过sender发送到`SendMsgMQ`
 - transfer消费`SendMsgMQ`里的消息，进行序列号生成和持久化存储（为了离线消息），并把消息发送到`PushMsgMQ`
