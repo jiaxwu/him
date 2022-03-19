@@ -131,6 +131,25 @@ type ChangeGroupMemberInfoRsp struct {
 	GroupMemberInfo *GroupMemberInfo `json:"GroupMemberInfo"` // 群成员信息
 }
 
+// IsGroupMemberReq 是否是群成员请求
+type IsGroupMemberReq struct {
+	UserID  uint64 `json:"UserID"`  // 用户编号
+	GroupID uint64 `json:"GroupID"` // 群编号
+}
+
+// IsGroupMemberRsp 是否是群成员响应
+type IsGroupMemberRsp struct{}
+
+// GetAllGroupMemberIDSReq 获取所有群成员编号请求
+type GetAllGroupMemberIDSReq struct {
+	GroupID uint64 `json:"GroupID"` // 群编号
+}
+
+// GetAllGroupMemberIDSRsp 获取所有群成员编号响应
+type GetAllGroupMemberIDSRsp struct {
+	MemberIDS []uint64 `json:"MemberIDS"` // 群成员编号列表
+}
+
 // InviteStatus 入群邀请状态
 type InviteStatus string
 

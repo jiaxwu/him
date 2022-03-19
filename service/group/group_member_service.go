@@ -129,6 +129,26 @@ func (s *Service) ChangeGroupMemberInfo(req *ChangeGroupMemberInfoReq) (*ChangeG
 	}, nil
 }
 
+// IsGroupMember 是否是群成员
+func (s *Service) IsGroupMember(req *IsGroupMemberReq) (*IsGroupMemberRsp, error) {
+	_, err := s.isGroupMember(req.UserID, req.GroupID)
+	if err != nil {
+		return nil, err
+	}
+	return &IsGroupMemberRsp{}, nil
+}
+
+// GetAllGroupMemberIDS 获取所有群成员编号
+func (s *Service) GetAllGroupMemberIDS(req *GetAllGroupMemberIDSReq) (*GetAllGroupMemberIDSRsp, error) {
+	memberIDS, err := s.getAllGroupMemberIDS(req.GroupID)
+	if err != nil {
+		return nil, err
+	}
+	return &GetAllGroupMemberIDSRsp{
+		MemberIDS: memberIDS,
+	}, nil
+}
+
 // 装配群成员信息
 func (s *Service) assembleGroupMemberInfo(groupMember *model.GroupMember) *GroupMemberInfo {
 	return &GroupMemberInfo{

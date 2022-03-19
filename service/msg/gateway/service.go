@@ -4,6 +4,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/jiaxwu/him/common"
 	"github.com/jiaxwu/him/service/friend"
+	"github.com/jiaxwu/him/service/group"
 	"github.com/jiaxwu/him/service/msg"
 	"github.com/jiaxwu/him/service/msg/sender"
 	"github.com/sirupsen/logrus"
@@ -18,16 +19,18 @@ type Service struct {
 	senderService *sender.Service
 	idGenerator   *msg.IDGenerator
 	friendService *friend.Service
+	groupService  *group.Service
 }
 
 func NewService(senderService *sender.Service, rdb *redis.Client, idGenerator *msg.IDGenerator, db *gorm.DB,
-	friendService *friend.Service) *Service {
+	friendService *friend.Service, groupService *group.Service) *Service {
 	return &Service{
 		rdb:           rdb,
 		senderService: senderService,
 		idGenerator:   idGenerator,
 		db:            db,
 		friendService: friendService,
+		groupService:  groupService,
 	}
 }
 
@@ -115,5 +118,49 @@ func (s *Service) sendToUser(req *SendMsgReq) (*SendMsgRsp, error) {
 
 // 发送给群
 func (s *Service) sendToGroup(req *SendMsgReq) (*SendMsgRsp, error) {
-	panic("未实现")
+	// 发送者必须是群成员
+	if req.Sender.Type == msg.SenderTypeUser {
+		_, err := s.groupService.IsGroupMember(&group.IsGroupMemberReq{
+			UserID:  req.Sender.SenderID,
+			GroupID: req.Receiver.ReceiverID,
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// 获取群成员编号
+	getAllGroupMemberIDSRsp, err := s.groupService.GetAllGroupMemberIDS(&group.GetAllGroupMemberIDSReq{
+		GroupID: req.Receiver.ReceiverID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// 构造群消息
+	memberIDS := getAllGroupMemberIDSRsp.MemberIDS
+	msgs := make([]*msg.Msg, 0, len(memberIDS))
+	msgID := s.idGenerator.GenMsgID()
+	now := uint64(time.Now().Unix())
+	for _, userID := range memberIDS {
+		msgs = append(msgs, &msg.Msg{
+			UserID:      userID,
+			MsgID:       msgID,
+			Sender:      req.Sender,
+			Receiver:    req.Receiver,
+			SendTime:    req.SendTime,
+			ArrivalTime: now,
+			Content:     req.Content,
+		})
+	}
+
+	// 发送到mq
+	if _, err := s.senderService.SendMsgs(&sender.SendMsgsReq{Msgs: msgs}); err != nil {
+		return nil, err
+	}
+
+	return &SendMsgRsp{
+		CorrelationID: req.CorrelationID,
+		MsgID:         msgID,
+	}, nil
 }
